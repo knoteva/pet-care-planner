@@ -1,10 +1,14 @@
 import Link from "next/link";
 import {
+  adminStats,
+  adminUsers,
   comments,
   currentUser,
   dashboardStats,
+  groupMembers,
   events,
   groups,
+  moderationQueue,
   participants,
   pets,
 } from "@/services/mock-data";
@@ -21,6 +25,8 @@ const navItems = [
   { href: "/dashboard", label: "Табло", icon: "▦" },
   { href: "/pets", label: "Любимци", icon: "●" },
   { href: "/groups", label: "Групи", icon: "◎" },
+  { href: "/admin", label: "Админ", icon: "◇" },
+  { href: "/api/docs", label: "API", icon: "{}" },
 ];
 
 const statusLabels: Record<EventStatus, string> = {
@@ -159,7 +165,7 @@ export function DashboardView() {
         <SectionTitle
           title="Предстоящи събития"
           action="Ново събитие"
-          href="/events/sabotna-razhodka"
+          href="/events/new"
         />
         <div className="mt-3 grid gap-3">
           {events.slice(0, 3).map((event) => (
@@ -259,7 +265,7 @@ export function PetsView() {
       <SectionTitle
         title="Моите любимци"
         action="Добави любимец"
-        href="/pets"
+        href="/pets/new"
       />
       <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {pets.map((pet) => (
@@ -273,7 +279,7 @@ export function PetsView() {
 export function GroupsView() {
   return (
     <AppShell active="/groups" aside={<InvitePanel />}>
-      <SectionTitle title="Групи" action="Нова група" href="/groups" />
+      <SectionTitle title="Групи" action="Нова група" href="/groups/new" />
       <div className="mt-4 grid gap-4">
         {groups.map((group) => (
           <GroupCard key={group.id} group={group} />
@@ -287,6 +293,276 @@ export function EventPageView() {
   return (
     <AppShell active="/dashboard" aside={<ParticipantPanel />}>
       <EventDetailsCard event={events[0]} />
+    </AppShell>
+  );
+}
+
+export function AdminView() {
+  return (
+    <AppShell active="/admin" aside={<AdminAuditPanel />}>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {adminStats.map((stat) => (
+          <StatCard key={stat.label} {...stat} />
+        ))}
+      </div>
+
+      <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-xl font-bold">Потребители</h2>
+            <p className="text-sm text-neutral-600">
+              Бъдещ admin изглед за роли, статус и основни действия.
+            </p>
+          </div>
+          <Badge tone="info">mock admin panel</Badge>
+        </div>
+        <div className="mt-4 overflow-hidden rounded-lg border border-neutral-200">
+          {adminUsers.map((user) => (
+            <div
+              key={user.id}
+              className="grid gap-3 border-b border-neutral-100 p-4 text-sm last:border-b-0 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_100px_120px]"
+            >
+              <div>
+                <p className="font-bold text-neutral-950">{user.name}</p>
+                <p className="text-neutral-500">{user.email}</p>
+              </div>
+              <p className="self-center text-neutral-700">{user.joinedAt}</p>
+              <p className="self-center font-semibold text-neutral-800">
+                {user.role}
+              </p>
+              <div className="flex gap-2 self-center">
+                <button
+                  type="button"
+                  className="rounded-lg border border-neutral-300 px-3 py-2 font-semibold"
+                >
+                  Преглед
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-5">
+        <h2 className="text-xl font-bold">Коментари за модерация</h2>
+        <div className="mt-4 grid gap-3">
+          {moderationQueue.map((item) => (
+            <div
+              key={item.id}
+              className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone="warning">{item.status}</Badge>
+                <p className="text-sm font-semibold text-neutral-700">
+                  {item.eventTitle}
+                </p>
+              </div>
+              <p className="mt-2 text-sm text-neutral-600">
+                {item.author}: {item.text}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </AppShell>
+  );
+}
+
+export function GroupDetailsView() {
+  const group = groups[0];
+  const groupEvents = events.filter((event) => event.groupId === group.id);
+
+  return (
+    <AppShell
+      active="/groups"
+      aside={
+        <>
+          <InvitePanel />
+          <CareChecklistPreview />
+        </>
+      }
+    >
+      <section className="rounded-lg border border-neutral-200 bg-white p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <Badge tone="success">мениджърски изглед</Badge>
+            <h2 className="mt-3 text-3xl font-bold">{group.title}</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600">
+              {group.description}
+            </p>
+            <p className="mt-3 text-sm font-semibold text-neutral-950">
+              {group.area}
+            </p>
+          </div>
+          <Link
+            href="/events/new"
+            className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
+          >
+            Ново събитие
+          </Link>
+        </div>
+      </section>
+
+      <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="rounded-lg border border-neutral-200 bg-white p-5">
+          <h3 className="text-xl font-bold">Събития в групата</h3>
+          <div className="mt-4 grid gap-3">
+            {groupEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-neutral-200 bg-white p-5">
+          <h3 className="text-xl font-bold">Членове</h3>
+          <div className="mt-4 grid gap-3">
+            {groupMembers.map((member) => (
+              <div
+                key={member.id}
+                className="rounded-lg border border-neutral-100 bg-neutral-50 p-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-bold">{member.name}</p>
+                    <p className="text-sm text-neutral-500">{member.email}</p>
+                  </div>
+                  <Badge
+                    tone={member.role === "мениджър" ? "success" : "neutral"}
+                  >
+                    {member.role}
+                  </Badge>
+                </div>
+                <p className="mt-2 text-sm text-neutral-600">
+                  {member.pets} · от {member.joinedAt}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </AppShell>
+  );
+}
+
+export function PetFormView() {
+  return (
+    <AppShell active="/pets" aside={<FormGuidePanel title="Любимец" />}>
+      <FormCard
+        title="Добави любимец"
+        description="Тези полета са подготвени за бъдещата таблица pets и create pet service."
+        submitLabel="Запази любимец"
+      >
+        <FormField name="name" label="Име" placeholder="Рая" />
+        <FormSelect
+          name="type"
+          label="Тип"
+          options={[
+            { value: "dog", label: "Куче" },
+            { value: "cat", label: "Котка" },
+            { value: "bird", label: "Птица" },
+            { value: "rabbit", label: "Заек" },
+            { value: "other", label: "Друго" },
+          ]}
+        />
+        <FormField name="breed" label="Порода" placeholder="Кокер шпаньол" />
+        <FormField name="age" label="Възраст" placeholder="4" type="number" />
+        <FormSelect
+          name="size"
+          label="Размер"
+          options={["малък", "среден", "голям"]}
+        />
+        <FormTextarea
+          name="notes"
+          label="Бележки"
+          placeholder="Характер, страхове, храна, важни навици..."
+        />
+      </FormCard>
+    </AppShell>
+  );
+}
+
+export function GroupFormView() {
+  return (
+    <AppShell active="/groups" aside={<FormGuidePanel title="Група" />}>
+      <FormCard
+        title="Създай група"
+        description="Собственикът на групата ще стане първият group manager."
+        submitLabel="Създай група"
+      >
+        <FormField
+          name="title"
+          label="Име на групата"
+          placeholder="Южен парк - разходки"
+        />
+        <FormField name="area" label="Район" placeholder="София, Южен парк" />
+        <FormTextarea
+          name="description"
+          label="Описание"
+          placeholder="Кога се събирате, какъв тип грижа координирате..."
+        />
+        <FormField
+          name="inviteCode"
+          label="Код за покана"
+          placeholder="PAWS-SOUTH"
+        />
+      </FormCard>
+    </AppShell>
+  );
+}
+
+export function EventFormView() {
+  return (
+    <AppShell active="/dashboard" aside={<FormGuidePanel title="Събитие" />}>
+      <FormCard
+        title="Ново събитие"
+        description="Полета, съвместими с бъдещата таблица care_events."
+        submitLabel="Публикувай събитие"
+      >
+        <FormField
+          name="title"
+          label="Заглавие"
+          placeholder="Съботна разходка в Южния парк"
+        />
+        <FormSelect
+          name="eventType"
+          label="Тип събитие"
+          options={[
+            { value: "dog_walk", label: "Разходка" },
+            { value: "pet_sitting", label: "Грижа" },
+            { value: "playdate", label: "Игра" },
+            { value: "training", label: "Тренировка" },
+            { value: "vet_support", label: "Ветеринарна помощ" },
+            { value: "other", label: "Друго" },
+          ]}
+        />
+        <FormField
+          name="startsAt"
+          label="Дата и час"
+          placeholder="2026-05-30 11:30"
+        />
+        <FormField
+          name="durationMinutes"
+          label="Продължителност"
+          placeholder="90"
+          type="number"
+        />
+        <FormField
+          name="location"
+          label="Място"
+          placeholder="Южен парк, вход откъм бул. Витоша"
+        />
+        <FormField
+          name="capacity"
+          label="Капацитет"
+          placeholder="8"
+          type="number"
+        />
+        <FormTextarea
+          name="notes"
+          label="Бележки"
+          placeholder="Какво да носят участниците, особености, инструкции..."
+        />
+      </FormCard>
     </AppShell>
   );
 }
@@ -573,7 +849,10 @@ function PetAvatar({ name, small = false }: { name: string; small?: boolean }) {
 
 function GroupCard({ group }: { group: PetGroup }) {
   return (
-    <article className="rounded-lg border border-neutral-200 bg-white p-5">
+    <Link
+      href="/groups/yuzhen-park"
+      className="block rounded-lg border border-neutral-200 bg-white p-5 transition hover:border-emerald-400 hover:shadow-sm"
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="text-xl font-bold">{group.title}</h3>
@@ -588,7 +867,7 @@ function GroupCard({ group }: { group: PetGroup }) {
           <Badge tone="neutral">член</Badge>
         )}
       </div>
-    </article>
+    </Link>
   );
 }
 
@@ -634,6 +913,29 @@ function InvitePanel() {
   );
 }
 
+function AdminAuditPanel() {
+  return (
+    <div className="rounded-lg border border-neutral-200 bg-white p-5">
+      <h2 className="text-lg font-bold">Админ панел</h2>
+      <p className="mt-2 text-sm leading-6 text-neutral-600">
+        Тази страница е визуален mock за бъдещи admin services: потребители,
+        групи, събития и модерация.
+      </p>
+      <div className="mt-4 grid gap-2 text-sm">
+        <div className="rounded-lg bg-neutral-50 p-3">
+          Проверка на роли преди достъп
+        </div>
+        <div className="rounded-lg bg-neutral-50 p-3">
+          Server-side paging за големи списъци
+        </div>
+        <div className="rounded-lg bg-neutral-50 p-3">
+          Модерация от admin или group manager
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CareChecklistPreview() {
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-5">
@@ -650,11 +952,66 @@ function CareChecklistPreview() {
   );
 }
 
+function FormGuidePanel({ title }: { title: string }) {
+  return (
+    <div className="rounded-lg border border-neutral-200 bg-white p-5">
+      <h2 className="text-lg font-bold">{title}: бъдеща логика</h2>
+      <p className="mt-2 text-sm leading-6 text-neutral-600">
+        Формата е само UI сега. Полетата са именувани така, че после да се
+        вържат към validation schema, Server Action и REST/service слой.
+      </p>
+      <ul className="mt-4 grid gap-2 text-sm text-neutral-700">
+        <li>✓ `name` атрибути за form data</li>
+        <li>✓ същите термини като бъдещата DB schema</li>
+        <li>✓ без fake client state, който после да пречи</li>
+      </ul>
+    </div>
+  );
+}
+
+function FormCard({
+  title,
+  description,
+  submitLabel,
+  children,
+}: {
+  title: string;
+  description: string;
+  submitLabel: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="mx-auto max-w-3xl rounded-lg border border-neutral-200 bg-white p-6">
+      <h2 className="text-2xl font-bold">{title}</h2>
+      <p className="mt-2 text-sm leading-6 text-neutral-600">{description}</p>
+      <form className="mt-6 grid gap-4">
+        {children}
+        <div className="mt-2 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="rounded-lg bg-emerald-700 px-4 py-3 text-sm font-bold text-white"
+          >
+            {submitLabel}
+          </button>
+          <Link
+            href="/dashboard"
+            className="rounded-lg border border-neutral-300 px-4 py-3 text-sm font-bold text-neutral-800"
+          >
+            Откажи
+          </Link>
+        </div>
+      </form>
+    </section>
+  );
+}
+
 function FormField({
+  name,
   label,
   placeholder,
   type = "text",
 }: {
+  name?: string;
   label: string;
   placeholder: string;
   type?: string;
@@ -663,9 +1020,60 @@ function FormField({
     <label className="grid gap-2 text-sm font-semibold text-neutral-800">
       {label}
       <input
+        name={name}
         className="rounded-lg border border-neutral-300 px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
         placeholder={placeholder}
         type={type}
+      />
+    </label>
+  );
+}
+
+function FormSelect({
+  name,
+  label,
+  options,
+}: {
+  name: string;
+  label: string;
+  options: Array<string | { value: string; label: string }>;
+}) {
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-neutral-800">
+      {label}
+      <select
+        name={name}
+        className="rounded-lg border border-neutral-300 bg-white px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
+      >
+        {options.map((option) => (
+          <option
+            key={typeof option === "string" ? option : option.value}
+            value={typeof option === "string" ? option : option.value}
+          >
+            {typeof option === "string" ? option : option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function FormTextarea({
+  name,
+  label,
+  placeholder,
+}: {
+  name: string;
+  label: string;
+  placeholder: string;
+}) {
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-neutral-800">
+      {label}
+      <textarea
+        name={name}
+        className="min-h-32 rounded-lg border border-neutral-300 px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
+        placeholder={placeholder}
       />
     </label>
   );

@@ -191,3 +191,129 @@ export const dashboardStats = [
   { label: "Групи", value: "4", tone: "violet" },
   { label: "Коментари днес", value: "18", tone: "amber" },
 ];
+
+export const groupMembers = [
+  {
+    id: 1,
+    name: "Мария Петкова",
+    email: "demo@paws.bg",
+    role: "мениджър",
+    pets: "Рая, Макс",
+    joinedAt: "20 май",
+  },
+  {
+    id: 2,
+    name: "Иван Георгиев",
+    email: "ivan.georgiev@example.com",
+    role: "член",
+    pets: "Арчи",
+    joinedAt: "21 май",
+  },
+  {
+    id: 3,
+    name: "Елена Димитрова",
+    email: "elena.dimitrova@example.com",
+    role: "член",
+    pets: "Бела",
+    joinedAt: "22 май",
+  },
+  {
+    id: 4,
+    name: "Николай Симеонов",
+    email: "nikolay@example.com",
+    role: "помощник",
+    pets: "без любимец",
+    joinedAt: "24 май",
+  },
+];
+
+export const adminStats = [
+  { label: "Потребители", value: "58", tone: "sky" },
+  { label: "Групи", value: "12", tone: "emerald" },
+  { label: "Любимци", value: "74", tone: "violet" },
+  { label: "Сигнали", value: "3", tone: "amber" },
+];
+
+export const adminUsers = [
+  {
+    id: 1,
+    name: "Мария Петкова",
+    email: "demo@paws.bg",
+    role: "admin",
+    status: "активен",
+    joinedAt: "26 май",
+  },
+  {
+    id: 2,
+    name: "Иван Георгиев",
+    email: "ivan.georgiev@example.com",
+    role: "user",
+    status: "активен",
+    joinedAt: "24 май",
+  },
+  {
+    id: 3,
+    name: "Елена Димитрова",
+    email: "elena.dimitrova@example.com",
+    role: "user",
+    status: "активен",
+    joinedAt: "23 май",
+  },
+];
+
+export const moderationQueue = [
+  {
+    id: 1,
+    eventTitle: "Игри в кучешката градинка",
+    author: "Иван",
+    text: "Може ли да дойда с две кучета?",
+    status: "чака преглед",
+  },
+  {
+    id: 2,
+    eventTitle: "Съботна разходка в Южния парк",
+    author: "Елена",
+    text: "Ще донеса вода.",
+    status: "нов коментар",
+  },
+  {
+    id: 3,
+    eventTitle: "Вечерна грижа за Рая",
+    author: "Мария",
+    text: "Моля проверете храната в шкафа.",
+    status: "важно",
+  },
+];
+
+export const apiEndpoints = [
+  {
+    method: "POST",
+    path: "/api/auth/register",
+    purpose: "Регистрация и връщане на JWT token.",
+  },
+  {
+    method: "POST",
+    path: "/api/auth/login",
+    purpose: "Вход с имейл и парола за mobile app.",
+  },
+  {
+    method: "GET",
+    path: "/api/me",
+    purpose: "Текущ потребител по Bearer token.",
+  },
+  {
+    method: "GET",
+    path: "/api/events?page=&limit=",
+    purpose: "Страничен списък със събития от групите на потребителя.",
+  },
+  {
+    method: "POST",
+    path: "/api/events/[id]/join",
+    purpose: "Участие със selected pet или helper-only режим.",
+  },
+  {
+    method: "POST",
+    path: "/api/events/[id]/comments",
+    purpose: "Добавяне на коментар към събитие.",
+  },
+];
