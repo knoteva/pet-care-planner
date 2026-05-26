@@ -183,6 +183,15 @@ export function DashboardView() {
         <PetPanel />
         <GroupPanel />
       </section>
+
+      <section className="mt-6">
+        <EmptyState
+          title="Архивът е празен в демо режима"
+          description="Тук ще се показват минали и отменени събития със server-side paging, когато свържем базата."
+          actionLabel="Създай събитие"
+          href="/events/new"
+        />
+      </section>
     </AppShell>
   );
 }
@@ -308,6 +317,14 @@ export function GroupsView() {
           <GroupCard key={group.id} group={group} />
         ))}
       </div>
+      <div className="mt-6">
+        <EmptyState
+          title="Няма чакащи покани"
+          description="Когато мениджър изпрати покана, тя ще се появи тук с действия за приемане или отказ."
+          actionLabel="Отвори демо група"
+          href="/groups/yuzhen-park"
+        />
+      </div>
     </AppShell>
   );
 }
@@ -424,12 +441,21 @@ export function GroupDetailsView() {
               {group.area}
             </p>
           </div>
-          <Link
-            href="/events/new"
-            className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
-          >
-            Ново събитие
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/events/new"
+              className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
+            >
+              Ново събитие
+            </Link>
+            <button
+              type="button"
+              disabled
+              className="cursor-not-allowed rounded-lg border border-neutral-300 bg-neutral-100 px-4 py-2.5 text-sm font-bold text-neutral-500"
+            >
+              Покани член
+            </button>
+          </div>
         </div>
       </section>
 
@@ -505,6 +531,65 @@ export function PetFormView() {
           name="notes"
           label="Бележки"
           placeholder="Характер, страхове, храна, важни навици..."
+        />
+      </FormCard>
+    </AppShell>
+  );
+}
+
+export function PetEditFormView() {
+  const pet = pets[0];
+
+  return (
+    <AppShell active="/pets" aside={<FormGuidePanel title="Редакция" />}>
+      <FormCard
+        title={`Редактирай ${pet.name}`}
+        description="Същата форма ще се използва от бъдещия update pet service."
+        submitLabel="Запази промените"
+        cancelHref="/pets"
+      >
+        <FormField
+          name="name"
+          label="Име"
+          placeholder="Рая"
+          defaultValue={pet.name}
+        />
+        <FormSelect
+          name="type"
+          label="Тип"
+          defaultValue={pet.type}
+          options={[
+            { value: "dog", label: "Куче" },
+            { value: "cat", label: "Котка" },
+            { value: "bird", label: "Птица" },
+            { value: "rabbit", label: "Заек" },
+            { value: "other", label: "Друго" },
+          ]}
+        />
+        <FormField
+          name="breed"
+          label="Порода"
+          placeholder="Кокер шпаньол"
+          defaultValue={pet.breed ?? ""}
+        />
+        <FormField
+          name="age"
+          label="Възраст"
+          placeholder="4"
+          type="number"
+          defaultValue={String(pet.age ?? "")}
+        />
+        <FormSelect
+          name="size"
+          label="Размер"
+          defaultValue={pet.size ?? "среден"}
+          options={["малък", "среден", "голям"]}
+        />
+        <FormTextarea
+          name="notes"
+          label="Бележки"
+          placeholder="Характер, страхове, храна, важни навици..."
+          defaultValue={pet.notes ?? ""}
         />
       </FormCard>
     </AppShell>
@@ -840,12 +925,12 @@ function PetCard({ pet }: { pet: Pet }) {
         {pet.breed} · {pet.age} г. · {pet.size}
       </p>
       <p className="mt-3 text-sm leading-6 text-neutral-600">{pet.notes}</p>
-      <button
-        className="mt-4 rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold"
-        type="button"
+      <Link
+        href="/pets/raya/edit"
+        className="mt-4 inline-flex rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold"
       >
         Редактирай
-      </button>
+      </Link>
     </article>
   );
 }
@@ -899,6 +984,32 @@ function GroupCard({ group }: { group: PetGroup }) {
   );
 }
 
+function EmptyState({
+  title,
+  description,
+  actionLabel,
+  href,
+}: {
+  title: string;
+  description: string;
+  actionLabel: string;
+  href: string;
+}) {
+  return (
+    <div className="rounded-lg border border-dashed border-neutral-300 bg-white p-5">
+      <p className="text-sm font-semibold text-neutral-500">Празно състояние</p>
+      <h3 className="mt-2 text-lg font-bold text-neutral-950">{title}</h3>
+      <p className="mt-2 text-sm leading-6 text-neutral-600">{description}</p>
+      <Link
+        href={href}
+        className="mt-4 inline-flex rounded-lg border border-neutral-300 px-3 py-2 text-sm font-bold text-neutral-800"
+      >
+        {actionLabel}
+      </Link>
+    </div>
+  );
+}
+
 function ParticipantPanel() {
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-5">
@@ -937,6 +1048,13 @@ function InvitePanel() {
       <div className="mt-4 rounded-lg bg-neutral-100 px-3 py-2 font-mono text-sm">
         PAWS-SOUTH
       </div>
+      <button
+        type="button"
+        disabled
+        className="mt-4 w-full cursor-not-allowed rounded-lg bg-neutral-200 px-4 py-2.5 text-sm font-bold text-neutral-500"
+      >
+        Покани член (скоро)
+      </button>
     </div>
   );
 }
@@ -976,6 +1094,13 @@ function CareChecklistPreview() {
         <li>✓ повод и торбички</li>
         <li>✓ бележки за любимците</li>
       </ul>
+      <button
+        type="button"
+        disabled
+        className="mt-4 w-full cursor-not-allowed rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-bold text-emerald-800"
+      >
+        Генерирай списък (скоро)
+      </button>
     </div>
   );
 }
@@ -1001,11 +1126,13 @@ function FormCard({
   title,
   description,
   submitLabel,
+  cancelHref = "/dashboard",
   children,
 }: {
   title: string;
   description: string;
   submitLabel: string;
+  cancelHref?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -1022,7 +1149,7 @@ function FormCard({
             {submitLabel}
           </button>
           <Link
-            href="/dashboard"
+            href={cancelHref}
             className="rounded-lg border border-neutral-300 px-4 py-3 text-sm font-bold text-neutral-800"
           >
             Откажи
@@ -1038,11 +1165,13 @@ function FormField({
   label,
   placeholder,
   type = "text",
+  defaultValue,
 }: {
   name?: string;
   label: string;
   placeholder: string;
   type?: string;
+  defaultValue?: string;
 }) {
   return (
     <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -1052,6 +1181,7 @@ function FormField({
         className="rounded-lg border border-neutral-300 px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
         placeholder={placeholder}
         type={type}
+        defaultValue={defaultValue}
       />
     </label>
   );
@@ -1061,10 +1191,12 @@ function FormSelect({
   name,
   label,
   options,
+  defaultValue,
 }: {
   name: string;
   label: string;
   options: Array<string | { value: string; label: string }>;
+  defaultValue?: string;
 }) {
   return (
     <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -1072,6 +1204,7 @@ function FormSelect({
       <select
         name={name}
         className="rounded-lg border border-neutral-300 bg-white px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
+        defaultValue={defaultValue}
       >
         {options.map((option) => (
           <option
@@ -1090,10 +1223,12 @@ function FormTextarea({
   name,
   label,
   placeholder,
+  defaultValue,
 }: {
   name: string;
   label: string;
   placeholder: string;
+  defaultValue?: string;
 }) {
   return (
     <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -1102,6 +1237,7 @@ function FormTextarea({
         name={name}
         className="min-h-32 rounded-lg border border-neutral-300 px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
         placeholder={placeholder}
+        defaultValue={defaultValue}
       />
     </label>
   );
