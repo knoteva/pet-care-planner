@@ -2,8 +2,6 @@
 
 Pet Care Planner is a capstone full-stack project for coordinating pet groups, dog walks, pet sitting events, participants, pets and comments.
 
-The application uses Bulgarian user-facing text in the UI and demo data. Code identifiers, folders, API routes and database objects stay in English.
-
 ## Repository Structure
 
 ```text
