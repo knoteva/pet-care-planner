@@ -1,0 +1,21 @@
+{
+  "name": "pet-care-planner",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "pet-care-web",
+    "pet-care-mobile",
+    "pet-care-shared"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w pet-care-web",
+    "dev:mobile": "npm run web -w pet-care-mobile",
+    "build:web": "npm run build -w pet-care-web",
+    "lint:web": "npm run lint -w pet-care-web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "format": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}
