@@ -49,7 +49,7 @@ const eventTypeLabels: Record<EventType, string> = {
 };
 
 function classNames(...values: Array<string | false | null | undefined>) {
-  return values.filter(Boolean).join(" ");
+  return values.filter(Boolean).join(" ").trim();
 }
 
 export function AppShell({
@@ -725,11 +725,11 @@ function SectionTitle({
   href: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <h2 className="text-xl font-bold text-neutral-950">{title}</h2>
       <Link
         href={href}
-        className="rounded-lg bg-neutral-950 px-3 py-2 text-sm font-semibold text-white"
+        className="inline-flex items-center justify-center rounded-lg bg-neutral-950 px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800"
       >
         <span aria-hidden="true">＋ </span>
         {action}
