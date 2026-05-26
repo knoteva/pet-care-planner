@@ -108,7 +108,12 @@ export function AppShell({
 
         <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8">
           <HeaderBar />
-          <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <div
+            className={classNames(
+              "mt-6 grid gap-6",
+              aside ? "xl:grid-cols-[minmax(0,1fr)_360px]" : "",
+            )}
+          >
             <section>{children}</section>
             {aside ? <aside className="space-y-5">{aside}</aside> : null}
           </div>
@@ -184,9 +189,9 @@ export function DashboardView() {
 
 export function HomeView() {
   return (
-    <AppShell active="/" aside={<CareChecklistPreview />}>
+    <AppShell active="/">
       <section className="rounded-lg border border-neutral-200 bg-white p-5">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-normal text-emerald-700">
               Pet Care Planner
@@ -218,9 +223,27 @@ export function HomeView() {
         </div>
       </section>
 
-      <div className="mt-6">
-        <DashboardMini />
-      </div>
+      <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {dashboardStats.map((stat) => (
+          <StatCard key={stat.label} {...stat} />
+        ))}
+      </section>
+
+      <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="rounded-lg border border-neutral-200 bg-white p-5">
+          <SectionTitle
+            title="Демо събития"
+            action="Виж табло"
+            href="/dashboard"
+          />
+          <div className="mt-4 grid gap-3">
+            {events.slice(0, 2).map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        </div>
+        <CareChecklistPreview />
+      </section>
     </AppShell>
   );
 }
@@ -299,48 +322,55 @@ export function EventPageView() {
 
 export function AdminView() {
   return (
-    <AppShell active="/admin" aside={<AdminAuditPanel />}>
+    <AppShell active="/admin">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {adminStats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>
 
-      <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-5">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-xl font-bold">Потребители</h2>
-            <p className="text-sm text-neutral-600">
-              Бъдещ admin изглед за роли, статус и основни действия.
-            </p>
-          </div>
-          <Badge tone="info">mock admin panel</Badge>
-        </div>
-        <div className="mt-4 overflow-hidden rounded-lg border border-neutral-200">
-          {adminUsers.map((user) => (
-            <div
-              key={user.id}
-              className="grid gap-3 border-b border-neutral-100 p-4 text-sm last:border-b-0 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_100px_120px]"
-            >
-              <div>
-                <p className="font-bold text-neutral-950">{user.name}</p>
-                <p className="text-neutral-500">{user.email}</p>
-              </div>
-              <p className="self-center text-neutral-700">{user.joinedAt}</p>
-              <p className="self-center font-semibold text-neutral-800">
-                {user.role}
+      <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="rounded-lg border border-neutral-200 bg-white p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-xl font-bold">Потребители</h2>
+              <p className="text-sm text-neutral-600">
+                Бъдещ admin изглед за роли, статус и основни действия.
               </p>
-              <div className="flex gap-2 self-center">
-                <button
-                  type="button"
-                  className="rounded-lg border border-neutral-300 px-3 py-2 font-semibold"
-                >
-                  Преглед
-                </button>
-              </div>
             </div>
-          ))}
+            <Badge tone="info">mock admin panel</Badge>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {adminUsers.map((user) => (
+              <div
+                key={user.id}
+                className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+              >
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px_auto] lg:items-center">
+                  <div className="min-w-0">
+                    <p className="font-bold text-neutral-950">{user.name}</p>
+                    <p className="break-all text-sm text-neutral-500">
+                      {user.email}
+                    </p>
+                  </div>
+                  <div className="grid gap-2 text-sm sm:grid-cols-3">
+                    <AdminMeta label="Роля" value={user.role} />
+                    <AdminMeta label="Статус" value={user.status} />
+                    <AdminMeta label="От" value={user.joinedAt} />
+                  </div>
+                  <button
+                    type="button"
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 font-semibold lg:w-auto"
+                  >
+                    Преглед
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+
+        <AdminAuditPanel />
       </section>
 
       <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-5">
@@ -403,7 +433,7 @@ export function GroupDetailsView() {
         </div>
       </section>
 
-      <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <section className="mt-6 grid gap-5">
         <div className="rounded-lg border border-neutral-200 bg-white p-5">
           <h3 className="text-xl font-bold">Събития в групата</h3>
           <div className="mt-4 grid gap-3">
@@ -415,7 +445,7 @@ export function GroupDetailsView() {
 
         <div className="rounded-lg border border-neutral-200 bg-white p-5">
           <h3 className="text-xl font-bold">Членове</h3>
-          <div className="mt-4 grid gap-3">
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
             {groupMembers.map((member) => (
               <div
                 key={member.id}
@@ -567,26 +597,6 @@ export function EventFormView() {
   );
 }
 
-function DashboardMini() {
-  return (
-    <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-      <div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {dashboardStats.map((stat) => (
-            <StatCard key={stat.label} {...stat} />
-          ))}
-        </div>
-        <div className="mt-5 grid gap-3">
-          {events.slice(0, 2).map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
-      </div>
-      <EventDetailsCard event={events[0]} compact />
-    </div>
-  );
-}
-
 function StatCard({
   label,
   value,
@@ -604,9 +614,18 @@ function StatCard({
   }[tone];
 
   return (
-    <div className={classNames("rounded-lg border bg-white p-4", toneClass)}>
-      <p className="text-sm font-medium">{label}</p>
-      <p className="mt-2 text-3xl font-black tracking-normal">{value}</p>
+    <div
+      className={classNames(
+        "flex min-h-28 flex-col justify-center rounded-lg border bg-white p-4",
+        toneClass,
+      )}
+    >
+      <p className="flex min-h-10 items-center justify-center text-center text-sm font-medium leading-5">
+        {label}
+      </p>
+      <p className="mt-1 text-center text-3xl font-black tracking-normal">
+        {value}
+      </p>
     </div>
   );
 }
@@ -760,6 +779,15 @@ function InfoItem({ label, value }: { label: string; value: string }) {
         {label}
       </dt>
       <dd className="mt-1 font-semibold text-neutral-950">{value}</dd>
+    </div>
+  );
+}
+
+function AdminMeta({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg bg-white px-3 py-2">
+      <p className="text-xs font-semibold text-neutral-500">{label}</p>
+      <p className="mt-1 font-bold text-neutral-900">{value}</p>
     </div>
   );
 }
