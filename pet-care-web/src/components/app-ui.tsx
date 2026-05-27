@@ -129,20 +129,6 @@ function HeaderBar() {
           План за разходки и грижа
         </h1>
       </div>
-      <div className="flex flex-wrap gap-2">
-        <Link
-          href="/login"
-          className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-800"
-        >
-          Вход
-        </Link>
-        <Link
-          href="/register"
-          className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white"
-        >
-          Регистрация
-        </Link>
-      </div>
     </header>
   );
 }
@@ -207,7 +193,7 @@ export function HomeView() {
         </div>
       </header>
 
-      <section className="mx-auto grid max-w-6xl gap-8 px-5 py-8 lg:grid-cols-[340px_minmax(0,1fr)]">
+      <section className="mx-auto grid max-w-6xl items-start gap-8 px-5 py-8 lg:grid-cols-[340px_minmax(0,1fr)]">
         <aside className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-black">Вход в профил</h1>
           <p className="mt-2 text-sm leading-6 text-neutral-600">
@@ -225,10 +211,10 @@ export function HomeView() {
             className="mt-2 w-full rounded-lg border border-neutral-300 px-3 py-3"
           />
           <Link
-            href="/dashboard"
+            href="/login"
             className="mt-5 block rounded-lg bg-emerald-700 px-4 py-3 text-center text-sm font-black text-white"
           >
-            Отвори демото
+            Вход
           </Link>
           <p className="mt-4 text-center text-sm text-neutral-600">
             Нямаш профил?{" "}
@@ -236,6 +222,10 @@ export function HomeView() {
               Регистрирай се!
             </Link>
           </p>
+          <div className="mt-5 rounded-lg bg-emerald-50 p-3 text-sm leading-6 text-emerald-900">
+            <p className="font-bold">Демо достъп</p>
+            <p>demo@paws.bg / demo123</p>
+          </div>
         </aside>
 
         <div className="grid gap-5">
