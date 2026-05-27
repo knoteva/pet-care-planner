@@ -257,43 +257,76 @@ export function AuthView({ mode }: { mode: "login" | "register" }) {
 
   return (
     <AppShell active="">
-      <div className="mx-auto max-w-xl rounded-lg border border-neutral-200 bg-white p-6">
-        <p className="text-sm font-semibold text-emerald-700">
-          {isLogin ? "Вход в профил" : "Създай профил"}
-        </p>
-        <h2 className="mt-2 text-2xl font-bold">
-          {isLogin ? "Добре дошла обратно" : "Регистрация в Лапички"}
-        </h2>
-        <form className="mt-6 grid gap-4">
-          {!isLogin ? (
-            <FormField name="name" label="Име" placeholder="Мария Петкова" />
-          ) : null}
-          <FormField name="email" label="Имейл" placeholder="demo@paws.bg" />
-          <FormField
-            name="password"
-            label="Парола"
-            placeholder="demo123"
-            type="password"
-          />
-          {!isLogin ? (
+      <div className="mx-auto grid max-w-5xl overflow-hidden rounded-lg border border-neutral-200 bg-white lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="p-6 sm:p-8">
+          <p className="text-sm font-semibold text-emerald-700">
+            {isLogin ? "Вход в профил" : "Създай профил"}
+          </p>
+          <h2 className="mt-2 text-3xl font-bold tracking-normal text-neutral-950">
+            {isLogin ? "Добре дошла обратно" : "Регистрация в Лапички"}
+          </h2>
+          <form className="mt-6 grid gap-4">
+            {!isLogin ? (
+              <FormField name="name" label="Име" placeholder="Мария Петкова" />
+            ) : null}
+            <FormField name="email" label="Имейл" placeholder="demo@paws.bg" />
             <FormField
-              name="confirmPassword"
-              label="Потвърди парола"
-              placeholder="Повтори паролата"
+              name="password"
+              label="Парола"
+              placeholder="demo123"
               type="password"
             />
-          ) : null}
-          <button
-            className="mt-2 rounded-lg bg-emerald-700 px-4 py-3 text-sm font-bold text-white"
-            type="button"
-          >
-            {isLogin ? "Влез" : "Създай профил"}
-          </button>
-        </form>
-        <p className="mt-4 text-sm text-neutral-600">
-          Демо достъп:{" "}
-          <span className="font-semibold">demo@paws.bg / demo123</span>
-        </p>
+            {!isLogin ? (
+              <FormField
+                name="confirmPassword"
+                label="Потвърди парола"
+                placeholder="Повтори паролата"
+                type="password"
+              />
+            ) : null}
+            <button
+              className="mt-2 rounded-lg bg-emerald-700 px-4 py-3 text-sm font-bold text-white"
+              type="button"
+            >
+              {isLogin ? "Влез" : "Създай профил"}
+            </button>
+          </form>
+          <p className="mt-4 text-sm text-neutral-600">
+            Демо достъп:{" "}
+            <span className="font-semibold">demo@paws.bg / demo123</span>
+          </p>
+          <p className="mt-4 text-sm text-neutral-600">
+            {isLogin ? "Нямаш профил?" : "Вече имаш профил?"}{" "}
+            <Link
+              href={isLogin ? "/register" : "/login"}
+              className="font-bold text-emerald-700"
+            >
+              {isLogin ? "Регистрирай се" : "Влез"}
+            </Link>
+          </p>
+        </div>
+        <div className="bg-emerald-50 p-6 sm:p-8">
+          <p className="text-sm font-semibold uppercase tracking-normal text-emerald-700">
+            Pet Care Planner
+          </p>
+          <h3 className="mt-3 text-2xl font-bold text-neutral-950">
+            Координирай грижа без хаос.
+          </h3>
+          <div className="mt-6 grid gap-3">
+            {[
+              "Групи със съседи",
+              "Събития и участие",
+              "Коментари и предложения",
+            ].map((item) => (
+              <div
+                key={item}
+                className="rounded-lg bg-white p-4 text-sm font-bold"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </AppShell>
   );

@@ -100,6 +100,24 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="register"
+        options={{
+          href: null,
+          title: "Регистрация",
+          tabBarIcon: ({ color }) => (
+            <SymbolView
+              name={{
+                ios: "person.badge.plus",
+                android: "person_add",
+                web: "person_add",
+              }}
+              tintColor={color}
+              size={28}
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

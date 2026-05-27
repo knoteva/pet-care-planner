@@ -1,3 +1,4 @@
+import { Link } from "expo-router";
 import {
   Pressable,
   ScrollView,
@@ -15,40 +16,37 @@ export default function AuthScreen() {
           <Text style={styles.eyebrow}>Лапички</Text>
           <Text style={styles.title}>Профил</Text>
           <Text style={styles.subtitle}>
-            Вход и регистрация за демо достъп.
+            Влез с демо профила. Реалният вход ще използва REST API и Bearer JWT
+            token.
           </Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Вход</Text>
           <AuthField label="Имейл" placeholder="demo@paws.bg" />
           <AuthField label="Парола" placeholder="demo123" secure />
           <Pressable style={styles.primaryButton}>
             <Text style={styles.primaryButtonText}>Влез</Text>
           </Pressable>
-          <Text style={styles.demoText}>demo@paws.bg / demo123</Text>
+          <Text style={styles.demoText}>
+            Демо достъп: demo@paws.bg / demo123
+          </Text>
+          <View style={styles.registerRow}>
+            <Text style={styles.registerQuestion}>Нямаш профил?</Text>
+            <Link href="/register" asChild>
+              <Pressable>
+                <Text style={styles.registerLink}>Регистрирай се!</Text>
+              </Pressable>
+            </Link>
+          </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Регистрация</Text>
-          <AuthField label="Име" placeholder="Мария Петкова" />
-          <AuthField label="Имейл" placeholder="maria@example.com" />
-          <AuthField label="Парола" placeholder="Минимум 8 символа" secure />
-          <AuthField
-            label="Потвърди парола"
-            placeholder="Повтори паролата"
-            secure
-          />
-          <Pressable style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Създай профил</Text>
-          </Pressable>
-        </View>
+        <BenefitCard />
       </View>
     </ScrollView>
   );
 }
 
-function AuthField({
+export function AuthField({
   label,
   placeholder,
   secure = false,
@@ -66,6 +64,17 @@ function AuthField({
         placeholderTextColor="#9ca3af"
         secureTextEntry={secure}
       />
+    </View>
+  );
+}
+
+function BenefitCard() {
+  return (
+    <View style={styles.benefitCard}>
+      <Text style={styles.benefitTitle}>Какво получаваш?</Text>
+      <Text style={styles.benefitItem}>✓ Групи за разходки и грижа</Text>
+      <Text style={styles.benefitItem}>✓ Участие и коментари по събития</Text>
+      <Text style={styles.benefitItem}>✓ Предложения към мениджърите</Text>
     </View>
   );
 }
@@ -116,11 +125,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: "#e5e7eb",
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "900",
-    color: "#111827",
   },
   field: {
     marginTop: 13,
@@ -175,4 +179,43 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#4b5563",
   },
+  registerRow: {
+    marginTop: 16,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: "#e5e7eb",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 6,
+  },
+  registerQuestion: {
+    fontSize: 14,
+    color: "#4b5563",
+  },
+  registerLink: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#047857",
+  },
+  benefitCard: {
+    marginTop: 14,
+    borderRadius: 8,
+    backgroundColor: "#ecfdf5",
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+  },
+  benefitTitle: {
+    fontSize: 17,
+    fontWeight: "900",
+    color: "#064e3b",
+  },
+  benefitItem: {
+    marginTop: 9,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#065f46",
+  },
 });
+
+export const authStyles = styles;
