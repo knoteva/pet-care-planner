@@ -13,13 +13,7 @@ import {
   participants,
   pets,
 } from "@/services/mock-data";
-import type {
-  CareEvent,
-  EventStatus,
-  EventType,
-  Pet,
-  PetGroup,
-} from "@pet-care/shared";
+import type { CareEvent, EventStatus, EventType, Pet, PetGroup } from "@/types";
 
 const navItems = [
   { href: "/", label: "Начало", icon: "⌂" },

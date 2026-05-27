@@ -7,7 +7,7 @@ Use Vercel for the public review link.
 1. Push the latest code to GitHub.
 2. Open Vercel and choose **Add New Project**.
 3. Import `knoteva/pet-care-planner`.
-4. Use these settings:
+4. Use the Web app as the Vercel root:
 
 ```text
 Framework Preset: Next.js

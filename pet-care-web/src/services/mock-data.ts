@@ -1,10 +1,4 @@
-import type {
-  CareEvent,
-  EventComment,
-  Pet,
-  PetGroup,
-  User,
-} from "@pet-care/shared";
+import type { CareEvent, EventComment, Pet, PetGroup, User } from "@/types";
 
 export const currentUser: User = {
   id: 1,
