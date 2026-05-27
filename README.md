@@ -40,6 +40,10 @@ Planned demo account:
 demo@paws.bg / demo123
 ```
 
+## Public Demo
+
+For a fast public review link, deploy the Web app to Vercel. See [DEPLOYMENT.md](./DEPLOYMENT.md) for the recommended settings and demo routes.
+
 ## Development Notes
 
 - Use Drizzle migrations for all database schema changes.

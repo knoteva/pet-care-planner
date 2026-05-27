@@ -9,9 +9,13 @@ export default function PetsScreen() {
         <Text style={styles.eyebrow}>Профил</Text>
         <Text style={styles.title}>Моите любимци</Text>
         <Text style={styles.subtitle}>
-          Избирай любимец при участие в събитие или се включи като помощник.
+          Любимците се използват при участие в събития и при заявки за грижа.
         </Text>
       </View>
+
+      <Pressable style={styles.primaryButton}>
+        <Text style={styles.primaryButtonText}>Добави любимец</Text>
+      </Pressable>
 
       <View style={styles.petList}>
         {mobilePets.map((pet) => (
@@ -25,6 +29,9 @@ export default function PetsScreen() {
                 {pet.breed} · {pet.age}
               </Text>
               <Text style={styles.petNote}>{pet.note}</Text>
+              <Pressable style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonText}>Редактирай</Text>
+              </Pressable>
             </View>
           </View>
         ))}
@@ -33,11 +40,9 @@ export default function PetsScreen() {
       <View style={styles.profileCard}>
         <Text style={styles.profileTitle}>demo@paws.bg</Text>
         <Text style={styles.profileText}>
-          Демо профил за тестване на бъдещия auth flow.
+          Демо профил за бъдещия auth flow. Реалният вход ще използва REST API и
+          Bearer JWT token.
         </Text>
-        <Pressable style={styles.secondaryButton}>
-          <Text style={styles.secondaryButtonText}>Изход</Text>
-        </Pressable>
       </View>
     </ScrollView>
   );
@@ -59,23 +64,36 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e5e7eb",
   },
-  title: {
-    marginTop: 4,
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#111827",
-  },
   eyebrow: {
     fontSize: 13,
     fontWeight: "800",
     color: "#be123c",
     textTransform: "uppercase",
   },
+  title: {
+    marginTop: 4,
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#111827",
+  },
   subtitle: {
     marginTop: 8,
     fontSize: 15,
     lineHeight: 22,
     color: "#4b5563",
+  },
+  primaryButton: {
+    marginTop: 14,
+    alignItems: "center",
+    borderRadius: 8,
+    backgroundColor: "#047857",
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+  },
+  primaryButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "900",
   },
   petList: {
     marginTop: 14,
@@ -108,7 +126,7 @@ const styles = StyleSheet.create({
   },
   petName: {
     fontSize: 18,
-    fontWeight: "800",
+    fontWeight: "900",
     color: "#111827",
   },
   petMeta: {
@@ -122,6 +140,20 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: "#374151",
   },
+  secondaryButton: {
+    marginTop: 12,
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  secondaryButtonText: {
+    color: "#111827",
+    fontSize: 13,
+    fontWeight: "800",
+  },
   profileCard: {
     marginTop: 14,
     borderRadius: 8,
@@ -132,7 +164,7 @@ const styles = StyleSheet.create({
   },
   profileTitle: {
     fontSize: 17,
-    fontWeight: "800",
+    fontWeight: "900",
     color: "#111827",
   },
   profileText: {
@@ -140,19 +172,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: "#4b5563",
-  },
-  secondaryButton: {
-    marginTop: 14,
-    alignSelf: "flex-start",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    paddingHorizontal: 14,
-    paddingVertical: 11,
-  },
-  secondaryButtonText: {
-    color: "#111827",
-    fontSize: 14,
-    fontWeight: "800",
   },
 });

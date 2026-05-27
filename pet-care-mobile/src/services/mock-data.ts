@@ -1,3 +1,9 @@
+export const mobileStats = [
+  { label: "Събития", value: "12", tone: "#dcfce7", text: "#166534" },
+  { label: "Любимци", value: "3", tone: "#e0f2fe", text: "#075985" },
+  { label: "Групи", value: "4", tone: "#ede9fe", text: "#5b21b6" },
+];
+
 export const mobileEvents = [
   {
     id: 1,
@@ -8,6 +14,7 @@ export const mobileEvents = [
     status: "предстоящо",
     capacity: "7/8",
     note: "Събираме се до фонтана. Носете вода и повод.",
+    comments: 3,
   },
   {
     id: 2,
@@ -18,6 +25,7 @@ export const mobileEvents = [
     status: "в момента",
     capacity: "6/5",
     note: "Има предупреждение за над капацитет.",
+    comments: 4,
   },
   {
     id: 3,
@@ -28,6 +36,7 @@ export const mobileEvents = [
     status: "предстоящо",
     capacity: "2/2",
     note: "Кратка проверка, храна и разходка.",
+    comments: 1,
   },
 ];
 
@@ -52,5 +61,41 @@ export const mobilePets = [
     breed: "Европейска късокосместа",
     age: "3 г.",
     note: "Нуждае се от вечерно хранене при пътуване.",
+  },
+];
+
+export const mobileGroups = [
+  {
+    id: 1,
+    title: "Южен парк - разходки",
+    area: "София, Южен парк",
+    role: "мениджър",
+    members: "8 членове",
+    description: "Съботни и вечерни разходки около централната алея.",
+  },
+  {
+    id: 2,
+    title: "Младост: помощ за любимци",
+    area: "София, Младост",
+    role: "член",
+    members: "5 членове",
+    description: "Съседи, които си помагат с хранене, разходки и грижа.",
+  },
+];
+
+export const mobileProposals = [
+  {
+    id: 1,
+    title: "Неделна разходка за малки кучета",
+    author: "Елена",
+    time: "неделя, 10:00",
+    status: "чака решение",
+  },
+  {
+    id: 2,
+    title: "Помощ за вечерно хранене",
+    author: "Иван",
+    time: "четвъртък след 19:00",
+    status: "ново предложение",
   },
 ];

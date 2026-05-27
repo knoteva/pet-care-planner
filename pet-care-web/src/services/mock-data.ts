@@ -227,6 +227,25 @@ export const groupMembers = [
   },
 ];
 
+export const eventProposals = [
+  {
+    id: 1,
+    title: "Неделна разходка за малки кучета",
+    author: "Елена",
+    preferredTime: "неделя, 10:00",
+    notes: "Има още двама съседи, които искат по-спокойна група.",
+    status: "чака решение",
+  },
+  {
+    id: 2,
+    title: "Помощ за вечерно хранене",
+    author: "Иван",
+    preferredTime: "четвъртък след 19:00",
+    notes: "Трябва ми човек за 20 минути, докато съм извън София.",
+    status: "ново предложение",
+  },
+];
+
 export const adminStats = [
   { label: "Потребители", value: "58", tone: "sky" },
   { label: "Групи", value: "12", tone: "emerald" },
@@ -267,21 +286,21 @@ export const moderationQueue = [
     eventTitle: "Игри в кучешката градинка",
     author: "Иван",
     text: "Може ли да дойда с две кучета?",
-    status: "чака преглед",
+    status: "докладвано",
   },
   {
     id: 2,
     eventTitle: "Съботна разходка в Южния парк",
     author: "Елена",
     text: "Ще донеса вода.",
-    status: "нов коментар",
+    status: "нов сигнал",
   },
   {
     id: 3,
     eventTitle: "Вечерна грижа за Рая",
     author: "Мария",
     text: "Моля проверете храната в шкафа.",
-    status: "важно",
+    status: "24 ч. без преглед",
   },
 ];
 

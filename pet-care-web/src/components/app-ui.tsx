@@ -7,6 +7,7 @@ import {
   dashboardStats,
   groupMembers,
   events,
+  eventProposals,
   groups,
   moderationQueue,
   participants,
@@ -271,10 +272,23 @@ export function AuthView({ mode }: { mode: "login" | "register" }) {
         </h2>
         <form className="mt-6 grid gap-4">
           {!isLogin ? (
-            <FormField label="Име" placeholder="Мария Петкова" />
+            <FormField name="name" label="Име" placeholder="Мария Петкова" />
           ) : null}
-          <FormField label="Имейл" placeholder="demo@paws.bg" />
-          <FormField label="Парола" placeholder="demo123" type="password" />
+          <FormField name="email" label="Имейл" placeholder="demo@paws.bg" />
+          <FormField
+            name="password"
+            label="Парола"
+            placeholder="demo123"
+            type="password"
+          />
+          {!isLogin ? (
+            <FormField
+              name="confirmPassword"
+              label="Потвърди парола"
+              placeholder="Повтори паролата"
+              type="password"
+            />
+          ) : null}
           <button
             className="mt-2 rounded-lg bg-emerald-700 px-4 py-3 text-sm font-bold text-white"
             type="button"
@@ -391,24 +405,39 @@ export function AdminView() {
       </section>
 
       <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-5">
-        <h2 className="text-xl font-bold">Коментари за модерация</h2>
+        <h2 className="text-xl font-bold">Сигнали за преглед</h2>
+        <p className="mt-2 text-sm leading-6 text-neutral-600">
+          Коментарите се публикуват веднага. Тук влизат само докладвани или
+          автоматично маркирани случаи; ако стоят дълго, се виждат като
+          просрочени сигнали.
+        </p>
         <div className="mt-4 grid gap-3">
-          {moderationQueue.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="warning">{item.status}</Badge>
-                <p className="text-sm font-semibold text-neutral-700">
-                  {item.eventTitle}
+          {moderationQueue.map((item) => {
+            const isOverdue = item.status.includes("24");
+
+            return (
+              <div
+                key={item.id}
+                className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone={isOverdue ? "danger" : "warning"}>
+                    {item.status}
+                  </Badge>
+                  <Badge tone="neutral">публикуван</Badge>
+                  <p className="text-sm font-semibold text-neutral-700">
+                    {item.eventTitle}
+                  </p>
+                </div>
+                <p className="mt-2 text-sm text-neutral-600">
+                  {item.author}: {item.text}
+                </p>
+                <p className="mt-2 text-xs text-neutral-500">
+                  Не блокира разговора; сигналът само чака преглед.
                 </p>
               </div>
-              <p className="mt-2 text-sm text-neutral-600">
-                {item.author}: {item.text}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </AppShell>
@@ -447,6 +476,12 @@ export function GroupDetailsView() {
               className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
             >
               Ново събитие
+            </Link>
+            <Link
+              href="/events/suggest"
+              className="rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm font-bold text-neutral-800"
+            >
+              Предложи събитие
             </Link>
             <button
               type="button"
@@ -490,6 +525,43 @@ export function GroupDetailsView() {
                 </div>
                 <p className="mt-2 text-sm text-neutral-600">
                   {member.pets} · от {member.joinedAt}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-neutral-200 bg-white p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="text-xl font-bold">Предложения от членове</h3>
+              <p className="mt-1 text-sm leading-6 text-neutral-600">
+                Членовете могат да поискат ново събитие. Мениджърът го преглежда
+                и при нужда го превръща в реално събитие.
+              </p>
+            </div>
+            <Link
+              href="/events/suggest"
+              className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-bold text-neutral-800"
+            >
+              Предложи събитие
+            </Link>
+          </div>
+          <div className="mt-4 grid gap-3">
+            {eventProposals.map((proposal) => (
+              <div
+                key={proposal.id}
+                className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone="warning">{proposal.status}</Badge>
+                  <p className="font-bold text-neutral-950">{proposal.title}</p>
+                </div>
+                <p className="mt-2 text-sm text-neutral-600">
+                  {proposal.author} · {proposal.preferredTime}
+                </p>
+                <p className="mt-1 text-sm text-neutral-600">
+                  {proposal.notes}
                 </p>
               </div>
             ))}
@@ -682,6 +754,53 @@ export function EventFormView() {
   );
 }
 
+export function EventProposalFormView() {
+  return (
+    <AppShell active="/groups" aside={<FormGuidePanel title="Предложение" />}>
+      <FormCard
+        title="Предложи събитие"
+        description="Това не публикува събитие веднага. Изпраща заявка към мениджърите на групата, които могат да я одобрят и превърнат в реално събитие."
+        submitLabel="Изпрати предложение"
+        cancelHref="/groups/yuzhen-park"
+      >
+        <input name="groupId" type="hidden" value={groups[0].id} />
+        <FormField
+          name="title"
+          label="Какво предлагаш?"
+          placeholder="Вечерна разходка в Южния парк"
+        />
+        <FormSelect
+          name="eventType"
+          label="Тип"
+          options={[
+            { value: "dog_walk", label: "Разходка" },
+            { value: "pet_sitting", label: "Грижа" },
+            { value: "playdate", label: "Игра" },
+            { value: "training", label: "Тренировка" },
+            { value: "vet_support", label: "Ветеринарна помощ" },
+            { value: "other", label: "Друго" },
+          ]}
+        />
+        <FormField
+          name="preferredTime"
+          label="Предпочитан ден и час"
+          placeholder="Петък след 18:30"
+        />
+        <FormField
+          name="location"
+          label="Място"
+          placeholder="Южен парк, вход откъм бул. Витоша"
+        />
+        <FormTextarea
+          name="notes"
+          label="Детайли към мениджъра"
+          placeholder="Защо е полезно, колко хора очакваш, има ли специални нужди..."
+        />
+      </FormCard>
+    </AppShell>
+  );
+}
+
 function StatCard({
   label,
   value,
@@ -851,6 +970,23 @@ function EventDetailsCard({
               </div>
             ))}
           </div>
+          <form className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+            <input name="eventId" type="hidden" value={event.id} />
+            <label className="grid gap-2 text-sm font-semibold text-neutral-800">
+              Напиши коментар
+              <textarea
+                name="text"
+                className="min-h-24 rounded-lg border border-neutral-300 bg-white px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
+                placeholder="Например: Ще донеса вода или ще закъснея 10 мин."
+              />
+            </label>
+            <button
+              type="button"
+              className="mt-3 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
+            >
+              Публикувай коментар
+            </button>
+          </form>
         </div>
       ) : null}
     </article>

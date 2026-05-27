@@ -1,31 +1,63 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { mobileEvents } from "@/src/services/mock-data";
+import { mobileEvents, mobileStats } from "@/src/services/mock-data";
 
 export default function EventsScreen() {
+  const primaryEvent = mobileEvents[0];
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.eyebrow}>Лапички</Text>
-        <Text style={styles.title}>Предстоящи грижи</Text>
+        <Text style={styles.title}>План за грижа днес</Text>
         <Text style={styles.subtitle}>
-          Демо мобилен изглед за разходки, участие и коментари.
+          Мобилен демо изглед за участие, коментари, групи и грижа за любимците.
         </Text>
       </View>
 
       <View style={styles.summaryRow}>
-        <SummaryCard label="Днес" value="3" tone="green" />
-        <SummaryCard label="Групи" value="4" tone="blue" />
-        <SummaryCard label="Любимци" value="3" tone="rose" />
+        {mobileStats.map((stat) => (
+          <View
+            key={stat.label}
+            style={[styles.summaryCard, { backgroundColor: stat.tone }]}
+          >
+            <Text style={[styles.summaryValue, { color: stat.text }]}>
+              {stat.value}
+            </Text>
+            <Text style={[styles.summaryLabel, { color: stat.text }]}>
+              {stat.label}
+            </Text>
+          </View>
+        ))}
       </View>
 
+      <View style={styles.featuredCard}>
+        <Text style={styles.badge}>{primaryEvent.status}</Text>
+        <Text style={styles.featuredTitle}>{primaryEvent.title}</Text>
+        <Text style={styles.meta}>
+          {primaryEvent.time} · {primaryEvent.location}
+        </Text>
+        <Text style={styles.note}>{primaryEvent.note}</Text>
+        <View style={styles.infoGrid}>
+          <Info label="Капацитет" value={primaryEvent.capacity} />
+          <Info label="Коментари" value={`${primaryEvent.comments}`} />
+        </View>
+        <View style={styles.actions}>
+          <Pressable style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>Ще участвам</Text>
+          </Pressable>
+          <Pressable style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>Напиши коментар</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>Предстоящи събития</Text>
       <View style={styles.list}>
-        {mobileEvents.map((event) => (
+        {mobileEvents.slice(1).map((event) => (
           <View key={event.id} style={styles.eventCard}>
             <View style={styles.cardTop}>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{event.status}</Text>
-              </View>
+              <Text style={styles.badge}>{event.status}</Text>
               <Text style={styles.capacity}>{event.capacity}</Text>
             </View>
             <Text style={styles.eventTitle}>{event.title}</Text>
@@ -33,15 +65,6 @@ export default function EventsScreen() {
             <Text style={styles.meta}>
               {event.time} · {event.location}
             </Text>
-            <Text style={styles.note}>{event.note}</Text>
-            <View style={styles.actions}>
-              <Pressable style={styles.primaryButton}>
-                <Text style={styles.primaryButtonText}>Ще участвам</Text>
-              </Pressable>
-              <Pressable style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>Детайли</Text>
-              </Pressable>
-            </View>
           </View>
         ))}
       </View>
@@ -49,31 +72,11 @@ export default function EventsScreen() {
   );
 }
 
-function SummaryCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: "green" | "blue" | "rose";
-}) {
-  const background = {
-    green: "#dcfce7",
-    blue: "#e0f2fe",
-    rose: "#ffe4e6",
-  }[tone];
-
-  const color = {
-    green: "#166534",
-    blue: "#075985",
-    rose: "#9f1239",
-  }[tone];
-
+function Info({ label, value }: { label: string; value: string }) {
   return (
-    <View style={[styles.summaryCard, { backgroundColor: background }]}>
-      <Text style={[styles.summaryValue, { color }]}>{value}</Text>
-      <Text style={[styles.summaryLabel, { color }]}>{label}</Text>
+    <View style={styles.infoBox}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
     </View>
   );
 }
@@ -94,17 +97,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#e5e7eb",
   },
-  title: {
-    marginTop: 4,
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#111827",
-  },
   eyebrow: {
     fontSize: 13,
     fontWeight: "800",
     color: "#047857",
     textTransform: "uppercase",
+  },
+  title: {
+    marginTop: 4,
+    fontSize: 28,
+    fontWeight: "900",
+    color: "#111827",
   },
   subtitle: {
     marginTop: 8,
@@ -119,60 +122,51 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
+    minHeight: 86,
+    justifyContent: "center",
     borderRadius: 8,
-    padding: 14,
+    padding: 12,
   },
   summaryValue: {
-    fontSize: 24,
+    textAlign: "center",
+    fontSize: 26,
     fontWeight: "900",
   },
   summaryLabel: {
     marginTop: 2,
+    textAlign: "center",
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "800",
   },
-  list: {
+  featuredCard: {
     marginTop: 14,
-    gap: 12,
-  },
-  eventCard: {
     borderRadius: 8,
     backgroundColor: "#ffffff",
     padding: 16,
     borderWidth: 1,
     borderColor: "#e5e7eb",
   },
-  cardTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
   badge: {
+    alignSelf: "flex-start",
+    overflow: "hidden",
     borderRadius: 8,
     backgroundColor: "#ecfdf5",
     borderWidth: 1,
     borderColor: "#bbf7d0",
     paddingHorizontal: 10,
     paddingVertical: 5,
-  },
-  badgeText: {
     color: "#166534",
     fontSize: 12,
     fontWeight: "800",
   },
-  capacity: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#92400e",
-  },
-  eventTitle: {
+  featuredTitle: {
     marginTop: 12,
-    fontSize: 19,
-    fontWeight: "800",
+    fontSize: 23,
+    fontWeight: "900",
     color: "#111827",
   },
   meta: {
-    marginTop: 4,
+    marginTop: 5,
     fontSize: 14,
     color: "#6b7280",
   },
@@ -182,9 +176,33 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: "#374151",
   },
+  infoGrid: {
+    marginTop: 14,
+    flexDirection: "row",
+    gap: 10,
+  },
+  infoBox: {
+    flex: 1,
+    borderRadius: 8,
+    backgroundColor: "#f9fafb",
+    padding: 12,
+  },
+  infoLabel: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#6b7280",
+    textTransform: "uppercase",
+  },
+  infoValue: {
+    marginTop: 4,
+    fontSize: 15,
+    fontWeight: "900",
+    color: "#111827",
+  },
   actions: {
     marginTop: 14,
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   primaryButton: {
@@ -209,5 +227,38 @@ const styles = StyleSheet.create({
     color: "#111827",
     fontSize: 14,
     fontWeight: "800",
+  },
+  sectionTitle: {
+    marginTop: 20,
+    fontSize: 20,
+    fontWeight: "900",
+    color: "#111827",
+  },
+  list: {
+    marginTop: 10,
+    gap: 12,
+  },
+  eventCard: {
+    borderRadius: 8,
+    backgroundColor: "#ffffff",
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+  cardTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  capacity: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#92400e",
+  },
+  eventTitle: {
+    marginTop: 12,
+    fontSize: 18,
+    fontWeight: "900",
+    color: "#111827",
   },
 });

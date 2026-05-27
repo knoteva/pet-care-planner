@@ -21,7 +21,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Събития",
+          title: "Табло",
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{
@@ -50,7 +50,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="pets"
         options={{
           title: "Любимци",
           tabBarIcon: ({ color }) => (
@@ -59,6 +59,23 @@ export default function TabLayout() {
                 ios: "heart",
                 android: "favorite",
                 web: "favorite",
+              }}
+              tintColor={color}
+              size={28}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="groups"
+        options={{
+          title: "Групи",
+          tabBarIcon: ({ color }) => (
+            <SymbolView
+              name={{
+                ios: "person.3",
+                android: "groups",
+                web: "groups",
               }}
               tintColor={color}
               size={28}
