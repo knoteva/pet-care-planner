@@ -86,7 +86,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="auth"
         options={{
-          title: "Вход",
+          title: "Профил",
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{

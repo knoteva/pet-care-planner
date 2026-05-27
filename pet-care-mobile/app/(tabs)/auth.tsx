@@ -10,38 +10,39 @@ import {
 export default function AuthScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>Достъп</Text>
-        <Text style={styles.title}>Вход в Лапички</Text>
-        <Text style={styles.subtitle}>
-          Статичен мобилен auth изглед. Реалният вход ще използва REST API и
-          Bearer JWT token.
-        </Text>
-      </View>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.eyebrow}>Лапички</Text>
+          <Text style={styles.title}>Профил</Text>
+          <Text style={styles.subtitle}>
+            Вход и регистрация за демо достъп.
+          </Text>
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Вход</Text>
-        <AuthField label="Имейл" placeholder="demo@paws.bg" />
-        <AuthField label="Парола" placeholder="demo123" secure />
-        <Pressable style={styles.primaryButton}>
-          <Text style={styles.primaryButtonText}>Влез</Text>
-        </Pressable>
-        <Text style={styles.demoText}>Демо достъп: demo@paws.bg / demo123</Text>
-      </View>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Вход</Text>
+          <AuthField label="Имейл" placeholder="demo@paws.bg" />
+          <AuthField label="Парола" placeholder="demo123" secure />
+          <Pressable style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>Влез</Text>
+          </Pressable>
+          <Text style={styles.demoText}>demo@paws.bg / demo123</Text>
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Регистрация</Text>
-        <AuthField label="Име" placeholder="Мария Петкова" />
-        <AuthField label="Имейл" placeholder="maria@example.com" />
-        <AuthField label="Парола" placeholder="Минимум 8 символа" secure />
-        <AuthField
-          label="Потвърди парола"
-          placeholder="Повтори паролата"
-          secure
-        />
-        <Pressable style={styles.secondaryButton}>
-          <Text style={styles.secondaryButtonText}>Създай профил</Text>
-        </Pressable>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Регистрация</Text>
+          <AuthField label="Име" placeholder="Мария Петкова" />
+          <AuthField label="Имейл" placeholder="maria@example.com" />
+          <AuthField label="Парола" placeholder="Минимум 8 символа" secure />
+          <AuthField
+            label="Потвърди парола"
+            placeholder="Повтори паролата"
+            secure
+          />
+          <Pressable style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>Създай профил</Text>
+          </Pressable>
+        </View>
       </View>
     </ScrollView>
   );
@@ -77,6 +78,11 @@ const styles = StyleSheet.create({
   content: {
     padding: 18,
     paddingBottom: 32,
+    alignItems: "center",
+  },
+  container: {
+    width: "100%",
+    maxWidth: 520,
   },
   header: {
     borderRadius: 8,
@@ -117,7 +123,7 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
   field: {
-    marginTop: 14,
+    marginTop: 13,
     gap: 7,
   },
   label: {
@@ -165,6 +171,7 @@ const styles = StyleSheet.create({
   },
   demoText: {
     marginTop: 12,
+    textAlign: "center",
     fontSize: 13,
     color: "#4b5563",
   },
