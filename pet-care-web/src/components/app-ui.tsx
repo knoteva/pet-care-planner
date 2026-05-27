@@ -193,62 +193,92 @@ export function DashboardView() {
 
 export function HomeView() {
   return (
-    <AppShell active="/">
-      <section className="rounded-lg border border-neutral-200 bg-white p-5">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-normal text-emerald-700">
-              Pet Care Planner
+    <main className="min-h-screen bg-[#eef4f1] text-neutral-950">
+      <header className="bg-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
+          <Link href="/" className="text-3xl font-black text-emerald-700">
+            Лапички
+          </Link>
+          <nav className="hidden items-center gap-6 text-sm font-bold text-neutral-700 md:flex">
+            <Link href="/dashboard">Демо табло</Link>
+            <Link href="/groups/yuzhen-park">Група</Link>
+            <Link href="/events/suggest">Предложи събитие</Link>
+          </nav>
+        </div>
+      </header>
+
+      <section className="mx-auto grid max-w-6xl gap-8 px-5 py-8 lg:grid-cols-[340px_minmax(0,1fr)]">
+        <aside className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
+          <h1 className="text-2xl font-black">Вход в профил</h1>
+          <p className="mt-2 text-sm leading-6 text-neutral-600">
+            Демо достъп за преглед на групи, събития и грижа.
+          </p>
+          <label className="mt-5 block text-sm font-bold">Имейл</label>
+          <input
+            placeholder="demo@paws.bg"
+            className="mt-2 w-full rounded-lg border border-neutral-300 px-3 py-3"
+          />
+          <label className="mt-4 block text-sm font-bold">Парола</label>
+          <input
+            type="password"
+            placeholder="demo123"
+            className="mt-2 w-full rounded-lg border border-neutral-300 px-3 py-3"
+          />
+          <Link
+            href="/dashboard"
+            className="mt-5 block rounded-lg bg-emerald-700 px-4 py-3 text-center text-sm font-black text-white"
+          >
+            Отвори демото
+          </Link>
+          <p className="mt-4 text-center text-sm text-neutral-600">
+            Нямаш профил?{" "}
+            <Link href="/register" className="font-black text-emerald-700">
+              Регистрирай се!
+            </Link>
+          </p>
+        </aside>
+
+        <div className="grid gap-5">
+          <section className="rounded-lg bg-white p-7 shadow-sm">
+            <p className="text-sm font-black uppercase tracking-normal text-emerald-700">
+              квартална организация
             </p>
-            <h2 className="mt-2 text-3xl font-bold tracking-normal text-neutral-950">
-              Организирай разходки, грижа и помощ в квартала.
+            <h2 className="mt-3 max-w-3xl text-4xl font-black leading-tight">
+              Един споделен план за разходки, грижа и помощ с любимците.
             </h2>
-            <p className="mt-3 text-base leading-7 text-neutral-600">
-              Начален статичен изглед на приложението: групи, любимци, събития,
-              участие и коментари. Backend връзката ще дойде след UI
-              milestone-а.
+            <p className="mt-4 max-w-2xl text-base leading-7 text-neutral-600">
+              Вместо да се губят уговорки в чатове, групата вижда събития,
+              участници, коментари и предложения на едно място.
             </p>
-          </div>
-          <div className="grid min-w-64 grid-cols-2 gap-2">
-            {["Разходка", "Грижа", "Коментар", "Група"].map((label) => (
-              <div
-                key={label}
-                className="rounded-lg border border-emerald-100 bg-emerald-50 p-4 text-center"
-              >
-                <span className="block text-xl font-black text-emerald-800">
-                  ✓
-                </span>
-                <span className="mt-1 block text-sm font-semibold text-emerald-950">
-                  {label}
-                </span>
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-3">
+            {[
+              ["Днес", "3 събития", "разходка, грижа и игра"],
+              ["Групи", "4 активни", "по квартал и нужда"],
+              ["Предложения", "2 нови", "чакат мениджър"],
+            ].map(([label, value, detail]) => (
+              <div key={label} className="rounded-lg bg-white p-5 shadow-sm">
+                <p className="text-sm font-bold text-neutral-500">{label}</p>
+                <p className="mt-2 text-2xl font-black text-emerald-700">
+                  {value}
+                </p>
+                <p className="mt-2 text-sm text-neutral-600">{detail}</p>
               </div>
             ))}
-          </div>
+          </section>
+
+          <section className="rounded-lg bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-black">Последни демо активности</h2>
+            <div className="mt-4 grid gap-3">
+              {events.slice(0, 3).map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          </section>
         </div>
       </section>
-
-      <section className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {dashboardStats.map((stat) => (
-          <StatCard key={stat.label} {...stat} />
-        ))}
-      </section>
-
-      <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="rounded-lg border border-neutral-200 bg-white p-5">
-          <SectionTitle
-            title="Демо събития"
-            action="Виж табло"
-            href="/dashboard"
-          />
-          <div className="mt-4 grid gap-3">
-            {events.slice(0, 2).map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
-        </div>
-        <CareChecklistPreview />
-      </section>
-    </AppShell>
+    </main>
   );
 }
 
