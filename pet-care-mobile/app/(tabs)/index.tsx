@@ -1,254 +1,297 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+﻿import { Link } from "expo-router";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { mobileEvents, mobileStats } from "@/src/services/mock-data";
+import { mobileEvents } from "@/src/services/mock-data";
+
+const homeStats = [
+  { label: "Днес", value: "3 събития", detail: "разходка, грижа и игра" },
+  { label: "Групи", value: "4 активни", detail: "по квартал и нужда" },
+  { label: "Предложения", value: "2 нови", detail: "чакат мениджър" },
+];
 
 export default function EventsScreen() {
-  const primaryEvent = mobileEvents[0];
-
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>Лапички</Text>
-        <Text style={styles.title}>План за грижа днес</Text>
-        <Text style={styles.subtitle}>
-          Мобилен демо изглед за участие, коментари, групи и грижа за любимците.
-        </Text>
-      </View>
-
-      <View style={styles.summaryRow}>
-        {mobileStats.map((stat) => (
-          <View
-            key={stat.label}
-            style={[styles.summaryCard, { backgroundColor: stat.tone }]}
-          >
-            <Text style={[styles.summaryValue, { color: stat.text }]}>
-              {stat.value}
-            </Text>
-            <Text style={[styles.summaryLabel, { color: stat.text }]}>
-              {stat.label}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.featuredCard}>
-        <Text style={styles.badge}>{primaryEvent.status}</Text>
-        <Text style={styles.featuredTitle}>{primaryEvent.title}</Text>
-        <Text style={styles.meta}>
-          {primaryEvent.time} · {primaryEvent.location}
-        </Text>
-        <Text style={styles.note}>{primaryEvent.note}</Text>
-        <View style={styles.infoGrid}>
-          <Info label="Капацитет" value={primaryEvent.capacity} />
-          <Info label="Коментари" value={`${primaryEvent.comments}`} />
+      <View style={styles.brandRow}>
+        <View style={styles.logoBox}>
+          <Text style={styles.logoText}>Л</Text>
         </View>
-        <View style={styles.actions}>
+        <View>
+          <Text style={styles.brand}>Лапички</Text>
+          <Text style={styles.brandSubline}>планер за грижа</Text>
+        </View>
+      </View>
+
+      <View style={styles.loginCard}>
+        <Text style={styles.loginTitle}>Вход в профил</Text>
+        <Text style={styles.loginCopy}>
+          Демо достъп за преглед на групи, събития и грижа.
+        </Text>
+        <Text style={styles.label}>Имейл</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="demo@paws.bg"
+          placeholderTextColor="#94a3b8"
+        />
+        <Text style={styles.label}>Парола</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="demo123"
+          placeholderTextColor="#94a3b8"
+          secureTextEntry
+        />
+        <Link href="/auth" asChild>
           <Pressable style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>Ще участвам</Text>
+            <Text style={styles.primaryButtonText}>Вход</Text>
           </Pressable>
-          <Pressable style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Напиши коментар</Text>
-          </Pressable>
+        </Link>
+        <View style={styles.registerRow}>
+          <Text style={styles.registerText}>Нямаш профил?</Text>
+          <Link href="/register" asChild>
+            <Pressable hitSlop={8}>
+              <Text style={styles.registerLink}>Регистрирай се!</Text>
+            </Pressable>
+          </Link>
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Предстоящи събития</Text>
-      <View style={styles.list}>
-        {mobileEvents.slice(1).map((event) => (
-          <View key={event.id} style={styles.eventCard}>
-            <View style={styles.cardTop}>
-              <Text style={styles.badge}>{event.status}</Text>
-              <Text style={styles.capacity}>{event.capacity}</Text>
-            </View>
-            <Text style={styles.eventTitle}>{event.title}</Text>
-            <Text style={styles.meta}>{event.group}</Text>
-            <Text style={styles.meta}>
-              {event.time} · {event.location}
-            </Text>
+      <View style={styles.heroCard}>
+        <Text style={styles.eyebrow}>квартална организация</Text>
+        <Text style={styles.title}>
+          Един споделен план за разходки, грижа и помощ с любимците.
+        </Text>
+        <Text style={styles.subtitle}>
+          Вместо уговорки в чатове, групата вижда събития, участници,
+          коментари и предложения на едно място.
+        </Text>
+      </View>
+
+      <View style={styles.statsGrid}>
+        {homeStats.map((stat) => (
+          <View key={stat.label} style={styles.statCard}>
+            <Text style={styles.statLabel}>{stat.label}</Text>
+            <Text style={styles.statValue}>{stat.value}</Text>
+            <Text style={styles.statDetail}>{stat.detail}</Text>
           </View>
         ))}
+      </View>
+
+      <View style={styles.activityCard}>
+        <Text style={styles.sectionTitle}>Последни демо активности</Text>
+        <View style={styles.activityList}>
+          {mobileEvents.map((event) => (
+            <View key={event.id} style={styles.eventCard}>
+              <View style={styles.eventTop}>
+                <Text style={styles.badge}>{event.status}</Text>
+                <Text style={styles.capacity}>{event.capacity}</Text>
+              </View>
+              <Text style={styles.eventTitle}>{event.title}</Text>
+              <Text style={styles.meta}>{event.location}</Text>
+              <Text style={styles.eventTime}>{event.time}</Text>
+            </View>
+          ))}
+        </View>
       </View>
     </ScrollView>
-  );
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.infoBox}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#f5f7f4",
+    backgroundColor: "#eef4f1",
   },
   content: {
     padding: 18,
-    paddingBottom: 32,
+    paddingBottom: 34,
   },
-  header: {
+  brandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 14,
+  },
+  logoBox: {
+    width: 42,
+    height: 42,
     borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#047857",
+  },
+  logoText: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  brand: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#047857",
+  },
+  brandSubline: {
+    marginTop: 1,
+    fontSize: 12,
+    color: "#64748b",
+  },
+  loginCard: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#dce3df",
     backgroundColor: "#ffffff",
     padding: 18,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
   },
-  eyebrow: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#047857",
-    textTransform: "uppercase",
-  },
-  title: {
-    marginTop: 4,
-    fontSize: 28,
+  loginTitle: {
+    fontSize: 22,
     fontWeight: "900",
-    color: "#111827",
+    color: "#0f172a",
   },
-  subtitle: {
+  loginCopy: {
     marginTop: 8,
-    fontSize: 15,
-    lineHeight: 22,
-    color: "#4b5563",
-  },
-  summaryRow: {
-    marginTop: 14,
-    flexDirection: "row",
-    gap: 10,
-  },
-  summaryCard: {
-    flex: 1,
-    minHeight: 86,
-    justifyContent: "center",
-    borderRadius: 8,
-    padding: 12,
-  },
-  summaryValue: {
-    textAlign: "center",
-    fontSize: 26,
-    fontWeight: "900",
-  },
-  summaryLabel: {
-    marginTop: 2,
-    textAlign: "center",
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  featuredCard: {
-    marginTop: 14,
-    borderRadius: 8,
-    backgroundColor: "#ffffff",
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  badge: {
-    alignSelf: "flex-start",
-    overflow: "hidden",
-    borderRadius: 8,
-    backgroundColor: "#ecfdf5",
-    borderWidth: 1,
-    borderColor: "#bbf7d0",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  featuredTitle: {
-    marginTop: 12,
-    fontSize: 23,
-    fontWeight: "900",
-    color: "#111827",
-  },
-  meta: {
-    marginTop: 5,
-    fontSize: 14,
-    color: "#6b7280",
-  },
-  note: {
-    marginTop: 10,
     fontSize: 14,
     lineHeight: 21,
-    color: "#374151",
+    color: "#475569",
   },
-  infoGrid: {
+  label: {
     marginTop: 14,
-    flexDirection: "row",
-    gap: 10,
-  },
-  infoBox: {
-    flex: 1,
-    borderRadius: 8,
-    backgroundColor: "#f9fafb",
-    padding: 12,
-  },
-  infoLabel: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: "800",
-    color: "#6b7280",
-    textTransform: "uppercase",
+    color: "#0f172a",
   },
-  infoValue: {
-    marginTop: 4,
+  input: {
+    marginTop: 7,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#eff6ff",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     fontSize: 15,
-    fontWeight: "900",
-    color: "#111827",
-  },
-  actions: {
-    marginTop: 14,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
+    color: "#0f172a",
   },
   primaryButton: {
+    marginTop: 16,
+    alignItems: "center",
     borderRadius: 8,
     backgroundColor: "#047857",
     paddingHorizontal: 14,
-    paddingVertical: 11,
+    paddingVertical: 13,
   },
   primaryButtonText: {
     color: "#ffffff",
     fontSize: 14,
-    fontWeight: "800",
+    fontWeight: "900",
   },
-  secondaryButton: {
+  registerRow: {
+    marginTop: 15,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 6,
+  },
+  registerText: {
+    fontSize: 14,
+    color: "#475569",
+  },
+  registerLink: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#047857",
+  },
+  heroCard: {
+    marginTop: 14,
+    borderRadius: 8,
+    backgroundColor: "#ffffff",
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#dce3df",
+  },
+  eyebrow: {
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#047857",
+    textTransform: "uppercase",
+  },
+  title: {
+    marginTop: 10,
+    fontSize: 28,
+    lineHeight: 34,
+    fontWeight: "900",
+    color: "#0f172a",
+  },
+  subtitle: {
+    marginTop: 12,
+    fontSize: 15,
+    lineHeight: 23,
+    color: "#475569",
+  },
+  statsGrid: {
+    marginTop: 14,
+    gap: 10,
+  },
+  statCard: {
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#d1d5db",
-    paddingHorizontal: 14,
-    paddingVertical: 11,
+    borderColor: "#dce3df",
+    backgroundColor: "#ffffff",
+    padding: 16,
   },
-  secondaryButtonText: {
-    color: "#111827",
-    fontSize: 14,
+  statLabel: {
+    fontSize: 13,
     fontWeight: "800",
+    color: "#64748b",
+  },
+  statValue: {
+    marginTop: 7,
+    fontSize: 24,
+    fontWeight: "900",
+    color: "#047857",
+  },
+  statDetail: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#475569",
+  },
+  activityCard: {
+    marginTop: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#dce3df",
+    backgroundColor: "#ffffff",
+    padding: 16,
   },
   sectionTitle: {
-    marginTop: 20,
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: "900",
-    color: "#111827",
+    color: "#0f172a",
   },
-  list: {
-    marginTop: 10,
-    gap: 12,
+  activityList: {
+    marginTop: 12,
+    gap: 11,
   },
   eventCard: {
     borderRadius: 8,
-    backgroundColor: "#ffffff",
-    padding: 16,
     borderWidth: 1,
     borderColor: "#e5e7eb",
+    backgroundColor: "#fbfbfa",
+    padding: 14,
   },
-  cardTop: {
+  eventTop: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 10,
+  },
+  badge: {
+    overflow: "hidden",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#99f6e4",
+    backgroundColor: "#ecfdf5",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    color: "#047857",
+    fontSize: 12,
+    fontWeight: "900",
   },
   capacity: {
     fontSize: 13,
@@ -256,9 +299,22 @@ const styles = StyleSheet.create({
     color: "#92400e",
   },
   eventTitle: {
-    marginTop: 12,
-    fontSize: 18,
+    marginTop: 11,
+    fontSize: 17,
+    lineHeight: 22,
     fontWeight: "900",
-    color: "#111827",
+    color: "#0f172a",
+  },
+  meta: {
+    marginTop: 5,
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#475569",
+  },
+  eventTime: {
+    marginTop: 7,
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#0f172a",
   },
 });
