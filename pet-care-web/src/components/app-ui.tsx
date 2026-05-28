@@ -11,8 +11,10 @@ import {
   participants,
   pets,
 } from "@/services/mock-data";
+import type { AdminPanelStat, AdminPanelUser } from "@/services/admin/admin-service";
 import type { Pet, PetGroup } from "@/types";
 import { AppShell } from "./app-shell";
+import { AuthForm } from "./auth-form";
 import { EventCard, EventDetailsCard } from "./event-ui";
 import {
   Badge,
@@ -89,37 +91,7 @@ export function HomeView() {
 
       <section className="mx-auto grid max-w-6xl items-start gap-8 px-5 py-8 lg:grid-cols-[340px_minmax(0,1fr)]">
         <aside className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-black">Вход в профил</h1>
-          <p className="mt-2 text-sm leading-6 text-neutral-600">
-            Демо достъп за преглед на групи, събития и грижа.
-          </p>
-          <label className="mt-5 block text-sm font-bold">Имейл</label>
-          <input
-            placeholder="demo@paws.bg"
-            className="mt-2 w-full rounded-lg border border-neutral-300 px-3 py-3"
-          />
-          <label className="mt-4 block text-sm font-bold">Парола</label>
-          <input
-            type="password"
-            placeholder="demo123"
-            className="mt-2 w-full rounded-lg border border-neutral-300 px-3 py-3"
-          />
-          <Link
-            href="/login"
-            className="mt-5 block rounded-lg bg-emerald-700 px-4 py-3 text-center text-sm font-black text-white"
-          >
-            Вход
-          </Link>
-          <p className="mt-4 text-center text-sm text-neutral-600">
-            Нямаш профил?{" "}
-            <Link href="/register" className="font-black text-emerald-700">
-              Регистрирай се!
-            </Link>
-          </p>
-          <div className="mt-5 rounded-lg bg-emerald-50 p-3 text-sm leading-6 text-emerald-900">
-            <p className="font-bold">Демо достъп</p>
-            <p>demo@paws.bg / demo123</p>
-          </div>
+          <AuthForm mode="login" variant="home" />
         </aside>
 
         <div className="grid gap-5">
@@ -292,97 +264,127 @@ export function EventPageView() {
   );
 }
 
-export function AdminView() {
+export function AdminView({
+  access = "allowed",
+  stats,
+  users,
+}: {
+  access?: "allowed" | "anonymous" | "forbidden";
+  stats: AdminPanelStat[];
+  users: AdminPanelUser[];
+}) {
+  const hasAccess = access === "allowed";
+
   return (
     <AppShell active="/admin">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {adminStats.map((stat) => (
-          <StatCard key={stat.label} {...stat} />
-        ))}
-      </div>
-
-      <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="rounded-lg border border-neutral-200 bg-white p-5">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-xl font-bold">Потребители</h2>
-              <p className="text-sm text-neutral-600">
-                Бъдещ admin изглед за роли, статус и основни действия.
-              </p>
-            </div>
-            <Badge tone="info">mock admin panel</Badge>
-          </div>
-          <div className="mt-4 grid gap-3">
-            {adminUsers.map((user) => (
-              <div
-                key={user.id}
-                className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
-              >
-                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_repeat(3,minmax(92px,120px))] xl:grid-cols-[minmax(0,1fr)_110px_110px_110px_auto] xl:items-center">
-                  <div className="min-w-0">
-                    <p className="font-bold text-neutral-950">{user.name}</p>
-                    <p className="break-all text-sm text-neutral-500">
-                      {user.email}
-                    </p>
-                  </div>
-                  <AdminMeta label="Роля" value={user.role} />
-                  <AdminMeta label="Статус" value={user.status} />
-                  <AdminMeta label="От" value={user.joinedAt} />
-                  <button
-                    type="button"
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 font-semibold md:col-span-4 xl:col-span-1 xl:w-auto"
-                  >
-                    Преглед
-                  </button>
-                </div>
-              </div>
+      {!hasAccess ? (
+        <section className="rounded-lg border border-neutral-200 bg-white p-6">
+          <p className="text-sm font-semibold text-emerald-700">
+            {access === "anonymous" ? "Необходим е вход" : "Ограничен достъп"}
+          </p>
+          <h2 className="mt-2 text-2xl font-bold text-neutral-950">
+            {access === "anonymous"
+              ? "Влез като администратор"
+              : "Тази страница е само за администратори"}
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-600">
+            {access === "anonymous"
+              ? "Админ панелът вече проверява реалната web сесия. Използвай admin@paws.bg или kate_admin@paws.bg."
+              : "В момента си влязъл с потребител без admin роля. Данните за потребители и роли не се показват."}
+          </p>
+          <Link
+            href="/login"
+            className="mt-5 inline-flex rounded-lg bg-emerald-700 px-4 py-3 text-sm font-bold text-white"
+          >
+            Към вход
+          </Link>
+        </section>
+      ) : (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {stats.map((stat) => (
+              <StatCard key={stat.label} {...stat} />
             ))}
           </div>
-        </div>
 
-        <AdminAuditPanel />
-      </section>
-
-      <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-5">
-        <h2 className="text-xl font-bold">Сигнали за преглед</h2>
-        <p className="mt-2 text-sm leading-6 text-neutral-600">
-          Коментарите се публикуват веднага. Тук влизат само докладвани или
-          автоматично маркирани случаи; ако стоят дълго, се виждат като
-          просрочени сигнали.
-        </p>
-        <div className="mt-4 grid gap-3">
-          {moderationQueue.map((item) => {
-            const isOverdue = item.status.includes("24");
-
-            return (
-              <div
-                key={item.id}
-                className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone={isOverdue ? "danger" : "warning"}>
-                    {item.status}
-                  </Badge>
-                  <Badge tone="neutral">публикуван</Badge>
-                  <p className="text-sm font-semibold text-neutral-700">
-                    {item.eventTitle}
+          <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="rounded-lg border border-neutral-200 bg-white p-5">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-bold">Потребители</h2>
+                  <p className="text-sm text-neutral-600">
+                    Реални потребители от Neon, с роли и дата на създаване.
                   </p>
                 </div>
-                <p className="mt-2 text-sm text-neutral-600">
-                  {item.author}: {item.text}
-                </p>
-                <p className="mt-2 text-xs text-neutral-500">
-                  Не блокира разговора; сигналът само чака преглед.
-                </p>
+                <Badge tone="success">real database</Badge>
               </div>
-            );
-          })}
-        </div>
-      </section>
+              <div className="mt-4 grid gap-3">
+                {users.map((user) => (
+                  <div
+                    key={user.id}
+                    className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+                  >
+                    <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_repeat(3,minmax(92px,120px))] xl:grid-cols-[minmax(0,1fr)_110px_110px_110px_auto] xl:items-center">
+                      <div className="min-w-0">
+                        <p className="font-bold text-neutral-950">{user.name}</p>
+                        <p className="break-all text-sm text-neutral-500">
+                          {user.email}
+                        </p>
+                      </div>
+                      <AdminMeta label="Роля" value={user.role} />
+                      <AdminMeta label="Статус" value={user.status} />
+                      <AdminMeta label="От" value={user.joinedAt} />
+                      <button
+                        type="button"
+                        className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 font-semibold md:col-span-4 xl:col-span-1 xl:w-auto"
+                      >
+                        Преглед
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <AdminAuditPanel />
+          </section>
+
+          <section className="mt-6 rounded-lg border border-neutral-200 bg-white p-5">
+            <h2 className="text-xl font-bold">Сигнали за преглед</h2>
+            <p className="mt-2 text-sm leading-6 text-neutral-600">
+              Коментарите се публикуват веднага. Тук влизат само докладвани или
+              автоматично маркирани случаи; ако стоят дълго, се виждат като
+              просрочени сигнали.
+            </p>
+            <div className="mt-4 grid gap-3">
+              {moderationQueue.map((item) => {
+                const isOverdue = item.status.includes("24");
+
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge tone={isOverdue ? "danger" : "warning"}>
+                        {item.status}
+                      </Badge>
+                      <Badge tone="neutral">публикуван</Badge>
+                      <p className="font-bold text-neutral-950">{item.eventTitle}</p>
+                    </div>
+                    <p className="mt-3 text-sm leading-6 text-neutral-700">
+                      {item.author}: {item.text}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </>
+      )}
     </AppShell>
   );
 }
-
 export function GroupDetailsView() {
   const group = groups[0];
   const groupEvents = events.filter((event) => event.groupId === group.id);

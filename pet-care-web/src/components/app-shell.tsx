@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { currentUser } from "@/services/mock-data";
+import type { PublicUser } from "@/services/auth/auth-service";
+import { getCurrentSessionUser } from "@/services/auth/session";
 import { classNames } from "./ui-primitives";
 
 const navSections = [
@@ -19,13 +20,13 @@ const navSections = [
   {
     title: "Управление",
     items: [
-      { href: "/admin", label: "Админ", icon: "◇" },
+      { href: "/admin", label: "Админ", icon: "◇", adminOnly: true },
       { href: "/api/docs", label: "API", icon: "{}" },
     ],
   },
 ];
 
-export function AppShell({
+export async function AppShell({
   active,
   children,
   aside,
@@ -34,6 +35,8 @@ export function AppShell({
   children: React.ReactNode;
   aside?: React.ReactNode;
 }) {
+  const user = await getCurrentSessionUser();
+
   return (
     <div className="min-h-screen bg-[#f5f7f4] text-neutral-950">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col lg:flex-row">
@@ -51,13 +54,20 @@ export function AppShell({
           </Link>
 
           <nav className="mt-6 grid gap-4">
-            {navSections.map((section) => (
+            {navSections.map((section) => {
+              const visibleItems = section.items.filter((item) => !item.adminOnly || user?.role === "admin");
+
+              if (visibleItems.length === 0) {
+                return null;
+              }
+
+              return (
               <div key={section.title}>
                 <p className="px-3 text-[11px] font-black uppercase tracking-normal text-neutral-400">
                   {section.title}
                 </p>
                 <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-1">
-                  {section.items.map((item) => (
+                  {visibleItems.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}
@@ -77,20 +87,21 @@ export function AppShell({
                   ))}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </nav>
 
           <div className="mt-6 hidden rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 lg:block">
-            <p className="font-semibold">Демо изглед</p>
+            <p className="font-semibold">Демо данни</p>
             <p className="mt-1 text-amber-800">
-              Данните са примерни и ще бъдат вързани към база в следващ
-              milestone.
+              Част от екраните вече са вързани към Neon. Останалите все още
+              използват примерни данни до следващите backend стъпки.
             </p>
           </div>
         </aside>
 
         <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8">
-          <HeaderBar />
+          <HeaderBar user={user} />
           <div
             className={classNames(
               "mt-6 grid gap-6",
@@ -106,24 +117,45 @@ export function AppShell({
   );
 }
 
-function HeaderBar() {
+function HeaderBar({ user }: { user: PublicUser | null }) {
+  const displayName = user?.name ?? "гост";
+
   return (
     <header className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="text-sm font-medium text-emerald-700">
-          Добре дошла, {currentUser.name}
+          Здравей, {displayName}
         </p>
         <h1 className="text-2xl font-bold tracking-normal text-neutral-950">
           План за разходки и грижа
         </h1>
       </div>
       <div className="flex flex-wrap gap-2 text-xs font-bold text-neutral-600">
-        <span className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1">
-          demo user
-        </span>
-        <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-800">
-          бъдеща auth зона
-        </span>
+        {user ? (
+          <>
+            <span className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1">
+              {user.role === "admin" ? "admin" : "user"}
+            </span>
+            <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-800">
+              реална сесия
+            </span>
+          </>
+        ) : (
+          <>
+            <Link
+              href="/login"
+              className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 transition hover:bg-neutral-100"
+            >
+              Вход
+            </Link>
+            <Link
+              href="/register"
+              className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-800 transition hover:bg-emerald-100"
+            >
+              Регистрация
+            </Link>
+          </>
+        )}
       </div>
     </header>
   );

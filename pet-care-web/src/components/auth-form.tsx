@@ -11,6 +11,7 @@ type AuthMode = "login" | "register";
 
 type AuthFormProps = {
   mode: AuthMode;
+  variant?: "page" | "home";
 };
 
 type AuthApiResponse = {
@@ -37,9 +38,10 @@ async function readAuthResponse(response: Response) {
   }
 }
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
   const router = useRouter();
   const isLogin = mode === "login";
+  const isHomeVariant = variant === "home";
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -98,7 +100,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   }
 
   return (
-    <div className="p-6 sm:p-8">
+    <div className={isHomeVariant ? "" : "p-6 sm:p-8"}>
       <p className="text-sm font-semibold text-emerald-700">
         {isLogin ? "Вход в профил" : "Създай профил"}
       </p>
