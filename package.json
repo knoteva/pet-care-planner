@@ -17,7 +17,8 @@
     "db:generate": "npm run db:generate -w pet-care-web",
     "db:migrate": "npm run db:migrate -w pet-care-web",
     "db:studio": "npm run db:studio -w pet-care-web",
-    "db:check": "npm run db:check -w pet-care-web"
+    "db:check": "npm run db:check -w pet-care-web",
+    "db:ping": "npm run db:ping -w pet-care-web"
   },
   "devDependencies": {
     "prettier": "^3.6.2"

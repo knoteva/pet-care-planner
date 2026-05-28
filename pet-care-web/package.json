@@ -11,7 +11,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:check": "drizzle-kit check"
+    "db:check": "drizzle-kit check",
+    "db:ping": "node scripts/db-ping.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
