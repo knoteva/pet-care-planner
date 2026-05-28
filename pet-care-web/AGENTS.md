@@ -1,20 +1,22 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# Pet Care Planner Next.js App
 
-# This is NOT the Next.js you know
+Pet Care Planner web app: manage users, pets, groups and care events. Users register and log in, create or join groups, manage pets, participate in events and comment. Group managers can create events and moderate group activity. Admin users manage users, groups and reports.
 
-This version has breaking changes. APIs, conventions and file structure may differ from older examples. Read the relevant guide in `node_modules/next/dist/docs/` before writing code and heed deprecation notices.
+## Technologies
 
-<!-- END:nextjs-agent-rules -->
+Next.js + React + Tailwind + Neon DB + Drizzle ORM.
 
-# Pet Care Web Instructions
+## Architectural Guidelines
 
-This package contains the Next.js Web app and backend API for Pet Care Planner.
+- **Service layer**: implement app business logic in `src/services`, used by REST API handlers and Server Actions.
+- **Modular design**: split repeated UI into reusable components to avoid large, hard-to-maintain files.
+- **Auth**: JWT tokens + bcrypt or argon2 password hashing.
+- **Database**: Neon DB + Drizzle ORM. Use Drizzle migrations for all schema changes.
+- **Authorization**: enforce role and group access checks in services and route handlers, not only in UI.
 
-- Keep user-facing UI text in Bulgarian.
-- Keep code identifiers, API route names, file names and database identifiers in English.
-- Prefer Server Components. Use Client Components only for browser-only interaction.
-- Put business rules in `src/services` and call those services from Server Actions and API route handlers.
-- Put database schema, client setup and seed scripts in `src/db`.
-- Put mobile REST endpoints under `src/app/api`.
-- Protect private routes server-side and enforce authorization in services.
-- All future database changes must use Drizzle migrations.
+## User Interface Guidelines
+
+- User-facing text, validation messages and demo data must be in Bulgarian.
+- Code identifiers, folders, API routes, database objects and TypeScript types must stay in English.
+- Prefer Server Components. Use Client Components only for browser interaction and forms.
+- Use responsive layout for desktop and mobile browsers.
