@@ -1,5 +1,5 @@
-import { AuthView } from "@/components/app-ui";
+import { AuthPage } from "@/components/auth-page";
 
 export default function RegisterPage() {
-  return <AuthView mode="register" />;
+  return <AuthPage mode="register" />;
 }
