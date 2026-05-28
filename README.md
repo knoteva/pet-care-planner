@@ -99,6 +99,23 @@ Required variables for the planned MVP:
 - `NEXT_PUBLIC_APP_URL`
 - `EXPO_PUBLIC_API_BASE_URL`
 
+## Auth API Checks
+
+After `DATABASE_URL` and `JWT_SECRET` are set in `pet-care-web/.env.local`, start the Web app:
+
+```bash
+npm run dev:web
+```
+
+Then test the auth endpoints from another terminal:
+
+```bash
+curl -X POST http://localhost:3000/api/auth/login -H "Content-Type: application/json" -d "{\"email\":\"kate_manager@paws.bg\",\"password\":\"kate123\"}"
+curl -X POST http://localhost:3000/api/auth/register -H "Content-Type: application/json" -d "{\"name\":\"Test User\",\"email\":\"test_user@example.com\",\"password\":\"test1234\"}"
+```
+
+The login/register response returns a `token` for mobile Bearer auth and also sets a `pet-care-session` httpOnly cookie for Web auth.
+
 ## Demo Credentials
 
 ```text

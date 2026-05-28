@@ -296,6 +296,11 @@ export const apiEndpoints = [
     purpose: "Текущ потребител по Bearer token.",
   },
   {
+    method: "POST",
+    path: "/api/auth/logout",
+    purpose: "Изход и изчистване на web session cookie.",
+  },
+  {
     method: "GET",
     path: "/api/events?page=&limit=",
     purpose: "Страничен списък със събития от групите на потребителя.",
