@@ -5,15 +5,15 @@ Build a "Pet Care Planner" app: a software product for neighbors, friends and pe
 - The app holds pet care groups, where events are organized.
 - Groups have managers and members.
 - Pets belong to users and can be connected to group activities.
-- Care events are announced in groups and members can join, leave, comment or suggest new events.
+- Care events are announced in groups and members can create, join, leave and comment on events.
 - The Web app includes the full management experience; the mobile app focuses on daily participation.
 
 ## Roles in the App
 
 - **Visitor**: can view the public home page and register in the app.
 - **User**: can manage own profile, pets and group memberships.
-- **Group member**: can view group events, join or leave events, comment and share event links.
-- **Group manager**: can create groups, invite members, create care events and review member suggestions.
+- **Group member**: can view group events, create events, join or leave events, comment and share event links.
+- **Group manager**: can create groups, invite members, create/edit/cancel group events and moderate reported comments.
 - **Admin**: can manage users, groups, events and reports in the Web app.
 
 ## Visitors
@@ -32,7 +32,7 @@ Registered users are pet owners or helpers who participate in pet care coordinat
 - Users can join groups by invite link or invite code.
 - Users can see upcoming events in their groups.
 - Users can join or leave events and add comments.
-- Users can suggest a new event when they are not group managers.
+- Users can create events in groups where they are members.
 
 ## Groups
 
@@ -40,7 +40,7 @@ Groups are shared spaces for organizing care around pets and neighborhoods.
 
 - A group has a name, location, members and managers.
 - Group members can see group events and participants.
-- Group managers can invite members and create events.
+- Group managers can invite members and manage group events.
 - Invite links and codes are planned for controlled group access.
 
 ## Care Events
@@ -54,7 +54,7 @@ Care events represent planned activities such as walks, feeding, visits, play ti
 
 ## Web App and Mobile App
 
-- The Web app is the primary app for this project. It implements the full functionality: registration, login, dashboard, pets, groups, group details, events, suggestions and admin views.
+- The Web app is the primary app for this project. It implements the full functionality: registration, login, dashboard, pets, groups, group details, events and admin views.
 - The mobile app is a scope-limited companion app. It implements the most important daily-use functionality: login/register, dashboard, pets, groups and participation views.
 
 ## Repository Structure
@@ -74,6 +74,20 @@ npm run dev:web
 npm run dev:mobile
 ```
 
+Database setup after `DATABASE_URL` is configured:
+
+```bash
+npm run db:migrate
+npm run db:seed
+```
+
+Useful database checks:
+
+```bash
+npm run db:ping
+npm run db:check
+```
+
 ## Environment Variables
 
 Copy `.env.example` to `.env` locally and fill in real values before adding database or authentication features.
@@ -89,7 +103,17 @@ Required variables for the planned MVP:
 
 ```text
 demo@paws.bg / demo123
+admin@paws.bg / admin123
+kate_admin@paws.bg / kate123
+kate_manager@paws.bg / kate123
+kate_user@paws.bg / kate123
 ```
+
+Role notes:
+
+- `kate_admin@paws.bg` has global `admin` role.
+- `kate_manager@paws.bg` has normal `user` role, but is a `manager` in the South Park group.
+- `kate_user@paws.bg` has normal `user` role and is a regular group member.
 
 ## Public Demo
 
