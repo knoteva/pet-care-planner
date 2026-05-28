@@ -13,7 +13,11 @@
     "build:web": "npm run build -w pet-care-web",
     "lint:web": "npm run lint -w pet-care-web",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "format": "prettier --check ."
+    "format": "prettier --check .",
+    "db:generate": "npm run db:generate -w pet-care-web",
+    "db:migrate": "npm run db:migrate -w pet-care-web",
+    "db:studio": "npm run db:studio -w pet-care-web",
+    "db:check": "npm run db:check -w pet-care-web"
   },
   "devDependencies": {
     "prettier": "^3.6.2"
