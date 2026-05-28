@@ -1,12 +1,17 @@
+import { Link } from "expo-router";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
-import { AuthField, authStyles as styles } from "./auth";
+import { AuthField, BenefitCard, authStyles as styles } from "./auth";
 
 export default function RegisterScreen() {
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={styles.container}>
-        <View style={styles.header}>
+        <View style={styles.heroCard}>
           <Text style={styles.eyebrow}>Нов профил</Text>
           <Text style={styles.title}>Регистрация</Text>
           <Text style={styles.subtitle}>
@@ -23,21 +28,27 @@ export default function RegisterScreen() {
             placeholder="Повтори паролата"
             secure
           />
-          <Pressable style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Създай профил</Text>
+          <Pressable style={styles.primaryButton}>
+            <Text style={styles.primaryButtonText}>Създай профил</Text>
           </Pressable>
+          <View style={styles.switchRow}>
+            <Text style={styles.switchText}>Вече имаш профил?</Text>
+            <Link href="/auth" asChild>
+              <Pressable hitSlop={8}>
+                <Text style={styles.switchLink}>Влез</Text>
+              </Pressable>
+            </Link>
+          </View>
         </View>
 
-        <View style={styles.benefitCard}>
-          <Text style={styles.benefitTitle}>След регистрация</Text>
-          <Text style={styles.benefitItem}>✓ Добавяш любимци към профила</Text>
-          <Text style={styles.benefitItem}>
-            ✓ Влизаш в групи с код за покана
-          </Text>
-          <Text style={styles.benefitItem}>
-            ✓ Предлагаш събития към мениджър
-          </Text>
-        </View>
+        <BenefitCard
+          title="След регистрация"
+          items={[
+            "Добавяш любимци към профила",
+            "Влизаш в групи с код за покана",
+            "Предлагаш събития към мениджър",
+          ]}
+        />
       </View>
     </ScrollView>
   );

@@ -10,14 +10,25 @@ import {
 
 export default function AuthScreen() {
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.eyebrow}>Лапички</Text>
-          <Text style={styles.title}>Профил</Text>
+        <View style={styles.heroCard}>
+          <View style={styles.brandRow}>
+            <View style={styles.logoBox}>
+              <Text style={styles.logoText}>Л</Text>
+            </View>
+            <View>
+              <Text style={styles.eyebrow}>Лапички</Text>
+              <Text style={styles.brandSubline}>планер за грижа</Text>
+            </View>
+          </View>
+          <Text style={styles.title}>Вход в профил</Text>
           <Text style={styles.subtitle}>
-            Влез с демо профила. Реалният вход ще използва REST API и Bearer JWT
-            token.
+            Демо вход за преглед на групи, събития, любимци и коментари.
           </Text>
         </View>
 
@@ -27,20 +38,25 @@ export default function AuthScreen() {
           <Pressable style={styles.primaryButton}>
             <Text style={styles.primaryButtonText}>Влез</Text>
           </Pressable>
-          <Text style={styles.demoText}>
-            Демо достъп: demo@paws.bg / demo123
-          </Text>
-          <View style={styles.registerRow}>
-            <Text style={styles.registerQuestion}>Нямаш профил?</Text>
+          <Text style={styles.demoText}>Демо достъп: demo@paws.bg / demo123</Text>
+          <View style={styles.switchRow}>
+            <Text style={styles.switchText}>Нямаш профил?</Text>
             <Link href="/register" asChild>
-              <Pressable>
-                <Text style={styles.registerLink}>Регистрирай се!</Text>
+              <Pressable hitSlop={8}>
+                <Text style={styles.switchLink}>Регистрирай се</Text>
               </Pressable>
             </Link>
           </View>
         </View>
 
-        <BenefitCard />
+        <BenefitCard
+          title="След вход"
+          items={[
+            "Преглеждаш предстоящи събития",
+            "Участваш и коментираш",
+            "Виждаш групи и любимци",
+          ]}
+        />
       </View>
     </ScrollView>
   );
@@ -68,13 +84,18 @@ export function AuthField({
   );
 }
 
-function BenefitCard() {
+export function BenefitCard({ title, items }: { title: string; items: string[] }) {
   return (
     <View style={styles.benefitCard}>
-      <Text style={styles.benefitTitle}>Какво получаваш?</Text>
-      <Text style={styles.benefitItem}>✓ Групи за разходки и грижа</Text>
-      <Text style={styles.benefitItem}>✓ Участие и коментари по събития</Text>
-      <Text style={styles.benefitItem}>✓ Предложения към мениджърите</Text>
+      <Text style={styles.benefitTitle}>{title}</Text>
+      <View style={styles.benefitList}>
+        {items.map((item) => (
+          <View key={item} style={styles.benefitPill}>
+            <Text style={styles.benefitCheck}>✓</Text>
+            <Text style={styles.benefitText}>{item}</Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -86,29 +107,52 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 18,
-    paddingBottom: 32,
+    paddingBottom: 34,
     alignItems: "center",
   },
   container: {
     width: "100%",
-    maxWidth: 520,
+    maxWidth: 430,
   },
-  header: {
+  heroCard: {
     borderRadius: 8,
     backgroundColor: "#ffffff",
     padding: 18,
     borderWidth: 1,
     borderColor: "#e5e7eb",
   },
+  brandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  logoBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#047857",
+  },
+  logoText: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontWeight: "900",
+  },
   eyebrow: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#047857",
-    textTransform: "uppercase",
+    fontSize: 16,
+    fontWeight: "900",
+    color: "#111827",
+  },
+  brandSubline: {
+    marginTop: 1,
+    fontSize: 12,
+    color: "#6b7280",
   },
   title: {
-    marginTop: 4,
-    fontSize: 28,
+    marginTop: 18,
+    fontSize: 26,
+    lineHeight: 31,
     fontWeight: "900",
     color: "#111827",
   },
@@ -119,7 +163,7 @@ const styles = StyleSheet.create({
     color: "#4b5563",
   },
   card: {
-    marginTop: 14,
+    marginTop: 12,
     borderRadius: 8,
     backgroundColor: "#ffffff",
     padding: 16,
@@ -127,7 +171,7 @@ const styles = StyleSheet.create({
     borderColor: "#e5e7eb",
   },
   field: {
-    marginTop: 13,
+    marginTop: 12,
     gap: 7,
   },
   label: {
@@ -139,7 +183,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#d1d5db",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#f9fafb",
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 15,
@@ -179,7 +223,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#4b5563",
   },
-  registerRow: {
+  switchRow: {
     marginTop: 16,
     paddingTop: 14,
     borderTopWidth: 1,
@@ -188,32 +232,49 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
   },
-  registerQuestion: {
+  switchText: {
     fontSize: 14,
     color: "#4b5563",
   },
-  registerLink: {
+  switchLink: {
     fontSize: 14,
     fontWeight: "900",
     color: "#047857",
   },
   benefitCard: {
-    marginTop: 14,
+    marginTop: 12,
     borderRadius: 8,
     backgroundColor: "#ecfdf5",
-    padding: 16,
+    padding: 14,
     borderWidth: 1,
     borderColor: "#bbf7d0",
   },
   benefitTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: "900",
     color: "#064e3b",
   },
-  benefitItem: {
-    marginTop: 9,
-    fontSize: 14,
-    lineHeight: 20,
+  benefitList: {
+    marginTop: 10,
+    gap: 8,
+  },
+  benefitPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 8,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+  },
+  benefitCheck: {
+    color: "#047857",
+    fontWeight: "900",
+  },
+  benefitText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
     color: "#065f46",
   },
 });

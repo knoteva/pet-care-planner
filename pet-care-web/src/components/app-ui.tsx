@@ -1,9 +1,8 @@
 import Link from "next/link";
+
 import {
   adminStats,
   adminUsers,
-  comments,
-  currentUser,
   dashboardStats,
   groupMembers,
   events,
@@ -13,125 +12,21 @@ import {
   participants,
   pets,
 } from "@/services/mock-data";
-import type { CareEvent, EventStatus, EventType, Pet, PetGroup } from "@/types";
-
-const navItems = [
-  { href: "/", label: "Начало", icon: "⌂" },
-  { href: "/dashboard", label: "Табло", icon: "▦" },
-  { href: "/pets", label: "Любимци", icon: "●" },
-  { href: "/groups", label: "Групи", icon: "◎" },
-  { href: "/admin", label: "Админ", icon: "◇" },
-  { href: "/api/docs", label: "API", icon: "{}" },
-];
-
-const statusLabels: Record<EventStatus, string> = {
-  upcoming: "предстоящо",
-  current: "в момента",
-  past: "архив",
-  canceled: "отменено",
-  under_capacity: "има места",
-  full_capacity: "запълнено",
-  over_capacity: "над капацитет",
-};
-
-const eventTypeLabels: Record<EventType, string> = {
-  dog_walk: "разходка",
-  pet_sitting: "грижа",
-  playdate: "игра",
-  training: "тренировка",
-  vet_support: "ветеринар",
-  other: "друго",
-};
-
-function classNames(...values: Array<string | false | null | undefined>) {
-  return values.filter(Boolean).join(" ").trim();
-}
-
-export function AppShell({
-  active,
-  children,
-  aside,
-}: {
-  active?: string;
-  children: React.ReactNode;
-  aside?: React.ReactNode;
-}) {
-  return (
-    <div className="min-h-screen bg-[#f5f7f4] text-neutral-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col lg:flex-row">
-        <aside className="border-b border-neutral-200 bg-white/90 px-4 py-4 lg:w-64 lg:border-b-0 lg:border-r lg:px-5 lg:py-6">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-lg bg-emerald-700 text-lg font-black text-white">
-              Л
-            </span>
-            <span>
-              <span className="block text-lg font-bold">Лапички</span>
-              <span className="block text-xs text-neutral-500">
-                планер за грижа
-              </span>
-            </span>
-          </Link>
-
-          <nav className="mt-6 grid grid-cols-2 gap-2 lg:grid-cols-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={classNames(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
-                  active === item.href
-                    ? "bg-emerald-700 text-white"
-                    : "text-neutral-700 hover:bg-emerald-50 hover:text-emerald-900",
-                )}
-              >
-                <span aria-hidden="true" className="w-5 text-center">
-                  {item.icon}
-                </span>
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="mt-6 hidden rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 lg:block">
-            <p className="font-semibold">Демо изглед</p>
-            <p className="mt-1 text-amber-800">
-              Данните са примерни и ще бъдат вързани към база в следващ
-              milestone.
-            </p>
-          </div>
-        </aside>
-
-        <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8">
-          <HeaderBar />
-          <div
-            className={classNames(
-              "mt-6 grid gap-6",
-              aside ? "xl:grid-cols-[minmax(0,1fr)_360px]" : "",
-            )}
-          >
-            <section>{children}</section>
-            {aside ? <aside className="space-y-5">{aside}</aside> : null}
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-}
-
-function HeaderBar() {
-  return (
-    <header className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="text-sm font-medium text-emerald-700">
-          Добре дошла, {currentUser.name}
-        </p>
-        <h1 className="text-2xl font-bold tracking-normal text-neutral-950">
-          План за разходки и грижа
-        </h1>
-      </div>
-    </header>
-  );
-}
+import type { Pet, PetGroup } from "@/types";
+import { AppShell } from "./app-shell";
+import { EventCard, EventDetailsCard } from "./event-ui";
+import {
+  Badge,
+  EmptyState,
+  FormCard,
+  FormField,
+  FormGuidePanel,
+  FormSelect,
+  FormTextarea,
+  SectionTitle,
+  StatCard,
+  classNames,
+} from "./ui-primitives";
 
 export function DashboardView() {
   const primaryEvent = events[0];
@@ -424,21 +319,19 @@ export function AdminView() {
                 key={user.id}
                 className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
               >
-                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px_auto] lg:items-center">
+                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_repeat(3,minmax(92px,120px))] xl:grid-cols-[minmax(0,1fr)_110px_110px_110px_auto] xl:items-center">
                   <div className="min-w-0">
                     <p className="font-bold text-neutral-950">{user.name}</p>
                     <p className="break-all text-sm text-neutral-500">
                       {user.email}
                     </p>
                   </div>
-                  <div className="grid gap-2 text-sm sm:grid-cols-3">
-                    <AdminMeta label="Роля" value={user.role} />
-                    <AdminMeta label="Статус" value={user.status} />
-                    <AdminMeta label="От" value={user.joinedAt} />
-                  </div>
+                  <AdminMeta label="Роля" value={user.role} />
+                  <AdminMeta label="Статус" value={user.status} />
+                  <AdminMeta label="От" value={user.joinedAt} />
                   <button
                     type="button"
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 font-semibold lg:w-auto"
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 font-semibold md:col-span-4 xl:col-span-1 xl:w-auto"
                   >
                     Преглед
                   </button>
@@ -848,212 +741,9 @@ export function EventProposalFormView() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: string;
-}) {
-  const toneClass = {
-    emerald: "bg-emerald-50 text-emerald-800 border-emerald-100",
-    sky: "bg-sky-50 text-sky-800 border-sky-100",
-    violet: "bg-violet-50 text-violet-800 border-violet-100",
-    amber: "bg-amber-50 text-amber-800 border-amber-100",
-  }[tone];
-
-  return (
-    <div
-      className={classNames(
-        "flex min-h-28 flex-col justify-center rounded-lg border bg-white p-4",
-        toneClass,
-      )}
-    >
-      <p className="flex min-h-10 items-center justify-center text-center text-sm font-medium leading-5">
-        {label}
-      </p>
-      <p className="mt-1 text-center text-3xl font-black tracking-normal">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function SectionTitle({
-  title,
-  action,
-  href,
-}: {
-  title: string;
-  action: string;
-  href: string;
-}) {
-  return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <h2 className="text-xl font-bold text-neutral-950">{title}</h2>
-      <Link
-        href={href}
-        className="inline-flex items-center justify-center rounded-lg bg-neutral-950 px-3 py-2 text-sm font-semibold text-white transition hover:bg-neutral-800"
-      >
-        <span aria-hidden="true">＋ </span>
-        {action}
-      </Link>
-    </div>
-  );
-}
-
-function EventCard({ event }: { event: CareEvent }) {
-  const capacityTone =
-    event.participantCount && event.participantCount > event.capacity
-      ? "warning"
-      : "ok";
-
-  return (
-    <Link
-      href="/events/sabotna-razhodka"
-      className="block rounded-lg border border-neutral-200 bg-white p-4 transition hover:border-emerald-400 hover:shadow-sm"
-    >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <div className="flex flex-wrap gap-2">
-            <Badge
-              tone={
-                event.canceled
-                  ? "danger"
-                  : event.status === "current"
-                    ? "info"
-                    : "success"
-              }
-            >
-              {statusLabels[event.status]}
-            </Badge>
-            <Badge tone="neutral">{eventTypeLabels[event.eventType]}</Badge>
-            <Badge tone={capacityTone}>
-              {event.participantCount}/{event.capacity} участници
-            </Badge>
-          </div>
-          <h3 className="mt-3 text-lg font-bold text-neutral-950">
-            {event.title}
-          </h3>
-          <p className="mt-1 text-sm text-neutral-600">{event.location}</p>
-        </div>
-        <div className="text-left text-sm text-neutral-600 lg:text-right">
-          <p className="font-semibold text-neutral-950">
-            {formatEventDate(event.startsAt)}
-          </p>
-          <p>{event.durationMinutes} мин.</p>
-          <p>{event.commentCount} коментара</p>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function EventDetailsCard({
-  event,
-  compact = false,
-}: {
-  event: CareEvent;
-  compact?: boolean;
-}) {
-  return (
-    <article className="rounded-lg border border-neutral-200 bg-white p-5">
-      <div className="flex flex-wrap gap-2">
-        <Badge tone={event.status === "current" ? "info" : "success"}>
-          {statusLabels[event.status]}
-        </Badge>
-        <Badge
-          tone={
-            event.participantCount && event.participantCount > event.capacity
-              ? "warning"
-              : "neutral"
-          }
-        >
-          {event.participantCount}/{event.capacity} капацитет
-        </Badge>
-      </div>
-      <h2 className="mt-3 text-2xl font-bold text-neutral-950">
-        {event.title}
-      </h2>
-      <p className="mt-2 text-sm leading-6 text-neutral-600">{event.notes}</p>
-
-      <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-        <InfoItem label="Дата" value={formatEventDate(event.startsAt)} />
-        <InfoItem
-          label="Продължителност"
-          value={`${event.durationMinutes} мин.`}
-        />
-        <InfoItem label="Място" value={event.location} />
-        <InfoItem label="Тип" value={eventTypeLabels[event.eventType]} />
-      </dl>
-
-      <div className="mt-5 flex flex-wrap gap-2">
-        <button
-          className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
-          type="button"
-        >
-          Ще участвам
-        </button>
-        <button
-          className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-bold text-neutral-800"
-          type="button"
-        >
-          Сподели линк
-        </button>
-      </div>
-
-      {!compact ? (
-        <div className="mt-6">
-          <h3 className="font-bold">Коментари</h3>
-          <div className="mt-3 grid gap-3">
-            {comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="rounded-lg bg-neutral-50 p-3 text-sm text-neutral-700"
-              >
-                {comment.text}
-              </div>
-            ))}
-          </div>
-          <form className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
-            <input name="eventId" type="hidden" value={event.id} />
-            <label className="grid gap-2 text-sm font-semibold text-neutral-800">
-              Напиши коментар
-              <textarea
-                name="text"
-                className="min-h-24 rounded-lg border border-neutral-300 bg-white px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
-                placeholder="Например: Ще донеса вода или ще закъснея 10 мин."
-              />
-            </label>
-            <button
-              type="button"
-              className="mt-3 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
-            >
-              Публикувай коментар
-            </button>
-          </form>
-        </div>
-      ) : null}
-    </article>
-  );
-}
-
-function InfoItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-neutral-50 p-3">
-      <dt className="text-xs font-semibold uppercase tracking-normal text-neutral-500">
-        {label}
-      </dt>
-      <dd className="mt-1 font-semibold text-neutral-950">{value}</dd>
-    </div>
-  );
-}
-
 function AdminMeta({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-white px-3 py-2">
+    <div className="rounded-lg bg-white px-3 py-2 md:bg-neutral-50">
       <p className="text-xs font-semibold text-neutral-500">{label}</p>
       <p className="mt-1 font-bold text-neutral-900">{value}</p>
     </div>
@@ -1167,32 +857,6 @@ function GroupCard({ group }: { group: PetGroup }) {
   );
 }
 
-function EmptyState({
-  title,
-  description,
-  actionLabel,
-  href,
-}: {
-  title: string;
-  description: string;
-  actionLabel: string;
-  href: string;
-}) {
-  return (
-    <div className="rounded-lg border border-dashed border-neutral-300 bg-white p-5">
-      <p className="text-sm font-semibold text-neutral-500">Празно състояние</p>
-      <h3 className="mt-2 text-lg font-bold text-neutral-950">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-neutral-600">{description}</p>
-      <Link
-        href={href}
-        className="mt-4 inline-flex rounded-lg border border-neutral-300 px-3 py-2 text-sm font-bold text-neutral-800"
-      >
-        {actionLabel}
-      </Link>
-    </div>
-  );
-}
-
 function ParticipantPanel() {
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-5">
@@ -1288,177 +952,3 @@ function CareChecklistPreview() {
   );
 }
 
-function FormGuidePanel({ title }: { title: string }) {
-  return (
-    <div className="rounded-lg border border-neutral-200 bg-white p-5">
-      <h2 className="text-lg font-bold">{title}: бъдеща логика</h2>
-      <p className="mt-2 text-sm leading-6 text-neutral-600">
-        Формата е само UI сега. Полетата са именувани така, че после да се
-        вържат към validation schema, Server Action и REST/service слой.
-      </p>
-      <ul className="mt-4 grid gap-2 text-sm text-neutral-700">
-        <li>✓ `name` атрибути за form data</li>
-        <li>✓ същите термини като бъдещата DB schema</li>
-        <li>✓ без fake client state, който после да пречи</li>
-      </ul>
-    </div>
-  );
-}
-
-function FormCard({
-  title,
-  description,
-  submitLabel,
-  cancelHref = "/dashboard",
-  children,
-}: {
-  title: string;
-  description: string;
-  submitLabel: string;
-  cancelHref?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mx-auto max-w-3xl rounded-lg border border-neutral-200 bg-white p-6">
-      <h2 className="text-2xl font-bold">{title}</h2>
-      <p className="mt-2 text-sm leading-6 text-neutral-600">{description}</p>
-      <form className="mt-6 grid gap-4">
-        {children}
-        <div className="mt-2 flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="rounded-lg bg-emerald-700 px-4 py-3 text-sm font-bold text-white"
-          >
-            {submitLabel}
-          </button>
-          <Link
-            href={cancelHref}
-            className="rounded-lg border border-neutral-300 px-4 py-3 text-sm font-bold text-neutral-800"
-          >
-            Откажи
-          </Link>
-        </div>
-      </form>
-    </section>
-  );
-}
-
-function FormField({
-  name,
-  label,
-  placeholder,
-  type = "text",
-  defaultValue,
-}: {
-  name?: string;
-  label: string;
-  placeholder: string;
-  type?: string;
-  defaultValue?: string;
-}) {
-  return (
-    <label className="grid gap-2 text-sm font-semibold text-neutral-800">
-      {label}
-      <input
-        name={name}
-        className="rounded-lg border border-neutral-300 px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
-        placeholder={placeholder}
-        type={type}
-        defaultValue={defaultValue}
-      />
-    </label>
-  );
-}
-
-function FormSelect({
-  name,
-  label,
-  options,
-  defaultValue,
-}: {
-  name: string;
-  label: string;
-  options: Array<string | { value: string; label: string }>;
-  defaultValue?: string;
-}) {
-  return (
-    <label className="grid gap-2 text-sm font-semibold text-neutral-800">
-      {label}
-      <select
-        name={name}
-        className="rounded-lg border border-neutral-300 bg-white px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
-        defaultValue={defaultValue}
-      >
-        {options.map((option) => (
-          <option
-            key={typeof option === "string" ? option : option.value}
-            value={typeof option === "string" ? option : option.value}
-          >
-            {typeof option === "string" ? option : option.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function FormTextarea({
-  name,
-  label,
-  placeholder,
-  defaultValue,
-}: {
-  name: string;
-  label: string;
-  placeholder: string;
-  defaultValue?: string;
-}) {
-  return (
-    <label className="grid gap-2 text-sm font-semibold text-neutral-800">
-      {label}
-      <textarea
-        name={name}
-        className="min-h-32 rounded-lg border border-neutral-300 px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
-        placeholder={placeholder}
-        defaultValue={defaultValue}
-      />
-    </label>
-  );
-}
-
-function Badge({
-  tone,
-  children,
-}: {
-  tone: "success" | "warning" | "danger" | "info" | "neutral" | "ok";
-  children: React.ReactNode;
-}) {
-  const classes = {
-    success: "bg-emerald-50 text-emerald-800 border-emerald-200",
-    warning: "bg-amber-50 text-amber-900 border-amber-200",
-    danger: "bg-rose-50 text-rose-800 border-rose-200",
-    info: "bg-sky-50 text-sky-800 border-sky-200",
-    neutral: "bg-neutral-100 text-neutral-700 border-neutral-200",
-    ok: "bg-teal-50 text-teal-800 border-teal-200",
-  }[tone];
-
-  return (
-    <span
-      className={classNames(
-        "inline-flex rounded-lg border px-2.5 py-1 text-xs font-bold",
-        classes,
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-function formatEventDate(value: string) {
-  return new Intl.DateTimeFormat("bg-BG", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
