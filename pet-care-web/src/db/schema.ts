@@ -1,6 +1,5 @@
 import { relations, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
 import {
-  boolean,
   index,
   integer,
   pgEnum,
@@ -41,9 +40,6 @@ export const eventStatusEnum = pgEnum("event_status", [
   "current",
   "past",
   "canceled",
-  "under_capacity",
-  "full_capacity",
-  "over_capacity",
 ]);
 
 export const eventParticipantStatusEnum = pgEnum("event_participant_status", [
@@ -79,7 +75,10 @@ export const users = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
-  (table) => [uniqueIndex("users_email_unique").on(table.email)],
+  (table) => [
+    uniqueIndex("users_email_unique").on(table.email),
+    index("users_deleted_at_idx").on(table.deletedAt),
+  ],
 );
 
 export const pets = pgTable(
@@ -103,6 +102,7 @@ export const pets = pgTable(
   (table) => [
     index("pets_owner_id_idx").on(table.ownerId),
     index("pets_type_idx").on(table.type),
+    index("pets_deleted_at_idx").on(table.deletedAt),
   ],
 );
 
@@ -124,6 +124,7 @@ export const petGroups = pgTable(
   (table) => [
     uniqueIndex("pet_groups_invite_code_unique").on(table.inviteCode),
     index("pet_groups_created_by_id_idx").on(table.createdById),
+    index("pet_groups_deleted_at_idx").on(table.deletedAt),
   ],
 );
 
@@ -164,7 +165,6 @@ export const careEvents = pgTable(
     durationMinutes: integer("duration_minutes").notNull(),
     location: text("location").notNull(),
     capacity: integer("capacity").notNull().default(1),
-    canceled: boolean("canceled").notNull().default(false),
     status: eventStatusEnum("status").notNull().default("upcoming"),
     notes: text("notes"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -176,6 +176,7 @@ export const careEvents = pgTable(
     index("care_events_created_by_id_idx").on(table.createdById),
     index("care_events_starts_at_idx").on(table.startsAt),
     index("care_events_status_idx").on(table.status),
+    index("care_events_deleted_at_idx").on(table.deletedAt),
   ],
 );
 
@@ -224,6 +225,7 @@ export const eventComments = pgTable(
     index("event_comments_event_id_idx").on(table.eventId),
     index("event_comments_user_id_idx").on(table.userId),
     index("event_comments_status_idx").on(table.status),
+    index("event_comments_deleted_at_idx").on(table.deletedAt),
   ],
 );
 

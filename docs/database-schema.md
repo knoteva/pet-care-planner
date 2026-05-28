@@ -100,7 +100,6 @@ Unique constraint: `group_id + user_id`.
 | `duration_minutes` | `integer` | Required |
 | `location` | `text` | Required |
 | `capacity` | `integer` | Required, default `1` |
-| `canceled` | `boolean` | Required, default `false` |
 | `status` | `event_status` enum | Default `upcoming` |
 | `notes` | `text` | Optional |
 | `created_at` | `timestamp with time zone` | Default now |
@@ -156,6 +155,10 @@ Unique constraint: `event_id + user_id`.
 | `created_at` | `timestamp with time zone` | Default now |
 | `updated_at` | `timestamp with time zone` | Default now |
 
+## Derived UI States
+
+Capacity labels such as under capacity, full capacity, and over capacity are not stored in the database. They are derived in services/UI from `care_events.capacity` and the count of joined `event_participants`.
+
 ## Enum Values
 
 | Enum | Values |
@@ -164,7 +167,7 @@ Unique constraint: `event_id + user_id`.
 | `pet_type` | `dog`, `cat`, `bird`, `rabbit`, `other` |
 | `group_member_role` | `member`, `manager` |
 | `event_type` | `dog_walk`, `pet_sitting`, `playdate`, `training`, `vet_support`, `other` |
-| `event_status` | `upcoming`, `current`, `past`, `canceled`, `under_capacity`, `full_capacity`, `over_capacity` |
+| `event_status` | `upcoming`, `current`, `past`, `canceled` |
 | `event_participant_status` | `joined`, `waitlisted`, `left`, `removed` |
 | `event_comment_status` | `visible`, `reported`, `hidden` |
 | `event_proposal_status` | `pending`, `approved`, `rejected`, `converted` |
