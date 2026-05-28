@@ -221,25 +221,6 @@ export const groupMembers = [
   },
 ];
 
-export const eventProposals = [
-  {
-    id: 1,
-    title: "Неделна разходка за малки кучета",
-    author: "Елена",
-    preferredTime: "неделя, 10:00",
-    notes: "Има още двама съседи, които искат по-спокойна група.",
-    status: "чака решение",
-  },
-  {
-    id: 2,
-    title: "Помощ за вечерно хранене",
-    author: "Иван",
-    preferredTime: "четвъртък след 19:00",
-    notes: "Трябва ми човек за 20 минути, докато съм извън София.",
-    status: "ново предложение",
-  },
-];
-
 export const adminStats = [
   { label: "Потребители", value: "58", tone: "sky" },
   { label: "Групи", value: "12", tone: "emerald" },

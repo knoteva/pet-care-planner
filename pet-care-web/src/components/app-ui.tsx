@@ -6,7 +6,6 @@ import {
   dashboardStats,
   groupMembers,
   events,
-  eventProposals,
   groups,
   moderationQueue,
   participants,
@@ -83,7 +82,7 @@ export function HomeView() {
           <nav className="hidden items-center gap-6 text-sm font-bold text-neutral-700 md:flex">
             <Link href="/dashboard">Демо табло</Link>
             <Link href="/groups/yuzhen-park">Група</Link>
-            <Link href="/events/suggest">Предложи събитие</Link>
+            <Link href="/events/new">Ново събитие</Link>
           </nav>
         </div>
       </header>
@@ -133,7 +132,7 @@ export function HomeView() {
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-neutral-600">
               Вместо да се губят уговорки в чатове, групата вижда събития,
-              участници, коментари и предложения на едно място.
+              участници и коментари на едно място.
             </p>
           </section>
 
@@ -141,7 +140,7 @@ export function HomeView() {
             {[
               ["Днес", "3 събития", "разходка, грижа и игра"],
               ["Групи", "4 активни", "по квартал и нужда"],
-              ["Предложения", "2 нови", "чакат мениджър"],
+              ["Участия", "15 активни", "по групите"],
             ].map(([label, value, detail]) => (
               <div key={label} className="rounded-lg bg-white p-5 shadow-sm">
                 <p className="text-sm font-bold text-neutral-500">{label}</p>
@@ -231,7 +230,7 @@ export function AuthView({ mode }: { mode: "login" | "register" }) {
             {[
               "Групи със съседи",
               "Събития и участие",
-              "Коментари и предложения",
+              "Коментари и участие",
             ].map((item) => (
               <div
                 key={item}
@@ -417,12 +416,6 @@ export function GroupDetailsView() {
             >
               Ново събитие
             </Link>
-            <Link
-              href="/events/suggest"
-              className="rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm font-bold text-neutral-800"
-            >
-              Предложи събитие
-            </Link>
             <button
               type="button"
               disabled
@@ -471,42 +464,6 @@ export function GroupDetailsView() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-neutral-200 bg-white p-5">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h3 className="text-xl font-bold">Предложения от членове</h3>
-              <p className="mt-1 text-sm leading-6 text-neutral-600">
-                Членовете могат да поискат ново събитие. Мениджърът го преглежда
-                и при нужда го превръща в реално събитие.
-              </p>
-            </div>
-            <Link
-              href="/events/suggest"
-              className="rounded-lg border border-neutral-300 px-3 py-2 text-sm font-bold text-neutral-800"
-            >
-              Предложи събитие
-            </Link>
-          </div>
-          <div className="mt-4 grid gap-3">
-            {eventProposals.map((proposal) => (
-              <div
-                key={proposal.id}
-                className="rounded-lg border border-neutral-200 bg-neutral-50 p-4"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone="warning">{proposal.status}</Badge>
-                  <p className="font-bold text-neutral-950">{proposal.title}</p>
-                </div>
-                <p className="mt-2 text-sm text-neutral-600">
-                  {proposal.author} · {proposal.preferredTime}
-                </p>
-                <p className="mt-1 text-sm text-neutral-600">
-                  {proposal.notes}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
     </AppShell>
   );
@@ -688,53 +645,6 @@ export function EventFormView() {
           name="notes"
           label="Бележки"
           placeholder="Какво да носят участниците, особености, инструкции..."
-        />
-      </FormCard>
-    </AppShell>
-  );
-}
-
-export function EventProposalFormView() {
-  return (
-    <AppShell active="/groups" aside={<FormGuidePanel title="Предложение" />}>
-      <FormCard
-        title="Предложи събитие"
-        description="Това не публикува събитие веднага. Изпраща заявка към мениджърите на групата, които могат да я одобрят и превърнат в реално събитие."
-        submitLabel="Изпрати предложение"
-        cancelHref="/groups/yuzhen-park"
-      >
-        <input name="groupId" type="hidden" value={groups[0].id} />
-        <FormField
-          name="title"
-          label="Какво предлагаш?"
-          placeholder="Вечерна разходка в Южния парк"
-        />
-        <FormSelect
-          name="eventType"
-          label="Тип"
-          options={[
-            { value: "dog_walk", label: "Разходка" },
-            { value: "pet_sitting", label: "Грижа" },
-            { value: "playdate", label: "Игра" },
-            { value: "training", label: "Тренировка" },
-            { value: "vet_support", label: "Ветеринарна помощ" },
-            { value: "other", label: "Друго" },
-          ]}
-        />
-        <FormField
-          name="preferredTime"
-          label="Предпочитан ден и час"
-          placeholder="Петък след 18:30"
-        />
-        <FormField
-          name="location"
-          label="Място"
-          placeholder="Южен парк, вход откъм бул. Витоша"
-        />
-        <FormTextarea
-          name="notes"
-          label="Детайли към мениджъра"
-          placeholder="Защо е полезно, колко хора очакваш, има ли специални нужди..."
         />
       </FormCard>
     </AppShell>

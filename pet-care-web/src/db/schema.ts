@@ -55,13 +55,6 @@ export const eventCommentStatusEnum = pgEnum("event_comment_status", [
   "hidden",
 ]);
 
-export const eventProposalStatusEnum = pgEnum("event_proposal_status", [
-  "pending",
-  "approved",
-  "rejected",
-  "converted",
-]);
-
 export const users = pgTable(
   "users",
   {
@@ -229,42 +222,6 @@ export const eventComments = pgTable(
   ],
 );
 
-export const eventProposals = pgTable(
-  "event_proposals",
-  {
-    id: serial("id").primaryKey(),
-    groupId: integer("group_id")
-      .notNull()
-      .references(() => petGroups.id, { onDelete: "cascade" }),
-    createdById: integer("created_by_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    title: varchar("title", { length: 180 }).notNull(),
-    eventType: eventTypeEnum("event_type").notNull(),
-    preferredStartsAt: timestamp("preferred_starts_at", { withTimezone: true }),
-    preferredTimeText: varchar("preferred_time_text", { length: 180 }),
-    location: text("location"),
-    capacity: integer("capacity").notNull().default(1),
-    notes: text("notes"),
-    status: eventProposalStatusEnum("status").notNull().default("pending"),
-    reviewedById: integer("reviewed_by_id").references(() => users.id, {
-      onDelete: "set null",
-    }),
-    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
-    convertedEventId: integer("converted_event_id").references(() => careEvents.id, {
-      onDelete: "set null",
-    }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-  },
-  (table) => [
-    index("event_proposals_group_id_idx").on(table.groupId),
-    index("event_proposals_created_by_id_idx").on(table.createdById),
-    index("event_proposals_status_idx").on(table.status),
-    index("event_proposals_reviewed_by_id_idx").on(table.reviewedById),
-  ],
-);
-
 export const usersRelations = relations(users, ({ many }) => ({
   pets: many(pets),
   createdGroups: many(petGroups),
@@ -272,8 +229,6 @@ export const usersRelations = relations(users, ({ many }) => ({
   createdEvents: many(careEvents),
   eventParticipants: many(eventParticipants),
   eventComments: many(eventComments),
-  createdEventProposals: many(eventProposals, { relationName: "proposal_creator" }),
-  reviewedEventProposals: many(eventProposals, { relationName: "proposal_reviewer" }),
 }));
 
 export const petsRelations = relations(pets, ({ one, many }) => ({
@@ -291,7 +246,6 @@ export const petGroupsRelations = relations(petGroups, ({ one, many }) => ({
   }),
   members: many(groupMembers),
   events: many(careEvents),
-  proposals: many(eventProposals),
 }));
 
 export const groupMembersRelations = relations(groupMembers, ({ one }) => ({
@@ -316,7 +270,6 @@ export const careEventsRelations = relations(careEvents, ({ one, many }) => ({
   }),
   participants: many(eventParticipants),
   comments: many(eventComments),
-  convertedProposals: many(eventProposals),
 }));
 
 export const eventParticipantsRelations = relations(eventParticipants, ({ one }) => ({
@@ -345,27 +298,6 @@ export const eventCommentsRelations = relations(eventComments, ({ one }) => ({
   }),
 }));
 
-export const eventProposalsRelations = relations(eventProposals, ({ one }) => ({
-  group: one(petGroups, {
-    fields: [eventProposals.groupId],
-    references: [petGroups.id],
-  }),
-  creator: one(users, {
-    fields: [eventProposals.createdById],
-    references: [users.id],
-    relationName: "proposal_creator",
-  }),
-  reviewer: one(users, {
-    fields: [eventProposals.reviewedById],
-    references: [users.id],
-    relationName: "proposal_reviewer",
-  }),
-  convertedEvent: one(careEvents, {
-    fields: [eventProposals.convertedEventId],
-    references: [careEvents.id],
-  }),
-}));
-
 export type UserRow = InferSelectModel<typeof users>;
 export type NewUser = InferInsertModel<typeof users>;
 export type PetRow = InferSelectModel<typeof pets>;
@@ -380,5 +312,3 @@ export type EventParticipantRow = InferSelectModel<typeof eventParticipants>;
 export type NewEventParticipant = InferInsertModel<typeof eventParticipants>;
 export type EventCommentRow = InferSelectModel<typeof eventComments>;
 export type NewEventComment = InferInsertModel<typeof eventComments>;
-export type EventProposalRow = InferSelectModel<typeof eventProposals>;
-export type NewEventProposal = InferInsertModel<typeof eventProposals>;

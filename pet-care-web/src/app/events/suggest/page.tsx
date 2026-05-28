@@ -1,5 +1,5 @@
-import { EventProposalFormView } from "@/components/app-ui";
+import { redirect } from "next/navigation";
 
 export default function SuggestEventPage() {
-  return <EventProposalFormView />;
+  redirect("/events/new");
 }

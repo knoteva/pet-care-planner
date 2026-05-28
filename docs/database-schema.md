@@ -20,11 +20,6 @@ erDiagram
 
   care_events ||--o{ event_comments : has
   users ||--o{ event_comments : writes
-
-  pet_groups ||--o{ event_proposals : receives
-  users ||--o{ event_proposals : proposes
-  users ||--o{ event_proposals : reviews
-  care_events ||--o{ event_proposals : converted_from
 ```
 
 ## Tables and Field Types
@@ -134,30 +129,26 @@ Unique constraint: `event_id + user_id`.
 | `updated_at` | `timestamp with time zone` | Default now |
 | `deleted_at` | `timestamp with time zone` | Optional soft delete |
 
-### `event_proposals`
-
-| Field | Type | Notes |
-|---|---|---|
-| `id` | `serial` | Primary key |
-| `group_id` | `integer` | FK to `pet_groups.id`, cascade delete |
-| `created_by_id` | `integer` | FK to `users.id` |
-| `title` | `varchar(180)` | Required |
-| `event_type` | `event_type` enum | Required |
-| `preferred_starts_at` | `timestamp with time zone` | Optional exact preferred date/time |
-| `preferred_time_text` | `varchar(180)` | Optional human-friendly time text |
-| `location` | `text` | Optional |
-| `capacity` | `integer` | Required, default `1` |
-| `notes` | `text` | Optional |
-| `status` | `event_proposal_status` enum | `pending`, `approved`, `rejected`, `converted` |
-| `reviewed_by_id` | `integer` | Optional FK to `users.id` |
-| `reviewed_at` | `timestamp with time zone` | Optional |
-| `converted_event_id` | `integer` | Optional FK to `care_events.id` |
-| `created_at` | `timestamp with time zone` | Default now |
-| `updated_at` | `timestamp with time zone` | Default now |
-
 ## Derived UI States
 
 Capacity labels such as under capacity, full capacity, and over capacity are not stored in the database. They are derived in services/UI from `care_events.capacity` and the count of joined `event_participants`.
+
+Event suggestions are not stored as a separate approval queue. A logged-in user who is a member of a group can create a `care_events` record directly. Group managers and admins can later edit, cancel, or moderate events through the service layer.
+
+## Access Rules Planned for Services
+
+| Action | Allowed actor |
+|---|---|
+| Register / login / logout | Visitor or logged-in user |
+| Join group by invite code | Logged-in user |
+| View group events | Group member or manager |
+| Create event in group | Group member or manager |
+| Edit/cancel own event | Event creator, group manager, or admin |
+| Edit/cancel any group event | Group manager or admin |
+| Join/leave event | Group member or manager |
+| Write comment | Group member or manager |
+| Hide reported comment | Group manager or admin |
+| Admin panel | Admin |
 
 ## Enum Values
 
@@ -170,4 +161,3 @@ Capacity labels such as under capacity, full capacity, and over capacity are not
 | `event_status` | `upcoming`, `current`, `past`, `canceled` |
 | `event_participant_status` | `joined`, `waitlisted`, `left`, `removed` |
 | `event_comment_status` | `visible`, `reported`, `hidden` |
-| `event_proposal_status` | `pending`, `approved`, `rejected`, `converted` |
