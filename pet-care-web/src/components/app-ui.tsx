@@ -29,6 +29,8 @@ import {
   StatCard,
   classNames,
 } from "./ui-primitives";
+import { DeletePetButton } from "./delete-pet-button";
+import { LogoutButton } from "./logout-button";
 
 export function DashboardView() {
   const primaryEvent = events[0];
@@ -155,6 +157,9 @@ function HomeSessionCard({ user }: { user: PublicUser }) {
             Админ панел
           </Link>
         ) : null}
+        <div className="flex justify-center">
+          <LogoutButton variant="button" />
+        </div>
       </div>
     </div>
   );
@@ -724,19 +729,22 @@ function GroupPanel() {
 
 function PetCard({ pet }: { pet: Pet }) {
   return (
-    <article className="rounded-lg border border-neutral-200 bg-white p-5">
+    <article className="flex flex-col rounded-lg border border-neutral-200 bg-white p-5">
       <PetAvatar name={pet.name} />
       <h3 className="mt-4 text-xl font-bold">{pet.name}</h3>
       <p className="text-sm text-neutral-600">
         {pet.breed} · {pet.age} г. · {pet.size}
       </p>
       <p className="mt-3 text-sm leading-6 text-neutral-600">{pet.notes}</p>
-      <Link
-        href="/pets/raya/edit"
-        className="mt-4 inline-flex rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold"
-      >
-        Редактирай
-      </Link>
+      <div className="mt-auto pt-4 flex flex-wrap gap-2">
+        <Link
+          href="/pets/raya/edit"
+          className="inline-flex rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold"
+        >
+          Редактирай
+        </Link>
+        <DeletePetButton petId={pet.id} />
+      </div>
     </article>
   );
 }
