@@ -8,7 +8,7 @@ export type CreatePetInput = Pick<
   "ownerId" | "name" | "type" | "breed" | "age" | "size" | "notes" | "photoUrl"
 >;
 
-// Дефинираме какво може да се променя (без ownerId)
+// Define updateable fields (excluding ownerId for security)
 export type UpdatePetInput = Partial<Omit<CreatePetInput, "ownerId">>;
 
 // Помощен тип за създаване от фронтенда (където ownerId идва от сесията)
