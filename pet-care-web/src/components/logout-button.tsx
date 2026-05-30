@@ -3,7 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function LogoutButton() {
+import { classNames } from "./ui-primitives";
+
+export function LogoutButton({
+  variant = "button",
+}: {
+  variant?: "button" | "link";
+}) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -22,7 +28,11 @@ export function LogoutButton() {
   return (
     <button
       type="button"
-      className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60"
+      className={classNames(
+        variant === "link"
+          ? "text-xs font-semibold text-neutral-600 hover:text-emerald-700 disabled:opacity-60"
+          : "rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60",
+      )}
       disabled={isSubmitting}
       onClick={handleLogout}
     >

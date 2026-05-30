@@ -14,7 +14,7 @@ import {
 import type { AdminPanelStat, AdminPanelUser } from "@/services/admin/admin-service";
 import type { PublicUser } from "@/services/auth/auth-service";
 import type { Pet, PetGroup } from "@/types";
-import { AppShell } from "./app-shell";
+import { AppShell, TopNavigation } from "./app-shell";
 import { AuthForm } from "./auth-form";
 import { EventCard, EventDetailsCard } from "./event-ui";
 import {
@@ -77,18 +77,7 @@ export function DashboardView() {
 export function HomeView({ currentUser }: { currentUser: PublicUser | null }) {
   return (
     <main className="min-h-screen bg-[#eef4f1] text-neutral-950">
-      <header className="bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-          <Link href="/" className="text-3xl font-black text-emerald-700">
-            Лапички
-          </Link>
-          <nav className="hidden items-center gap-6 text-sm font-bold text-neutral-700 md:flex">
-            <Link href="/dashboard">Демо табло</Link>
-            <Link href="/groups/yuzhen-park">Група</Link>
-            <Link href="/events/new">Ново събитие</Link>
-          </nav>
-        </div>
-      </header>
+      <TopNavigation user={currentUser} active="/" />
 
       <section className="mx-auto grid max-w-6xl items-start gap-8 px-5 py-8 lg:grid-cols-[340px_minmax(0,1fr)]">
         <aside className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
@@ -145,7 +134,7 @@ function HomeSessionCard({ user }: { user: PublicUser }) {
       <p className="text-sm font-semibold text-emerald-700">Активен профил</p>
       <h1 className="mt-2 text-2xl font-black">Здравей, {user.name}</h1>
       <p className="mt-2 text-sm leading-6 text-neutral-600">
-        Сесията ти е активна. Начало е публичната страница, но вече показва, че си влязла.
+        Сесията е активна. Начало е публичната страница, но вече показва активния профил.
       </p>
       <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm">
         <p className="break-all font-semibold">{user.email}</p>

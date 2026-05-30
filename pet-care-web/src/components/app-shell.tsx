@@ -8,36 +8,18 @@ import { classNames } from "./ui-primitives";
 type NavItem = {
   href: string;
   label: string;
-  icon: string;
   authOnly?: boolean;
   adminOnly?: boolean;
 };
 
-type NavSection = {
-  title: string;
-  items: NavItem[];
-};
-
-const navSections: NavSection[] = [
-  {
-    title: "Публично",
-    items: [{ href: "/", label: "Начало", icon: "⌂" }],
-  },
-  {
-    title: "След вход",
-    items: [
-      { href: "/dashboard", label: "Табло", icon: "▦", authOnly: true },
-      { href: "/pets", label: "Любимци", icon: "●", authOnly: true },
-      { href: "/groups", label: "Групи", icon: "◎", authOnly: true },
-    ],
-  },
-  {
-    title: "Управление",
-    items: [
-      { href: "/admin", label: "Админ", icon: "◇", adminOnly: true },
-      { href: "/api/docs", label: "API", icon: "{}" },
-    ],
-  },
+const navItems: NavItem[] = [
+  { href: "/", label: "Начало" },
+  { href: "/dashboard", label: "Табло", authOnly: true },
+  { href: "/groups", label: "Групи", authOnly: true },
+  { href: "/pets", label: "Любимци", authOnly: true },
+  { href: "/events/new", label: "Ново събитие", authOnly: true },
+  { href: "/admin", label: "Админ", adminOnly: true },
+  { href: "/api/docs", label: "API" },
 ];
 
 export async function AppShell({
@@ -53,91 +35,103 @@ export async function AppShell({
 
   return (
     <div className="min-h-screen bg-[#f5f7f4] text-neutral-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col lg:flex-row">
-        <aside className="border-b border-neutral-200 bg-white/90 px-4 py-4 lg:w-64 lg:border-b-0 lg:border-r lg:px-5 lg:py-6">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-lg bg-emerald-700 text-lg font-black text-white">
-              Л
-            </span>
-            <span>
-              <span className="block text-lg font-bold">Лапички</span>
-              <span className="block text-xs text-neutral-500">
-                планер за грижа
-              </span>
-            </span>
-          </Link>
+      <TopNavigation user={user} active={active} />
 
-          <nav className="mt-6 grid gap-4">
-            {navSections.map((section) => {
-              const visibleItems = section.items.filter((item) => {
-                if (item.adminOnly) {
-                  return user?.role === "admin";
-                }
-
-                if (item.authOnly) {
-                  return Boolean(user);
-                }
-
-                return true;
-              });
-
-              if (visibleItems.length === 0) {
-                return null;
-              }
-
-              return (
-                <div key={section.title}>
-                  <p className="px-3 text-[11px] font-black uppercase tracking-normal text-neutral-400">
-                    {section.title}
-                  </p>
-                  <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-1">
-                    {visibleItems.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        aria-current={active === item.href ? "page" : undefined}
-                        className={classNames(
-                          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
-                          active === item.href
-                            ? "bg-emerald-700 text-white"
-                            : "text-neutral-700 hover:bg-emerald-50 hover:text-emerald-900",
-                        )}
-                      >
-                        <span aria-hidden="true" className="w-5 text-center">
-                          {item.icon}
-                        </span>
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </nav>
-
-          <div className="mt-6 hidden rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 lg:block">
-            <p className="font-semibold">Демо данни</p>
-            <p className="mt-1 text-amber-800">
-              Част от екраните вече са вързани към Neon. Останалите все още
-              използват примерни данни до следващите backend стъпки.
-            </p>
-          </div>
-        </aside>
-
-        <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8">
-          <HeaderBar user={user} />
-          <div
-            className={classNames(
-              "mt-6 grid gap-6",
-              aside ? "xl:grid-cols-[minmax(0,1fr)_360px]" : "",
-            )}
-          >
-            <section>{children}</section>
-            {aside ? <aside className="space-y-5">{aside}</aside> : null}
-          </div>
-        </main>
-      </div>
+      <main className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+        <HeaderBar user={user} />
+        <div
+          className={classNames(
+            "mt-6 grid gap-6",
+            aside ? "xl:grid-cols-[minmax(0,1fr)_360px]" : "",
+          )}
+        >
+          <section>{children}</section>
+          {aside ? <aside className="space-y-5">{aside}</aside> : null}
+        </div>
+      </main>
     </div>
+  );
+}
+
+export function TopNavigation({
+  user,
+  active,
+}: {
+  user: PublicUser | null;
+  active?: string;
+}) {
+  const visibleItems = navItems.filter((item) => {
+    if (item.adminOnly) {
+      return user?.role === "admin";
+    }
+
+    if (item.authOnly) {
+      return Boolean(user);
+    }
+
+    return true;
+  });
+
+  return (
+    <header className="border-b border-neutral-200 bg-white shadow-sm">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-7">
+          <Link href="/" className="text-3xl font-black tracking-normal text-emerald-700">
+            Лапички
+          </Link>
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-neutral-700">
+            {visibleItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active === item.href ? "page" : undefined}
+                className={classNames(
+                  "transition hover:text-emerald-700",
+                  active === item.href ? "text-emerald-700" : "",
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 lg:justify-end">
+          {user ? (
+            <div className="flex items-center gap-2 text-right">
+              <span className="grid size-9 shrink-0 place-items-center rounded-full border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700">
+                {user.name.slice(0, 1)}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-neutral-800">{user.name}</p>
+                <div className="flex items-center justify-end gap-1.5 text-xs font-semibold text-neutral-600">
+                  <Link href="/" className="hover:text-emerald-700">
+                    Начало
+                  </Link>
+                  <span aria-hidden="true">|</span>
+                  <LogoutButton variant="link" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <Link
+                href="/login"
+                className="rounded-lg border border-neutral-200 bg-white px-3 py-2 transition hover:bg-neutral-50"
+              >
+                Вход
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-lg bg-emerald-700 px-3 py-2 text-white transition hover:bg-emerald-800"
+              >
+                Регистрация
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
   );
 }
 
@@ -145,43 +139,11 @@ function HeaderBar({ user }: { user: PublicUser | null }) {
   const displayName = user?.name ?? "гост";
 
   return (
-    <header className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="text-sm font-medium text-emerald-700">
-          Здравей, {displayName}
-        </p>
-        <h1 className="text-2xl font-bold tracking-normal text-neutral-950">
-          План за разходки и грижа
-        </h1>
-      </div>
-      <div className="flex flex-wrap gap-2 text-xs font-bold text-neutral-600">
-        {user ? (
-          <>
-            <span className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1">
-              {user.role === "admin" ? "admin" : "user"}
-            </span>
-            <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-800">
-              реална сесия
-            </span>
-            <LogoutButton />
-          </>
-        ) : (
-          <>
-            <Link
-              href="/login"
-              className="rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 transition hover:bg-neutral-100"
-            >
-              Вход
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-800 transition hover:bg-emerald-100"
-            >
-              Регистрация
-            </Link>
-          </>
-        )}
-      </div>
+    <header className="rounded-lg border border-neutral-200 bg-white p-4">
+      <p className="text-sm font-medium text-emerald-700">Здравей, {displayName}</p>
+      <h1 className="text-2xl font-bold tracking-normal text-neutral-950">
+        План за разходки и грижа
+      </h1>
     </header>
   );
 }
