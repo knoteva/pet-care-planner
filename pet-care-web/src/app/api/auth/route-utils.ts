@@ -53,6 +53,27 @@ export function clearAuthCookieResponse() {
 
   return response;
 }
+export function clearAuthCookieRedirectResponse(request: Request, fallbackPath = "/") {
+  const requestUrl = new URL(request.url);
+  const redirectParam = requestUrl.searchParams.get("redirect") ?? fallbackPath;
+  let redirectUrl = new URL(redirectParam, requestUrl.origin);
+
+  if (redirectUrl.origin !== requestUrl.origin) {
+    redirectUrl = new URL(fallbackPath, requestUrl.origin);
+  }
+
+  const response = NextResponse.redirect(redirectUrl, { status: 303 });
+
+  response.cookies.set(AUTH_COOKIE_NAME, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+  });
+
+  return response;
+}
 
 export function authErrorResponse(error: unknown) {
   if (error instanceof AuthError) {
