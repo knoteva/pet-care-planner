@@ -11,8 +11,8 @@ export function LogoutButton({
         type="submit"
         className={classNames(
           variant === "link"
-            ? "text-xs font-semibold text-neutral-600 hover:text-emerald-700"
-            : "rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 transition hover:bg-neutral-100",
+            ? "cursor-pointer text-xs font-semibold text-neutral-600 hover:text-emerald-700"
+            : "cursor-pointer rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 py-1 transition hover:bg-neutral-100",
         )}
       >
         Изход
