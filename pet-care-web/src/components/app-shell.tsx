@@ -100,7 +100,7 @@ export function TopNavigation({
           {user ? (
             <div className="flex items-center gap-2 text-right">
               <span className="grid size-9 shrink-0 place-items-center rounded-full border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700">
-                {user.name.slice(0, 1)}
+                {user.name.split(" ").slice(0, 2).map(w => w[0]).join("")}
               </span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-neutral-800">{user.name}</p>
