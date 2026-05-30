@@ -1,5 +1,8 @@
 import { PetFormView } from "@/components/app-ui";
+import { requireCurrentSessionUser } from "@/services/auth/session";
 
-export default function NewPetPage() {
+export default async function NewPetPage() {
+  await requireCurrentSessionUser("/pets/new");
+
   return <PetFormView />;
 }

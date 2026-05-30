@@ -1,5 +1,8 @@
 import { EventPageView } from "@/components/app-ui";
+import { requireCurrentSessionUser } from "@/services/auth/session";
 
-export default function EventPage() {
+export default async function EventPage() {
+  await requireCurrentSessionUser("/events/sabotna-razhodka");
+
   return <EventPageView />;
 }

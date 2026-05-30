@@ -36,6 +36,15 @@ const demoAccounts = [
   { label: "Потребител", email: "kate_user@paws.bg" },
 ];
 
+function getAuthRedirectPath() {
+  const redirectTo = new URLSearchParams(window.location.search).get("redirect");
+
+  if (redirectTo?.startsWith("/") && !redirectTo.startsWith("//")) {
+    return redirectTo;
+  }
+
+  return "/dashboard";
+}
 async function readAuthResponse(response: Response) {
   try {
     return (await response.json()) as AuthApiResponse;
@@ -97,7 +106,7 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
 
       setMessage(isLogin ? "Входът е успешен." : "Профилът е създаден.");
       router.refresh();
-      router.push("/dashboard");
+      router.push(getAuthRedirectPath());
     } catch {
       setError("Не може да се осъществи връзка със сървъра.");
     } finally {

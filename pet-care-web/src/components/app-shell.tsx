@@ -2,9 +2,23 @@ import Link from "next/link";
 
 import type { PublicUser } from "@/services/auth/auth-service";
 import { getCurrentSessionUser } from "@/services/auth/session";
+import { LogoutButton } from "./logout-button";
 import { classNames } from "./ui-primitives";
 
-const navSections = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: string;
+  authOnly?: boolean;
+  adminOnly?: boolean;
+};
+
+type NavSection = {
+  title: string;
+  items: NavItem[];
+};
+
+const navSections: NavSection[] = [
   {
     title: "Публично",
     items: [{ href: "/", label: "Начало", icon: "⌂" }],
@@ -12,9 +26,9 @@ const navSections = [
   {
     title: "След вход",
     items: [
-      { href: "/dashboard", label: "Табло", icon: "▦" },
-      { href: "/pets", label: "Любимци", icon: "●" },
-      { href: "/groups", label: "Групи", icon: "◎" },
+      { href: "/dashboard", label: "Табло", icon: "▦", authOnly: true },
+      { href: "/pets", label: "Любимци", icon: "●", authOnly: true },
+      { href: "/groups", label: "Групи", icon: "◎", authOnly: true },
     ],
   },
   {
@@ -55,38 +69,48 @@ export async function AppShell({
 
           <nav className="mt-6 grid gap-4">
             {navSections.map((section) => {
-              const visibleItems = section.items.filter((item) => !item.adminOnly || user?.role === "admin");
+              const visibleItems = section.items.filter((item) => {
+                if (item.adminOnly) {
+                  return user?.role === "admin";
+                }
+
+                if (item.authOnly) {
+                  return Boolean(user);
+                }
+
+                return true;
+              });
 
               if (visibleItems.length === 0) {
                 return null;
               }
 
               return (
-              <div key={section.title}>
-                <p className="px-3 text-[11px] font-black uppercase tracking-normal text-neutral-400">
-                  {section.title}
-                </p>
-                <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-1">
-                  {visibleItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      aria-current={active === item.href ? "page" : undefined}
-                      className={classNames(
-                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
-                        active === item.href
-                          ? "bg-emerald-700 text-white"
-                          : "text-neutral-700 hover:bg-emerald-50 hover:text-emerald-900",
-                      )}
-                    >
-                      <span aria-hidden="true" className="w-5 text-center">
-                        {item.icon}
-                      </span>
-                      {item.label}
-                    </Link>
-                  ))}
+                <div key={section.title}>
+                  <p className="px-3 text-[11px] font-black uppercase tracking-normal text-neutral-400">
+                    {section.title}
+                  </p>
+                  <div className="mt-2 grid grid-cols-2 gap-2 lg:grid-cols-1">
+                    {visibleItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        aria-current={active === item.href ? "page" : undefined}
+                        className={classNames(
+                          "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition",
+                          active === item.href
+                            ? "bg-emerald-700 text-white"
+                            : "text-neutral-700 hover:bg-emerald-50 hover:text-emerald-900",
+                        )}
+                      >
+                        <span aria-hidden="true" className="w-5 text-center">
+                          {item.icon}
+                        </span>
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
               );
             })}
           </nav>
@@ -139,6 +163,7 @@ function HeaderBar({ user }: { user: PublicUser | null }) {
             <span className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-800">
               реална сесия
             </span>
+            <LogoutButton />
           </>
         ) : (
           <>

@@ -1,5 +1,9 @@
 import { redirect } from "next/navigation";
 
-export default function SuggestEventPage() {
+import { requireCurrentSessionUser } from "@/services/auth/session";
+
+export default async function SuggestEventPage() {
+  await requireCurrentSessionUser("/events/suggest");
+
   redirect("/events/new");
 }
