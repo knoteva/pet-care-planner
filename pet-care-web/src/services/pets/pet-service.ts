@@ -10,19 +10,19 @@ export type CreatePetInput = Pick<
 
 export type UpdatePetInput = Partial<Omit<CreatePetInput, "ownerId">>;
 
-export async function listPetsByOwner(ownerId: number) {
+export async function listPetsForUser(userId: number) {
   return db
     .select()
     .from(pets)
-    .where(and(eq(pets.ownerId, ownerId), isNull(pets.deletedAt)))
+    .where(and(eq(pets.ownerId, userId), isNull(pets.deletedAt)))
     .orderBy(asc(pets.name));
 }
 
-export async function getPetForOwner(petId: number, ownerId: number) {
+export async function getPetForUser(petId: number, userId: number) {
   const [pet] = await db
     .select()
     .from(pets)
-    .where(and(eq(pets.id, petId), eq(pets.ownerId, ownerId), isNull(pets.deletedAt)))
+    .where(and(eq(pets.id, petId), eq(pets.ownerId, userId), isNull(pets.deletedAt)))
     .limit(1);
 
   return pet ?? null;
@@ -34,21 +34,21 @@ export async function createPet(input: CreatePetInput) {
   return pet;
 }
 
-export async function updatePetForOwner(petId: number, ownerId: number, input: UpdatePetInput) {
+export async function updatePetForUser(petId: number, userId: number, input: UpdatePetInput) {
   const [pet] = await db
     .update(pets)
     .set({ ...input, updatedAt: new Date() })
-    .where(and(eq(pets.id, petId), eq(pets.ownerId, ownerId), isNull(pets.deletedAt)))
+    .where(and(eq(pets.id, petId), eq(pets.ownerId, userId), isNull(pets.deletedAt)))
     .returning();
 
   return pet ?? null;
 }
 
-export async function softDeletePetForOwner(petId: number, ownerId: number) {
+export async function softDeletePetForUser(petId: number, userId: number) {
   const [pet] = await db
     .update(pets)
     .set({ deletedAt: new Date(), updatedAt: new Date() })
-    .where(and(eq(pets.id, petId), eq(pets.ownerId, ownerId), isNull(pets.deletedAt)))
+    .where(and(eq(pets.id, petId), eq(pets.ownerId, userId), isNull(pets.deletedAt)))
     .returning();
 
   return pet ?? null;

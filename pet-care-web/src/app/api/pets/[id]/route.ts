@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCurrentSessionUser } from "@/services/auth/session";
-import { softDeletePetForOwner } from "@/services/pets/pet-service";
+import { softDeletePetForUser } from "@/services/pets/pet-service";
 
 export const runtime = "nodejs";
 
@@ -19,7 +19,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Невалиден ID." }, { status: 400 });
   }
 
-  const pet = await softDeletePetForOwner(petId, user.id);
+  const pet = await softDeletePetForUser(petId, user.id);
   if (!pet) {
     return NextResponse.json({ error: "Любимецът не е намерен." }, { status: 404 });
   }

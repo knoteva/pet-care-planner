@@ -173,10 +173,10 @@ export const comments: EventComment[] = [
 ];
 
 export const participants = [
-  { id: 1, name: "Мария", pet: "Рая", status: "потвърдено" },
-  { id: 2, name: "Иван", pet: "Макс", status: "потвърдено" },
-  { id: 3, name: "Елена", pet: "Бела", status: "потвърдено" },
-  { id: 4, name: "Николай", pet: "помощник", status: "без любимец" },
+  { id: 1, userId: 1, name: "Мария", pet: "Рая", status: "потвърдено" },
+  { id: 2, userId: 2, name: "Иван", pet: "Макс", status: "потвърдено" },
+  { id: 3, userId: 3, name: "Елена", pet: "Бела", status: "потвърдено" },
+  { id: 4, userId: 4, name: "Николай", pet: "помощник", status: "без любимец" },
 ];
 
 export const dashboardStats = [
