@@ -5,15 +5,15 @@ import {
   adminUsers,
   dashboardStats,
   groupMembers,
-  events,
+  events as mockEvents,
   groups,
   moderationQueue,
   participants,
-  pets,
+  pets as mockPets,
 } from "@/services/mock-data";
 import type { AdminPanelStat, AdminPanelUser } from "@/services/admin/admin-service";
 import type { PublicUser } from "@/services/auth/auth-service";
-import type { Pet, PetGroup } from "@/types";
+import type { CareEvent, Pet, PetGroup } from "@/types";
 import { AppShell, TopNavigation } from "./app-shell";
 import { AuthForm } from "./auth-form";
 import { EventCard, EventDetailsCard } from "./event-ui";
@@ -32,13 +32,13 @@ import {
 import { DeletePetButton } from "./delete-pet-button";
 import { LogoutButton } from "./logout-button";
 
-export function DashboardView() {
+export function DashboardView({ events = mockEvents }: { events?: CareEvent[] }) {
   const primaryEvent = events[0];
 
   return (
     <AppShell
       active="/dashboard"
-      aside={<EventDetailsCard event={primaryEvent} compact />}
+      aside={primaryEvent ? <EventDetailsCard event={primaryEvent} compact /> : undefined}
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {dashboardStats.map((stat) => (
@@ -52,11 +52,22 @@ export function DashboardView() {
           action="Ново събитие"
           href="/events/new"
         />
-        <div className="mt-3 grid gap-3">
-          {events.slice(0, 3).map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
+        {events.length > 0 ? (
+          <div className="mt-3 grid gap-3">
+            {events.slice(0, 3).map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-3">
+            <EmptyState
+              title="Още няма събития"
+              description="Създай или отвори групово събитие, за да се покаже в таблото."
+              actionLabel="Ново събитие"
+              href="/events/new"
+            />
+          </div>
+        )}
       </section>
 
       <section className="mt-6 grid gap-5 lg:grid-cols-2">
@@ -119,7 +130,7 @@ export function HomeView({ currentUser }: { currentUser: PublicUser | null }) {
           <section className="rounded-lg bg-white p-6 shadow-sm">
             <h2 className="text-xl font-black">Последни демо активности</h2>
             <div className="mt-4 grid gap-3">
-              {events.slice(0, 3).map((event) => (
+              {mockEvents.slice(0, 3).map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
@@ -244,7 +255,7 @@ export function AuthView({ mode }: { mode: "login" | "register" }) {
   );
 }
 
-export function PetsView() {
+export function PetsView({ pets }: { pets: Pet[] }) {
   return (
     <AppShell active="/pets" aside={<CareChecklistPreview />}>
       <SectionTitle
@@ -252,11 +263,22 @@ export function PetsView() {
         action="Добави любимец"
         href="/pets/new"
       />
-      <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {pets.map((pet) => (
-          <PetCard key={pet.id} pet={pet} />
-        ))}
-      </div>
+      {pets.length > 0 ? (
+        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {pets.map((pet) => (
+            <PetCard key={pet.id} pet={pet} />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4">
+          <EmptyState
+            title="Още няма любимци"
+            description="Добави първия си любимец, за да започнеш да координираш грижа с реални данни от базата."
+            actionLabel="Добави любимец"
+            href="/pets/new"
+          />
+        </div>
+      )}
     </AppShell>
   );
 }
@@ -285,7 +307,7 @@ export function GroupsView() {
 export function EventPageView() {
   return (
     <AppShell active="/dashboard" aside={<ParticipantPanel />}>
-      <EventDetailsCard event={events[0]} />
+      <EventDetailsCard event={mockEvents[0]} />
     </AppShell>
   );
 }
@@ -413,7 +435,7 @@ export function AdminView({
 }
 export function GroupDetailsView() {
   const group = groups[0];
-  const groupEvents = events.filter((event) => event.groupId === group.id);
+  const groupEvents = mockEvents.filter((event) => event.groupId === group.id);
 
   return (
     <AppShell
@@ -497,13 +519,18 @@ export function GroupDetailsView() {
   );
 }
 
-export function PetFormView() {
+export function PetFormView({
+  action,
+}: {
+  action?: React.ComponentProps<"form">["action"];
+}) {
   return (
     <AppShell active="/pets" aside={<FormGuidePanel title="Любимец" />}>
       <FormCard
         title="Добави любимец"
         description="Тези полета са подготвени за бъдещата таблица pets и create pet service."
         submitLabel="Запази любимец"
+        action={action}
       >
         <FormField name="name" label="Име" placeholder="Рая" />
         <FormSelect
@@ -534,9 +561,13 @@ export function PetFormView() {
   );
 }
 
-export function PetEditFormView() {
-  const pet = pets[0];
-
+export function PetEditFormView({
+  pet = mockPets[0],
+  action,
+}: {
+  pet?: Pet;
+  action?: React.ComponentProps<"form">["action"];
+} = {}) {
   return (
     <AppShell active="/pets" aside={<FormGuidePanel title="Редакция" />}>
       <FormCard
@@ -544,6 +575,7 @@ export function PetEditFormView() {
         description="Същата форма ще се използва от бъдещия update pet service."
         submitLabel="Запази промените"
         cancelHref="/pets"
+        action={action}
       >
         <FormField
           name="name"
@@ -693,7 +725,7 @@ function PetPanel() {
     <div className="rounded-lg border border-neutral-200 bg-white p-4">
       <h2 className="text-lg font-bold">Моите любимци</h2>
       <div className="mt-3 grid gap-3">
-        {pets.slice(0, 2).map((pet) => (
+        {mockPets.slice(0, 2).map((pet) => (
           <PetRow key={pet.id} pet={pet} />
         ))}
       </div>
@@ -738,7 +770,7 @@ function PetCard({ pet }: { pet: Pet }) {
       <p className="mt-3 text-sm leading-6 text-neutral-600">{pet.notes}</p>
       <div className="mt-auto pt-4 flex flex-wrap gap-2">
         <Link
-          href="/pets/raya/edit"
+          href={`/pets/${pet.id}/edit`}
           className="inline-flex rounded-lg border border-neutral-300 px-3 py-2 text-sm font-semibold"
         >
           Редактирай

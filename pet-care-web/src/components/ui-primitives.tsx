@@ -159,23 +159,25 @@ export function FormCard({
   description,
   submitLabel,
   cancelHref = "/dashboard",
+  action,
   children,
 }: {
   title: string;
   description: string;
   submitLabel: string;
   cancelHref?: string;
+  action?: React.ComponentProps<"form">["action"];
   children: React.ReactNode;
 }) {
   return (
     <section className="mx-auto max-w-3xl rounded-lg border border-neutral-200 bg-white p-6">
       <h2 className="text-2xl font-bold">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-neutral-600">{description}</p>
-      <form className="mt-6 grid gap-4">
+      <form action={action} className="mt-6 grid gap-4">
         {children}
         <div className="mt-2 flex flex-wrap gap-2">
           <button
-            type="button"
+            type="submit"
             className="rounded-lg bg-emerald-700 px-4 py-3 text-sm font-bold text-white"
           >
             {submitLabel}
