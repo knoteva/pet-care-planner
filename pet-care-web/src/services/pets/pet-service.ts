@@ -8,8 +8,15 @@ export type CreatePetInput = Pick<
   "ownerId" | "name" | "type" | "breed" | "age" | "size" | "notes" | "photoUrl"
 >;
 
+// Дефинираме какво може да се променя (без ownerId)
 export type UpdatePetInput = Partial<Omit<CreatePetInput, "ownerId">>;
 
+// Помощен тип за създаване от фронтенда (където ownerId идва от сесията)
+export type CreatePetPayload = Omit<CreatePetInput, "ownerId">;
+
+/**
+ * Списък с всички активни любимци на конкретен потребител.
+ */
 export async function listPetsForUser(userId: number) {
   return db
     .select()
@@ -18,6 +25,9 @@ export async function listPetsForUser(userId: number) {
     .orderBy(asc(pets.name));
 }
 
+/**
+ * Връща конкретен любимец, само ако той принадлежи на подадения потребител.
+ */
 export async function getPetForUser(petId: number, userId: number) {
   const [pet] = await db
     .select()
@@ -29,6 +39,10 @@ export async function getPetForUser(petId: number, userId: number) {
 }
 
 export async function createPet(input: CreatePetInput) {
+  if (!input.ownerId) {
+    throw new Error("Owner ID is required to create a pet.");
+  }
+
   const [pet] = await db.insert(pets).values(input).returning();
 
   return pet;
