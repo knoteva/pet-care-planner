@@ -8,10 +8,8 @@ export type AuthResult = {
   token: string;
 };
 
-export function createAuthResponse(result: AuthResult, status = 200) {
-  const response = NextResponse.json(result, { status });
-
-  response.cookies.set(AUTH_COOKIE_NAME, result.token, {
+function setAuthCookie(response: NextResponse, token: string) {
+  response.cookies.set(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -20,6 +18,26 @@ export function createAuthResponse(result: AuthResult, status = 200) {
   });
 
   return response;
+}
+
+export function createAuthResponse(result: AuthResult, status = 200) {
+  return setAuthCookie(NextResponse.json(result, { status }), result.token);
+}
+
+export function createAuthRedirectResponse(
+  result: AuthResult,
+  request: Request,
+  fallbackPath = "/dashboard",
+) {
+  const requestUrl = new URL(request.url);
+  const redirectParam = requestUrl.searchParams.get("redirect") ?? fallbackPath;
+  let redirectUrl = new URL(redirectParam, requestUrl.origin);
+
+  if (redirectUrl.origin !== requestUrl.origin) {
+    redirectUrl = new URL(fallbackPath, requestUrl.origin);
+  }
+
+  return setAuthCookie(NextResponse.redirect(redirectUrl, { status: 303 }), result.token);
 }
 
 export function clearAuthCookieResponse() {
@@ -47,6 +65,25 @@ export function authErrorResponse(error: unknown) {
     { error: "Възникна неочаквана грешка. Моля опитай отново." },
     { status: 500 },
   );
+}
+
+export function isFormRequest(request: Request) {
+  const contentType = request.headers.get("content-type") ?? "";
+
+  return (
+    contentType.includes("application/x-www-form-urlencoded") ||
+    contentType.includes("multipart/form-data")
+  );
+}
+
+export async function readAuthRequestBody(request: Request) {
+  if (!isFormRequest(request)) {
+    return readJsonBody(request);
+  }
+
+  const formData = await request.formData();
+
+  return Object.fromEntries(formData.entries());
 }
 
 export async function readJsonBody(request: Request) {

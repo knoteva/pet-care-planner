@@ -26,9 +26,15 @@ type AuthApiResponse = {
 };
 
 const demoCredentials = {
-  email: "demo@paws.bg",
-  password: "demo123",
+  email: "kate_user@paws.bg",
+  password: "kate123",
 };
+
+const demoAccounts = [
+  { label: "Админ", email: "kate_admin@paws.bg" },
+  { label: "Мениджър", email: "kate_manager@paws.bg" },
+  { label: "Потребител", email: "kate_user@paws.bg" },
+];
 
 async function readAuthResponse(response: Response) {
   try {
@@ -108,21 +114,26 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
         {isLogin ? "Добре дошла обратно" : "Регистрация в Лапички"}
       </h2>
 
-      <form className="mt-6 grid gap-4" onSubmit={handleSubmit}>
+      <form
+        action={isLogin ? "/api/auth/login?redirect=/dashboard" : "/api/auth/register?redirect=/dashboard"}
+        className="mt-6 grid gap-4"
+        method="post"
+        onSubmit={handleSubmit}
+      >
         {!isLogin ? (
           <AuthField name="name" label="Име" placeholder="Мария Петкова" />
         ) : null}
         <AuthField
           name="email"
           label="Имейл"
-          placeholder={demoCredentials.email}
+          placeholder=""
           type="email"
           autoComplete="email"
         />
         <AuthField
           name="password"
           label="Парола"
-          placeholder={isLogin ? demoCredentials.password : "Минимум 8 символа"}
+          placeholder={isLogin ? "" : "Минимум 8 символа"}
           type="password"
           autoComplete={isLogin ? "current-password" : "new-password"}
         />
@@ -156,9 +167,18 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
         </button>
       </form>
 
-      <p className="mt-4 text-sm text-neutral-600">
-        Демо достъп: <span className="font-semibold">demo@paws.bg / demo123</span>
-      </p>
+      <div className="mt-4 rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-950">
+        <p className="font-bold">Тестови профили</p>
+        <div className="mt-2 grid gap-1.5">
+          {demoAccounts.map((account) => (
+            <p key={account.email} className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between">
+              <span className="font-semibold">{account.label}</span>
+              <span className="break-all">{account.email}</span>
+            </p>
+          ))}
+        </div>
+        <p className="mt-2 text-emerald-800">Парола за всички: <span className="font-semibold">kate123</span></p>
+      </div>
       <p className="mt-4 text-sm text-neutral-600">
         {isLogin ? "Нямаш профил?" : "Вече имаш профил?"} {" "}
         <Link href={isLogin ? "/register" : "/login"} className="font-bold text-emerald-700">

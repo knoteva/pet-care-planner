@@ -12,6 +12,7 @@ import {
   pets,
 } from "@/services/mock-data";
 import type { AdminPanelStat, AdminPanelUser } from "@/services/admin/admin-service";
+import type { PublicUser } from "@/services/auth/auth-service";
 import type { Pet, PetGroup } from "@/types";
 import { AppShell } from "./app-shell";
 import { AuthForm } from "./auth-form";
@@ -73,7 +74,7 @@ export function DashboardView() {
   );
 }
 
-export function HomeView() {
+export function HomeView({ currentUser }: { currentUser: PublicUser | null }) {
   return (
     <main className="min-h-screen bg-[#eef4f1] text-neutral-950">
       <header className="bg-white">
@@ -91,7 +92,7 @@ export function HomeView() {
 
       <section className="mx-auto grid max-w-6xl items-start gap-8 px-5 py-8 lg:grid-cols-[340px_minmax(0,1fr)]">
         <aside className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
-          <AuthForm mode="login" variant="home" />
+          {currentUser ? <HomeSessionCard user={currentUser} /> : <AuthForm mode="login" variant="home" />}
         </aside>
 
         <div className="grid gap-5">
@@ -138,6 +139,37 @@ export function HomeView() {
   );
 }
 
+function HomeSessionCard({ user }: { user: PublicUser }) {
+  return (
+    <div>
+      <p className="text-sm font-semibold text-emerald-700">Активен профил</p>
+      <h1 className="mt-2 text-2xl font-black">Здравей, {user.name}</h1>
+      <p className="mt-2 text-sm leading-6 text-neutral-600">
+        Сесията ти е активна. Начало е публичната страница, но вече показва, че си влязла.
+      </p>
+      <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm">
+        <p className="break-all font-semibold">{user.email}</p>
+        <p className="mt-1 text-neutral-600">Роля: {user.role === "admin" ? "admin" : "user"}</p>
+      </div>
+      <div className="mt-5 grid gap-2">
+        <Link
+          href="/dashboard"
+          className="rounded-lg bg-emerald-700 px-4 py-3 text-center text-sm font-black text-white transition hover:bg-emerald-800"
+        >
+          Към таблото
+        </Link>
+        {user.role === "admin" ? (
+          <Link
+            href="/admin"
+            className="rounded-lg border border-neutral-300 bg-white px-4 py-3 text-center text-sm font-bold transition hover:bg-neutral-50"
+          >
+            Админ панел
+          </Link>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 export function AuthView({ mode }: { mode: "login" | "register" }) {
   const isLogin = mode === "login";
 
@@ -155,11 +187,11 @@ export function AuthView({ mode }: { mode: "login" | "register" }) {
             {!isLogin ? (
               <FormField name="name" label="Име" placeholder="Мария Петкова" />
             ) : null}
-            <FormField name="email" label="Имейл" placeholder="demo@paws.bg" />
+            <FormField name="email" label="Имейл" placeholder="kate_user@paws.bg" />
             <FormField
               name="password"
               label="Парола"
-              placeholder="demo123"
+              placeholder="kate123"
               type="password"
             />
             {!isLogin ? (
@@ -179,7 +211,7 @@ export function AuthView({ mode }: { mode: "login" | "register" }) {
           </form>
           <p className="mt-4 text-sm text-neutral-600">
             Демо достъп:{" "}
-            <span className="font-semibold">demo@paws.bg / demo123</span>
+            <span className="font-semibold">kate_user@paws.bg / kate123</span>
           </p>
           <p className="mt-4 text-sm text-neutral-600">
             {isLogin ? "Нямаш профил?" : "Вече имаш профил?"}{" "}
