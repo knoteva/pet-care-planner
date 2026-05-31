@@ -137,7 +137,8 @@ export function EventDetailsCard({
               </button>
             </form>
           )}
-                    <ShareLinkButton />
+          {/* TODO: Да се направи: без любимец */}
+          <ShareLinkButton />
         </div>
       ) : null}
 
@@ -151,47 +152,53 @@ export function EventDetailsCard({
                   key={comment.id}
                   className="rounded-lg bg-neutral-50 p-3 text-sm text-neutral-700"
                 >
-                  {comment.authorName ? (
-                    <p className="mb-1 font-semibold text-neutral-900">{comment.authorName}</p>
-                  ) : null}
-                  <p>{comment.text}</p>
-                  {comment.canManage ? (
-                    <div className="mt-3 grid gap-2 border-t border-neutral-200 pt-3">
-                      {editCommentAction ? (
-                        <details>
-                          <summary className="cursor-pointer text-sm font-bold text-emerald-700">Редактирай</summary>
-                          <form action={editCommentAction} className="mt-2 grid gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      {comment.authorName ? (
+                        <p className="font-semibold text-neutral-900">{comment.authorName}</p>
+                      ) : null}
+                      <p className="mt-1 break-words leading-6">{comment.text}</p>
+                    </div>
+                    {comment.canManage ? (
+                      <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+                        {editCommentAction ? (
+                          <details className="group">
+                            <summary className="inline-flex cursor-pointer list-none rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50 marker:content-[''] [&::-webkit-details-marker]:hidden">
+                              Редактирай
+                            </summary>
+                            <form action={editCommentAction} className="mt-2 grid min-w-72 gap-2 rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
+                              <input name="commentId" type="hidden" value={comment.id} />
+                              <textarea
+                                name="text"
+                                className="min-h-20 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600"
+                                defaultValue={comment.text}
+                                minLength={2}
+                                maxLength={500}
+                                required
+                              />
+                              <button
+                                type="submit"
+                                className="w-fit rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white transition hover:bg-emerald-800"
+                              >
+                                Запази
+                              </button>
+                            </form>
+                          </details>
+                        ) : null}
+                        {deleteCommentAction ? (
+                          <form action={deleteCommentAction}>
                             <input name="commentId" type="hidden" value={comment.id} />
-                            <textarea
-                              name="text"
-                              className="min-h-20 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600"
-                              defaultValue={comment.text}
-                              minLength={2}
-                              maxLength={500}
-                              required
-                            />
                             <button
                               type="submit"
-                              className="w-fit rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white"
+                              className="rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-sm font-bold text-rose-700 transition hover:bg-rose-50"
                             >
-                              Запази
+                              Изтрий
                             </button>
                           </form>
-                        </details>
-                      ) : null}
-                      {deleteCommentAction ? (
-                        <form action={deleteCommentAction}>
-                          <input name="commentId" type="hidden" value={comment.id} />
-                          <button
-                            type="submit"
-                            className="rounded-lg border border-rose-200 px-3 py-2 text-sm font-bold text-rose-700"
-                          >
-                            Изтрий
-                          </button>
-                        </form>
-                      ) : null}
-                    </div>
-                  ) : null}
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               ))
             ) : (
