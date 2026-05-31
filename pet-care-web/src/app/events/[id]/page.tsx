@@ -2,8 +2,8 @@ import { notFound, redirect } from "next/navigation";
 
 import { EventPageView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
-import { createEventComment, listEventComments } from "@/services/comments/comment-service";
-import { getEventForViewer, joinEvent, leaveEvent } from "@/services/events/event-service";
+import { createEventComment, listEventComments, softDeleteEventComment, updateEventComment } from "@/services/comments/comment-service";
+import { getEventForViewer, joinEvent, leaveEvent, listEventParticipantsForViewer } from "@/services/events/event-service";
 import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
 import type { CareEvent, EventComment } from "@/types";
 
@@ -37,7 +37,10 @@ function toCareEvent(event: NonNullable<Awaited<ReturnType<typeof getEventForVie
   };
 }
 
-function toComment(comment: Awaited<ReturnType<typeof listEventComments>>[number]): EventComment & { authorName: string } {
+function toComment(
+  comment: Awaited<ReturnType<typeof listEventComments>>[number],
+  user: Awaited<ReturnType<typeof requireCurrentSessionUser>>,
+): EventComment & { authorName: string; canManage: boolean } {
   return {
     id: comment.id,
     eventId: comment.eventId,
@@ -46,6 +49,7 @@ function toComment(comment: Awaited<ReturnType<typeof listEventComments>>[number
     createdAt: comment.createdAt.toISOString(),
     updatedAt: comment.updatedAt.toISOString(),
     authorName: comment.authorName,
+    canManage: user.role === "admin" || comment.userId === user.id,
   };
 }
 
@@ -66,7 +70,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     notFound();
   }
 
-  const comments = (await listEventComments(resolvedEventId)).map(toComment);
+  const [commentRows, participants] = await Promise.all([
+    listEventComments(resolvedEventId),
+    listEventParticipantsForViewer(resolvedEventId, user),
+  ]);
+  const comments = commentRows.map((comment) => toComment(comment, user));
 
   async function createCommentAction(formData: FormData) {
     "use server";
@@ -80,6 +88,45 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
     try {
       await createEventComment(actionUser, resolvedEventId, text);
+    } catch (error) {
+      redirectWithFormError(eventPath, error);
+    }
+
+    redirect(eventPath);
+  }
+
+  async function updateCommentAction(formData: FormData) {
+    "use server";
+
+    const actionUser = await requireCurrentSessionUser(eventPath);
+    const commentId = parseId(String(formData.get("commentId") ?? ""));
+    const text = String(formData.get("text") ?? "").trim();
+
+    if (!commentId || !text) {
+      redirectWithFormError(eventPath, new Error("Коментарът не може да е празен."));
+    }
+
+    try {
+      await updateEventComment(commentId, actionUser, text);
+    } catch (error) {
+      redirectWithFormError(eventPath, error);
+    }
+
+    redirect(eventPath);
+  }
+
+  async function deleteCommentAction(formData: FormData) {
+    "use server";
+
+    const actionUser = await requireCurrentSessionUser(eventPath);
+    const commentId = parseId(String(formData.get("commentId") ?? ""));
+
+    if (!commentId) {
+      redirectWithFormError(eventPath, new Error("Невалиден коментар."));
+    }
+
+    try {
+      await softDeleteEventComment(commentId, actionUser);
     } catch (error) {
       redirectWithFormError(eventPath, error);
     }
@@ -119,7 +166,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     <EventPageView
       event={{ ...toCareEvent(event), commentCount: comments.length }}
       comments={comments}
+      participants={participants}
       commentAction={createCommentAction}
+      editCommentAction={updateCommentAction}
+      deleteCommentAction={deleteCommentAction}
       joinAction={joinEventAction}
       leaveAction={leaveEventAction}
       errorMessage={errorMessage}

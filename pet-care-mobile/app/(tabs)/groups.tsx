@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Text, TextInput, View } from "react-native";
 
 import * as api from "@/src/services/api";
-import { Badge, BrandHeader, Card, EmptyState, ErrorBanner, LoadingState, PrimaryButton, RequireLogin, Screen, SecondaryButton, SectionTitle, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
+import { AppHeader, Badge, Card, EmptyState, ErrorBanner, LoadingState, PrimaryButton, RequireLogin, Screen, SectionTitle, Subtitle, SuccessBanner, Title, Eyebrow } from "@/src/components/mobile-ui";
 import { useAuth } from "@/src/state/auth-context";
 
 export default function GroupsScreen() {
@@ -74,20 +74,16 @@ export default function GroupsScreen() {
 
   return (
     <Screen>
-      <BrandHeader subtitle="моите групи" />
+      <AppHeader subtitle="групи" />
       <Card>
-        <Eyebrow>Групи</Eyebrow>
-        <Title>Квартална грижа</Title>
+        <Eyebrow>Квартална грижа</Eyebrow>
+        <Title>Моите групи</Title>
         <Subtitle>Виж групите, в които участваш. Нови групи и събития се управляват през web, а тук можеш да се включиш с код.</Subtitle>
       </Card>
       <ErrorBanner message={error} />
-      {message ? (
-        <Card tone="green">
-          <Text style={groupStyles.successText}>{message}</Text>
-        </Card>
-      ) : null}
+      <SuccessBanner message={message} />
       <Card>
-        <SectionTitle>Вход с код за покана</SectionTitle>
+        <SectionTitle>Код за покана</SectionTitle>
         <TextInput
           style={groupStyles.inviteInput}
           placeholder="Напр. PAWS-SOUTH"
@@ -98,10 +94,7 @@ export default function GroupsScreen() {
         />
         <PrimaryButton disabled={joining} onPress={() => void handleJoinGroup()}>{joining ? "Добавяне..." : "Присъедини се"}</PrimaryButton>
       </Card>
-      <View style={groupStyles.sectionHeader}>
-        <SectionTitle>Моите групи</SectionTitle>
-        <SecondaryButton disabled={loading} onPress={() => void loadGroups()}>{loading ? "Зарежда..." : "Обнови"}</SecondaryButton>
-      </View>
+      <SectionTitle>Групи</SectionTitle>
       {loading && groups.length === 0 ? <LoadingState /> : null}
       {!loading && groups.length === 0 ? <EmptyState title="Няма групи" text="Въведи код за покана или създай група през web приложението." /> : null}
       <View style={groupStyles.list}>
@@ -122,11 +115,6 @@ export default function GroupsScreen() {
 }
 
 const groupStyles = {
-  successText: {
-    fontSize: 14,
-    fontWeight: "800" as const,
-    color: "#047857",
-  },
   inviteInput: {
     marginTop: 12,
     borderRadius: 8,
@@ -137,12 +125,6 @@ const groupStyles = {
     paddingVertical: 12,
     fontSize: 15,
     color: "#0f172a",
-  },
-  sectionHeader: {
-    flexDirection: "row" as const,
-    justifyContent: "space-between" as const,
-    alignItems: "center" as const,
-    gap: 12,
   },
   list: {
     gap: 12,

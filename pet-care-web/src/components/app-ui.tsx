@@ -8,7 +8,6 @@ import {
   events as mockEvents,
   groups as mockGroups,
   moderationQueue,
-  participants,
   pets as mockPets,
 } from "@/services/mock-data";
 import type { AdminPanelStat, AdminPanelUser, AdminUserDetails } from "@/services/admin/admin-service";
@@ -331,6 +330,14 @@ type GroupMemberDisplay = {
   joinedAt: string;
 };
 
+type EventParticipantView = {
+  id: number;
+  userId: number;
+  name: string;
+  petName?: string | null;
+  status: "joined" | "waitlisted" | "left" | "removed";
+};
+
 export function GroupsView({
   groups = mockGroups,
   pagination,
@@ -365,24 +372,32 @@ export function GroupsView({
 export function EventPageView({
   event = mockEvents[0],
   comments,
+  participants = [],
   commentAction,
+  editCommentAction,
+  deleteCommentAction,
   joinAction,
   leaveAction,
   errorMessage,
 }: {
   event?: CareEvent;
-  comments?: Array<EventComment & { authorName?: string }>;
+  comments?: Array<EventComment & { authorName?: string; canManage?: boolean }>;
+  participants?: EventParticipantView[];
   commentAction?: React.ComponentProps<"form">["action"];
+  editCommentAction?: React.ComponentProps<"form">["action"];
+  deleteCommentAction?: React.ComponentProps<"form">["action"];
   joinAction?: React.ComponentProps<"form">["action"];
   leaveAction?: React.ComponentProps<"form">["action"];
   errorMessage?: string;
 }) {
   return (
-    <AppShell active="/dashboard" aside={<ParticipantPanel />}>
+    <AppShell active="/dashboard" aside={<ParticipantPanel participants={participants} />}>
       <EventDetailsCard
         event={event}
         comments={comments}
         commentAction={commentAction}
+        editCommentAction={editCommentAction}
+        deleteCommentAction={deleteCommentAction}
         joinAction={joinAction}
         leaveAction={leaveAction}
         errorMessage={errorMessage}
@@ -1048,29 +1063,38 @@ function GroupCard({ group }: { group: PetGroup }) {
   );
 }
 
-function ParticipantPanel() {
+function ParticipantPanel({ participants }: { participants: EventParticipantView[] }) {
+  const statusLabels: Record<EventParticipantView["status"], string> = {
+    joined: "потвърдено",
+    waitlisted: "изчаква",
+    left: "отписан",
+    removed: "премахнат",
+  };
+
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-5">
       <h2 className="text-lg font-bold">Участници</h2>
       <div className="mt-3 grid gap-3">
-        {participants.map((participant) => (
-          <div
-            key={participant.id}
-            className="flex items-center justify-between gap-3"
-          >
-            <div>
-              <p className="font-semibold">{participant.name}</p>
-              <p className="text-sm text-neutral-500">{participant.pet}</p>
-            </div>
-            <Badge
-              tone={
-                participant.status === "без любимец" ? "neutral" : "success"
-              }
+        {participants.length > 0 ? (
+          participants.map((participant) => (
+            <div
+              key={participant.id}
+              className="flex items-center justify-between gap-3"
             >
-              {participant.status}
-            </Badge>
-          </div>
-        ))}
+              <div>
+                <p className="font-semibold">{participant.name}</p>
+                <p className="text-sm text-neutral-500">{participant.petName ?? "без любимец"}</p>
+              </div>
+              <Badge tone={participant.status === "waitlisted" ? "warning" : "success"}>
+                {statusLabels[participant.status]}
+              </Badge>
+            </div>
+          ))
+        ) : (
+          <p className="rounded-lg bg-neutral-50 p-3 text-sm text-neutral-600">
+            Още няма участници.
+          </p>
+        )}
       </div>
     </div>
   );

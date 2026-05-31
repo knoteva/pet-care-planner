@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
 import * as api from "@/src/services/api";
-import { Badge, BrandHeader, Card, EmptyState, ErrorBanner, LoadingState, RequireLogin, Screen, SecondaryButton, SectionTitle, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
+import { AppHeader, Badge, Card, EmptyState, ErrorBanner, LoadingState, RequireLogin, Screen, SectionTitle, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
 import { useAuth } from "@/src/state/auth-context";
 import { formatPetMeta } from "@/src/utils/format";
 
@@ -46,19 +46,16 @@ export default function PetsScreen() {
 
   return (
     <Screen>
-      <BrandHeader subtitle="любимци" />
+      <AppHeader subtitle="любимци" />
       <Card>
         <Eyebrow>Профил</Eyebrow>
         <Title>Моите любимци</Title>
         <Subtitle>Mobile приложението показва любимците от реалната база. Добавяне и редакция засега остават в web приложението.</Subtitle>
       </Card>
       <ErrorBanner message={error} />
-      <View style={petStyles.sectionHeader}>
-        <SectionTitle>Списък</SectionTitle>
-        <SecondaryButton disabled={loading} onPress={() => void loadPets()}>{loading ? "Зарежда..." : "Обнови"}</SecondaryButton>
-      </View>
+      <SectionTitle>Списък</SectionTitle>
       {loading && pets.length === 0 ? <LoadingState /> : null}
-      {!loading && pets.length === 0 ? <EmptyState title="Няма любимци" text="Добави любимец през web приложението, после обнови този екран." /> : null}
+      {!loading && pets.length === 0 ? <EmptyState title="Няма любимци" text="Добави любимец през web приложението, после отвори този екран отново." /> : null}
       <View style={petStyles.list}>
         {pets.map((pet) => (
           <Card key={pet.id}>
@@ -81,12 +78,6 @@ export default function PetsScreen() {
 }
 
 const petStyles = {
-  sectionHeader: {
-    flexDirection: "row" as const,
-    justifyContent: "space-between" as const,
-    alignItems: "center" as const,
-    gap: 12,
-  },
   list: {
     gap: 12,
   },

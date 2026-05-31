@@ -2,7 +2,7 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { BrandHeader, Card, ErrorBanner, Field, PrimaryButton, Screen, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
+import { AppHeader, Card, ErrorBanner, Field, PrimaryButton, Screen, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
 import { useAuth } from "@/src/state/auth-context";
 
 export default function RegisterScreen() {
@@ -48,11 +48,11 @@ export default function RegisterScreen() {
   if (user) {
     return (
       <Screen>
-        <BrandHeader subtitle="мобилен профил" />
-        <Card tone="green">
-          <Eyebrow>Вече си влязла</Eyebrow>
+        <AppHeader subtitle="профил" />
+        <Card>
+          <Eyebrow>Профил</Eyebrow>
           <Title>{user.name}</Title>
-          <Subtitle>Можеш да продължиш към таблото или да излезеш от профила през таб Профил.</Subtitle>
+          <Subtitle>Вече си в профил. Можеш да продължиш към таблото.</Subtitle>
           <PrimaryButton onPress={() => router.replace("/")}>Към таблото</PrimaryButton>
         </Card>
       </Screen>
@@ -61,7 +61,7 @@ export default function RegisterScreen() {
 
   return (
     <Screen>
-      <BrandHeader subtitle="нов профил" />
+      <AppHeader subtitle="нов профил" />
       <Card>
         <Eyebrow>Регистрация</Eyebrow>
         <Title>Създай профил</Title>

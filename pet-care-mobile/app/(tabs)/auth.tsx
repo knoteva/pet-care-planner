@@ -2,7 +2,7 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { BrandHeader, Card, DemoProfiles, ErrorBanner, Field, PrimaryButton, Screen, SecondaryButton, Subtitle, Title, Eyebrow, styles } from "@/src/components/mobile-ui";
+import { AppHeader, Card, DemoProfiles, ErrorBanner, Field, PrimaryButton, Screen, SecondaryButton, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
 import { useAuth } from "@/src/state/auth-context";
 
 export default function AuthScreen() {
@@ -32,15 +32,11 @@ export default function AuthScreen() {
   if (user) {
     return (
       <Screen>
-        <BrandHeader subtitle="мобилен профил" />
-        <Card tone="green">
-          <Eyebrow>Активна сесия</Eyebrow>
-          <Title>Здравей, {user.name}</Title>
+        <AppHeader subtitle="профил" />
+        <Card>
+          <Eyebrow>Профил</Eyebrow>
+          <Title>{user.name}</Title>
           <Subtitle>{user.email}</Subtitle>
-          <View style={profileStyles.roleBox}>
-            <Text style={profileStyles.roleLabel}>Роля</Text>
-            <Text style={profileStyles.roleValue}>{user.role === "admin" ? "admin" : "user"}</Text>
-          </View>
           <PrimaryButton onPress={() => router.replace("/")}>Към таблото</PrimaryButton>
           <SecondaryButton onPress={() => void signOut()}>Изход</SecondaryButton>
         </Card>
@@ -50,7 +46,7 @@ export default function AuthScreen() {
 
   return (
     <Screen>
-      <BrandHeader subtitle="мобилен достъп" />
+      <AppHeader subtitle="мобилен достъп" />
       <Card>
         <Eyebrow>Вход в профил</Eyebrow>
         <Title>Добре дошла обратно</Title>
@@ -74,25 +70,6 @@ export default function AuthScreen() {
 }
 
 const profileStyles = {
-  roleBox: {
-    marginTop: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#bbf7d0",
-    backgroundColor: "#ffffff",
-    padding: 12,
-  },
-  roleLabel: {
-    fontSize: 12,
-    fontWeight: "800" as const,
-    color: "#64748b",
-  },
-  roleValue: {
-    marginTop: 3,
-    fontSize: 16,
-    fontWeight: "900" as const,
-    color: "#047857",
-  },
   switchRow: {
     marginTop: 16,
     flexDirection: "row" as const,

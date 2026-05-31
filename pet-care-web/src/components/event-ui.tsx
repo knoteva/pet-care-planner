@@ -8,6 +8,7 @@ import { Badge, InfoItem } from "./ui-primitives";
 
 type EventCommentView = EventComment & {
   authorName?: string;
+  canManage?: boolean;
 };
 
 export function EventCard({ event }: { event: CareEvent }) {
@@ -62,6 +63,8 @@ export function EventDetailsCard({
   compact = false,
   comments = mockComments,
   commentAction,
+  editCommentAction,
+  deleteCommentAction,
   joinAction,
   leaveAction,
   errorMessage,
@@ -70,6 +73,8 @@ export function EventDetailsCard({
   compact?: boolean;
   comments?: EventCommentView[];
   commentAction?: React.ComponentProps<"form">["action"];
+  editCommentAction?: React.ComponentProps<"form">["action"];
+  deleteCommentAction?: React.ComponentProps<"form">["action"];
   joinAction?: React.ComponentProps<"form">["action"];
   leaveAction?: React.ComponentProps<"form">["action"];
   errorMessage?: string;
@@ -150,6 +155,43 @@ export function EventDetailsCard({
                     <p className="mb-1 font-semibold text-neutral-900">{comment.authorName}</p>
                   ) : null}
                   <p>{comment.text}</p>
+                  {comment.canManage ? (
+                    <div className="mt-3 grid gap-2 border-t border-neutral-200 pt-3">
+                      {editCommentAction ? (
+                        <details>
+                          <summary className="cursor-pointer text-sm font-bold text-emerald-700">Редактирай</summary>
+                          <form action={editCommentAction} className="mt-2 grid gap-2">
+                            <input name="commentId" type="hidden" value={comment.id} />
+                            <textarea
+                              name="text"
+                              className="min-h-20 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600"
+                              defaultValue={comment.text}
+                              minLength={2}
+                              maxLength={500}
+                              required
+                            />
+                            <button
+                              type="submit"
+                              className="w-fit rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white"
+                            >
+                              Запази
+                            </button>
+                          </form>
+                        </details>
+                      ) : null}
+                      {deleteCommentAction ? (
+                        <form action={deleteCommentAction}>
+                          <input name="commentId" type="hidden" value={comment.id} />
+                          <button
+                            type="submit"
+                            className="rounded-lg border border-rose-200 px-3 py-2 text-sm font-bold text-rose-700"
+                          >
+                            Изтрий
+                          </button>
+                        </form>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               ))
             ) : (

@@ -52,6 +52,31 @@ export async function createEventComment(user: PublicUser, eventId: number, text
   return comment;
 }
 
+export async function updateEventComment(commentId: number, user: PublicUser, text: string) {
+  const [comment] = await db
+    .select({ id: eventComments.id, userId: eventComments.userId })
+    .from(eventComments)
+    .where(and(eq(eventComments.id, commentId), isNull(eventComments.deletedAt)))
+    .limit(1);
+
+  if (!comment) {
+    return null;
+  }
+
+  if (!isAdmin(user) && comment.userId !== user.id) {
+    throw new Error("Only the comment author or an admin can edit this comment.");
+  }
+
+  const cleanText = textField(text, { label: "Коментар", min: 2, max: 500 });
+  const [updatedComment] = await db
+    .update(eventComments)
+    .set({ text: cleanText, updatedAt: new Date() })
+    .where(eq(eventComments.id, commentId))
+    .returning();
+
+  return updatedComment ?? null;
+}
+
 export async function softDeleteEventComment(commentId: number, user: PublicUser) {
   const [comment] = await db
     .select({ id: eventComments.id, userId: eventComments.userId })

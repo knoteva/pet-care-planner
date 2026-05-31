@@ -1,6 +1,8 @@
-import type { ReactNode } from "react";
 import { Link } from "expo-router";
+import type { ReactNode } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
+
+import { useAuth } from "@/src/state/auth-context";
 
 export function Screen({ children }: { children: ReactNode }) {
   return (
@@ -20,10 +22,28 @@ export function BrandHeader({ subtitle }: { subtitle?: string }) {
       <View style={styles.logoBox}>
         <Text style={styles.logoText}>Л</Text>
       </View>
-      <View>
+      <View style={styles.brandTextBox}>
         <Text style={styles.brand}>Лапички</Text>
         {subtitle ? <Text style={styles.brandSubline}>{subtitle}</Text> : null}
       </View>
+    </View>
+  );
+}
+
+export function AppHeader({ subtitle }: { subtitle?: string }) {
+  const { user, signOut } = useAuth();
+
+  return (
+    <View style={styles.appHeader}>
+      <BrandHeader subtitle={subtitle} />
+      {user ? (
+        <View style={styles.sessionActions}>
+          <Text numberOfLines={1} style={styles.sessionName}>{user.name}</Text>
+          <Pressable hitSlop={8} onPress={() => void signOut()}>
+            <Text style={styles.logoutText}>Изход</Text>
+          </Pressable>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -70,7 +90,9 @@ export function SecondaryButton({ children, disabled, onPress }: { children: Rea
 }
 
 export function Badge({ children, tone = "green" }: { children: ReactNode; tone?: "green" | "gray" | "amber" }) {
-  return <Text style={[styles.badge, styles[`${tone}Badge`]]}>{children}</Text>;
+  const toneStyle = tone === "amber" ? styles.amberBadge : tone === "gray" ? styles.grayBadge : styles.greenBadge;
+
+  return <Text style={[styles.badge, toneStyle]}>{children}</Text>;
 }
 
 export function ErrorBanner({ message }: { message?: string | null }) {
@@ -79,6 +101,16 @@ export function ErrorBanner({ message }: { message?: string | null }) {
   return (
     <View style={styles.errorBanner}>
       <Text style={styles.errorText}>{message}</Text>
+    </View>
+  );
+}
+
+export function SuccessBanner({ message }: { message?: string | null }) {
+  if (!message) return null;
+
+  return (
+    <View style={styles.successBanner}>
+      <Text style={styles.successText}>{message}</Text>
     </View>
   );
 }
@@ -104,6 +136,7 @@ export function EmptyState({ title, text }: { title: string; text: string }) {
 export function RequireLogin() {
   return (
     <Screen>
+      <AppHeader subtitle="мобилен достъп" />
       <Card>
         <Eyebrow>Достъп</Eyebrow>
         <Title>Влез в профил</Title>
@@ -143,10 +176,20 @@ export const styles = StyleSheet.create({
     paddingBottom: 34,
     gap: 14,
   },
+  appHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 14,
+  },
   brandRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    flexShrink: 1,
+  },
+  brandTextBox: {
+    flexShrink: 1,
   },
   logoBox: {
     width: 42,
@@ -170,6 +213,22 @@ export const styles = StyleSheet.create({
     marginTop: 1,
     fontSize: 12,
     color: "#64748b",
+  },
+  sessionActions: {
+    alignItems: "flex-end",
+    flexShrink: 1,
+  },
+  sessionName: {
+    maxWidth: 180,
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#0f172a",
+  },
+  logoutText: {
+    marginTop: 3,
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#047857",
   },
   card: {
     borderRadius: 8,
@@ -297,6 +356,19 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: "#991b1b",
+  },
+  successBanner: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    backgroundColor: "#ecfdf5",
+    padding: 12,
+  },
+  successText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "800",
+    color: "#047857",
   },
   stateBox: {
     borderRadius: 8,

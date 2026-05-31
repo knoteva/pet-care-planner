@@ -3,9 +3,25 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
 import * as api from "@/src/services/api";
-import { Badge, BrandHeader, Card, DemoProfiles, EmptyState, ErrorBanner, LoadingState, PrimaryButton, Screen, SecondaryButton, SectionTitle, Subtitle, Title, Eyebrow, styles } from "@/src/components/mobile-ui";
+import { AppHeader, Badge, Card, DemoProfiles, EmptyState, ErrorBanner, LoadingState, PrimaryButton, Screen, SecondaryButton, SectionTitle, Subtitle, SuccessBanner, Title, Eyebrow, styles } from "@/src/components/mobile-ui";
 import { formatCapacity, formatDuration, formatEventDate, formatEventStatus, formatEventType } from "@/src/utils/format";
 import { useAuth } from "@/src/state/auth-context";
+
+function actionErrorMessage(error: unknown) {
+  if (error instanceof api.ApiError) {
+    if (error.status === 403) {
+      return "Трябва да си член на групата, за да участваш или коментираш.";
+    }
+
+    if (error.status === 401) {
+      return "Сесията е изтекла. Влез отново.";
+    }
+
+    return error.message;
+  }
+
+  return error instanceof Error ? error.message : "Действието не беше записано.";
+}
 
 export default function DashboardScreen() {
   const { user, token, isLoading: authLoading } = useAuth();
@@ -16,6 +32,7 @@ export default function DashboardScreen() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [actionEventId, setActionEventId] = useState<number | null>(null);
+  const [eventFeedback, setEventFeedback] = useState<Record<number, { type: "success" | "error"; message: string }>>({});
 
   const loadEvents = useCallback(async () => {
     if (!token) return;
@@ -27,7 +44,7 @@ export default function DashboardScreen() {
       const response = await api.listEvents(token);
       setEvents(response.events);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Събитията не можаха да се заредят.");
+      setError(actionErrorMessage(requestError));
     } finally {
       setLoading(false);
     }
@@ -42,28 +59,55 @@ export default function DashboardScreen() {
     const joined = events.filter((event) => event.participationStatus === "joined").length;
 
     return [
-      { label: "Събития", value: String(events.length), detail: "видими за профила" },
-      { label: "Групи", value: String(groupNames.size), detail: "с активен достъп" },
-      { label: "Участия", value: String(joined), detail: "потвърдени" },
+      { label: "Събития", value: String(events.length) },
+      { label: "Групи", value: String(groupNames.size) },
+      { label: "Участия", value: String(joined) },
     ];
   }, [events]);
 
   async function toggleJoin(event: api.MobileEvent) {
     if (!token) return;
 
+    const wasJoined = event.participationStatus === "joined";
     setActionEventId(event.id);
     setError(null);
+    setEventFeedback((current) => {
+      const next = { ...current };
+      delete next[event.id];
+      return next;
+    });
 
     try {
-      if (event.participationStatus === "joined") {
+      if (wasJoined) {
         await api.leaveEvent(event.id, token);
       } else {
         await api.joinEvent(event.id, token);
       }
 
+      setEvents((current) =>
+        current.map((item) => {
+          if (item.id !== event.id) return item;
+
+          const nextCount = Math.max(0, (item.participantCount ?? 0) + (wasJoined ? -1 : 1));
+
+          return {
+            ...item,
+            participationStatus: wasJoined ? "left" : "joined",
+            participantCount: nextCount,
+          };
+        }),
+      );
+
+      setEventFeedback((current) => ({
+        ...current,
+        [event.id]: { type: "success", message: wasJoined ? "Участието е отменено." : "Участието е записано." },
+      }));
       await loadEvents();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Участието не беше записано.");
+      setEventFeedback((current) => ({
+        ...current,
+        [event.id]: { type: "error", message: actionErrorMessage(requestError) },
+      }));
     } finally {
       setActionEventId(null);
     }
@@ -84,7 +128,10 @@ export default function DashboardScreen() {
       const response = await api.listComments(eventId, token);
       setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Коментарите не можаха да се заредят.");
+      setEventFeedback((current) => ({
+        ...current,
+        [eventId]: { type: "error", message: actionErrorMessage(requestError) },
+      }));
     }
   }
 
@@ -94,7 +141,10 @@ export default function DashboardScreen() {
     const text = (commentInputs[eventId] ?? "").trim();
 
     if (text.length < 2) {
-      setError("Коментарът трябва да е поне 2 символа.");
+      setEventFeedback((current) => ({
+        ...current,
+        [eventId]: { type: "error", message: "Коментарът трябва да е поне 2 символа." },
+      }));
       return;
     }
 
@@ -106,9 +156,16 @@ export default function DashboardScreen() {
       setCommentInputs((current) => ({ ...current, [eventId]: "" }));
       const response = await api.listComments(eventId, token);
       setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
+      setEventFeedback((current) => ({
+        ...current,
+        [eventId]: { type: "success", message: "Коментарът е добавен." },
+      }));
       await loadEvents();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Коментарът не беше записан.");
+      setEventFeedback((current) => ({
+        ...current,
+        [eventId]: { type: "error", message: actionErrorMessage(requestError) },
+      }));
     } finally {
       setActionEventId(null);
     }
@@ -125,7 +182,7 @@ export default function DashboardScreen() {
   if (!user) {
     return (
       <Screen>
-        <BrandHeader subtitle="мобилен планер" />
+        <AppHeader subtitle="мобилен планер" />
         <Card>
           <Eyebrow>Квартална организация</Eyebrow>
           <Title>Един споделен план за разходки, грижа и помощ с любимците.</Title>
@@ -143,10 +200,10 @@ export default function DashboardScreen() {
 
   return (
     <Screen>
-      <BrandHeader subtitle={`здравей, ${user.name}`} />
+      <AppHeader subtitle="мобилно табло" />
       <Card tone="green">
-        <Eyebrow>Активен профил</Eyebrow>
-        <Title>План за грижа днес</Title>
+        <Eyebrow>Днес</Eyebrow>
+        <Title>План за грижа</Title>
         <Subtitle>{user.email}</Subtitle>
       </Card>
       <ErrorBanner message={error} />
@@ -155,14 +212,10 @@ export default function DashboardScreen() {
           <View key={stat.label} style={dashboardStyles.statCard}>
             <Text style={dashboardStyles.statLabel}>{stat.label}</Text>
             <Text style={dashboardStyles.statValue}>{stat.value}</Text>
-            <Text style={dashboardStyles.statDetail}>{stat.detail}</Text>
           </View>
         ))}
       </View>
-      <View style={dashboardStyles.sectionHeader}>
-        <SectionTitle>Събития</SectionTitle>
-        <SecondaryButton disabled={loading} onPress={() => void loadEvents()}>{loading ? "Зарежда..." : "Обнови"}</SecondaryButton>
-      </View>
+      <SectionTitle>Събития</SectionTitle>
       {loading && events.length === 0 ? <LoadingState /> : null}
       {!loading && events.length === 0 ? <EmptyState title="Няма събития" text="Влез в група с код за покана или създай събитие през web приложението." /> : null}
       <View style={dashboardStyles.list}>
@@ -171,6 +224,7 @@ export default function DashboardScreen() {
           const isExpanded = expandedEventId === event.id;
           const comments = commentsByEvent[event.id] ?? [];
           const actionInProgress = actionEventId === event.id;
+          const feedback = eventFeedback[event.id];
 
           return (
             <Card key={event.id}>
@@ -187,8 +241,10 @@ export default function DashboardScreen() {
                 <Text style={dashboardStyles.factText}>{event.commentCount ?? 0} коментара</Text>
               </View>
               {event.notes ? <Text style={dashboardStyles.eventNote}>{event.notes}</Text> : null}
+              {feedback?.type === "success" ? <SuccessBanner message={feedback.message} /> : null}
+              {feedback?.type === "error" ? <ErrorBanner message={feedback.message} /> : null}
               <PrimaryButton disabled={actionInProgress} onPress={() => void toggleJoin(event)}>
-                {isJoined ? "Няма да участвам" : "Ще участвам"}
+                {actionInProgress ? "Записване..." : isJoined ? "Няма да участвам" : "Ще участвам"}
               </PrimaryButton>
               <SecondaryButton disabled={actionInProgress} onPress={() => void toggleComments(event.id)}>
                 {isExpanded ? "Скрий коментарите" : "Коментари"}
@@ -243,17 +299,6 @@ const dashboardStyles = {
     fontWeight: "900" as const,
     color: "#047857",
   },
-  statDetail: {
-    marginTop: 3,
-    fontSize: 13,
-    color: "#475569",
-  },
-  sectionHeader: {
-    flexDirection: "row" as const,
-    justifyContent: "space-between" as const,
-    alignItems: "center" as const,
-    gap: 12,
-  },
   list: {
     gap: 12,
   },
@@ -286,6 +331,7 @@ const dashboardStyles = {
   },
   eventNote: {
     marginTop: 10,
+    marginBottom: 10,
     fontSize: 14,
     lineHeight: 21,
     color: "#475569",

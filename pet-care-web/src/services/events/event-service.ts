@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -7,6 +7,8 @@ import {
   eventParticipants,
   groupMembers,
   petGroups,
+  pets,
+  users,
   type NewCareEvent,
 } from "@/db/schema";
 import { isAdmin, requireGroupManager, requireGroupMember, type PublicUser } from "@/services/auth/auth-service";
@@ -87,7 +89,7 @@ function adminEventSelect(userId?: number) {
 
 export async function listEventsForUser(userId: number, options: { limit?: number; offset?: number } = {}) {
   return db
-    .select(eventSelect())
+    .select(eventSelect(userId))
     .from(careEvents)
     .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
     .innerJoin(groupMembers, eq(groupMembers.groupId, careEvents.groupId))
@@ -104,9 +106,9 @@ export async function listEventsForUser(userId: number, options: { limit?: numbe
     .offset(options.offset ?? 0);
 }
 
-export async function listEventsForAdmin(options: { limit?: number; offset?: number } = {}) {
+export async function listEventsForAdmin(options: { limit?: number; offset?: number } = {}, userId?: number) {
   return db
-    .select(adminEventSelect())
+    .select(adminEventSelect(userId))
     .from(careEvents)
     .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
     .where(and(isNull(careEvents.deletedAt), isNull(petGroups.deletedAt)))
@@ -116,13 +118,13 @@ export async function listEventsForAdmin(options: { limit?: number; offset?: num
 }
 
 export async function listEventsForViewer(user: PublicUser, options: { limit?: number; offset?: number } = {}) {
-  return isAdmin(user) ? listEventsForAdmin(options) : listEventsForUser(user.id, options);
+  return isAdmin(user) ? listEventsForAdmin(options, user.id) : listEventsForUser(user.id, options);
 }
 
 export async function listLatestEventsForViewer(user: PublicUser, options: { limit?: number; offset?: number } = {}) {
   const rows = isAdmin(user)
     ? await db
-        .select(adminEventSelect())
+        .select(adminEventSelect(user.id))
         .from(careEvents)
         .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
         .where(and(isNull(careEvents.deletedAt), isNull(petGroups.deletedAt)))
@@ -130,7 +132,7 @@ export async function listLatestEventsForViewer(user: PublicUser, options: { lim
         .limit(options.limit ?? 3)
         .offset(options.offset ?? 0)
     : await db
-        .select(eventSelect())
+        .select(eventSelect(user.id))
         .from(careEvents)
         .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
         .innerJoin(groupMembers, eq(groupMembers.groupId, careEvents.groupId))
@@ -154,7 +156,7 @@ export async function listUpcomingEventsForViewer(user: PublicUser, options: { l
 
   const rows = isAdmin(user)
     ? await db
-        .select(adminEventSelect())
+        .select(adminEventSelect(user.id))
         .from(careEvents)
         .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
         .where(and(gte(careEvents.startsAt, now), isNull(careEvents.deletedAt), isNull(petGroups.deletedAt)))
@@ -162,7 +164,7 @@ export async function listUpcomingEventsForViewer(user: PublicUser, options: { l
         .limit(options.limit ?? 100)
         .offset(options.offset ?? 0)
     : await db
-        .select(eventSelect())
+        .select(eventSelect(user.id))
         .from(careEvents)
         .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
         .innerJoin(groupMembers, eq(groupMembers.groupId, careEvents.groupId))
@@ -186,13 +188,50 @@ export async function listEventsForGroupForViewer(user: PublicUser, groupId: num
   await requireGroupMember(user, groupId);
 
   return db
-    .select(isAdmin(user) ? adminEventSelect() : eventSelect())
+    .select(isAdmin(user) ? adminEventSelect(user.id) : eventSelect(user.id))
     .from(careEvents)
     .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
     .where(and(eq(careEvents.groupId, groupId), isNull(careEvents.deletedAt), isNull(petGroups.deletedAt)))
     .orderBy(asc(careEvents.startsAt))
     .limit(options.limit ?? 100)
     .offset(options.offset ?? 0);
+}
+
+export async function listEventParticipantsForViewer(eventId: number, user: PublicUser) {
+  const [event] = await db
+    .select({ groupId: careEvents.groupId })
+    .from(careEvents)
+    .where(and(eq(careEvents.id, eventId), isNull(careEvents.deletedAt)))
+    .limit(1);
+
+  if (!event) {
+    throw new Error("Event not found.");
+  }
+
+  await requireGroupMember(user, event.groupId);
+
+  return db
+    .select({
+      id: eventParticipants.id,
+      eventId: eventParticipants.eventId,
+      userId: eventParticipants.userId,
+      name: users.name,
+      petName: pets.name,
+      status: eventParticipants.status,
+      joinedAt: eventParticipants.joinedAt,
+      leftAt: eventParticipants.leftAt,
+    })
+    .from(eventParticipants)
+    .innerJoin(users, eq(users.id, eventParticipants.userId))
+    .leftJoin(pets, and(eq(pets.id, eventParticipants.petId), isNull(pets.deletedAt)))
+    .where(
+      and(
+        eq(eventParticipants.eventId, eventId),
+        inArray(eventParticipants.status, ["joined", "waitlisted"]),
+        isNull(users.deletedAt),
+      ),
+    )
+    .orderBy(asc(eventParticipants.joinedAt), asc(users.name));
 }
 
 export async function getEventForUser(eventId: number, userId: number) {
