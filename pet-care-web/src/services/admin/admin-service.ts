@@ -31,7 +31,7 @@ async function getCount<T extends number>(query: Promise<Array<{ value: T }>>) {
   return Number(row?.value ?? 0);
 }
 
-export async function getAdminDashboardData() {
+export async function getAdminDashboardData(options: { limit?: number; offset?: number } = {}) {
   const [userCount, groupCount, petCount, signalCount, adminUsers] = await Promise.all([
     getCount(db.select({ value: count() }).from(users).where(isNull(users.deletedAt))),
     getCount(db.select({ value: count() }).from(petGroups).where(isNull(petGroups.deletedAt))),
@@ -53,7 +53,8 @@ export async function getAdminDashboardData() {
       .from(users)
       .where(isNull(users.deletedAt))
       .orderBy(desc(users.createdAt))
-      .limit(50),
+      .limit(options.limit ?? 50)
+      .offset(options.offset ?? 0),
   ]);
 
   return {

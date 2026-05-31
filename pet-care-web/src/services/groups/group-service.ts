@@ -7,7 +7,7 @@ import {
   users,
   type NewPetGroup,
 } from "@/db/schema";
-import { integerField, textField } from "@/services/validation";
+import { integerField, textField, ValidationError } from "@/services/validation";
 
 export type CreateGroupInput = Pick<NewPetGroup, "title" | "description" | "area" | "inviteCode" | "createdById">;
 
@@ -27,7 +27,7 @@ function validateGroupInput(input: CreateGroupInput) {
   };
 }
 
-export async function listGroupsForUser(userId: number) {
+export async function listGroupsForUser(userId: number, options: { limit?: number; offset?: number } = {}) {
   return db
     .select({
       id: petGroups.id,
@@ -49,7 +49,9 @@ export async function listGroupsForUser(userId: number) {
         isNull(petGroups.deletedAt),
       ),
     )
-    .orderBy(asc(petGroups.title));
+    .orderBy(asc(petGroups.title))
+    .limit(options.limit ?? 100)
+    .offset(options.offset ?? 0);
 }
 
 export async function getGroupForUser(groupId: number, userId: number) {
@@ -91,6 +93,53 @@ export async function createGroup(input: CreateGroupInput) {
   });
 
   return group;
+}
+
+export async function joinGroupByInviteCode(userId: number, inviteCode: string) {
+  const cleanUserId = integerField(userId, { label: "Потребител", min: 1, max: 2147483647 });
+  const cleanInviteCode = textField(inviteCode, {
+    label: "Код за покана",
+    min: 4,
+    max: 48,
+    pattern: /^[A-Z0-9-]+$/,
+  }).toUpperCase();
+
+  const [group] = await db
+    .select({ id: petGroups.id })
+    .from(petGroups)
+    .where(and(eq(petGroups.inviteCode, cleanInviteCode), isNull(petGroups.deletedAt)))
+    .limit(1);
+
+  if (!group) {
+    throw new ValidationError("Няма активна група с този код за покана.");
+  }
+
+  const [existingMembership] = await db
+    .select({ id: groupMembers.id, removedAt: groupMembers.removedAt })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, group.id), eq(groupMembers.userId, cleanUserId)))
+    .limit(1);
+
+  if (existingMembership && !existingMembership.removedAt) {
+    throw new ValidationError("Вече си член на тази група.");
+  }
+
+  if (existingMembership?.removedAt) {
+    const [membership] = await db
+      .update(groupMembers)
+      .set({ role: "member", removedAt: null, joinedAt: new Date() })
+      .where(eq(groupMembers.id, existingMembership.id))
+      .returning();
+
+    return membership;
+  }
+
+  const [membership] = await db
+    .insert(groupMembers)
+    .values({ groupId: group.id, userId: cleanUserId, role: "member" })
+    .returning();
+
+  return membership;
 }
 
 export async function listGroupMembers(groupId: number) {

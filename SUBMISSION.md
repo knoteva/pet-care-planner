@@ -26,13 +26,15 @@ kate_user@paws.bg     / kate123   regular user
 - Group roles: `member`, `manager`.
 - Admin-only admin panel.
 - Pets list/create/edit/delete for current user.
-- Groups list/create/details.
+- Groups list/create/details/join by invite code.
 - Group creator becomes manager.
 - Events list/create/details.
 - Create event only for admin or group manager.
 - Join/leave event for group members.
 - Event comments list/create.
 - Regular users can suggest an event through a lightweight request/comment flow.
+- REST API routes for auth, me, pets, groups, events, join/leave and comments.
+- Basic pagination for large Web lists.
 
 ## Implemented Database Tables
 
@@ -48,7 +50,7 @@ event_comments
 
 ## Web Screen Count
 
-The Web app has at least 18 page screens/routes, including public pages, dashboard, admin, pets, groups, events, API docs and legacy routes that redirect to database-backed sections.
+The Web app has at least 19 page screens/routes, including public pages, dashboard, admin, pets, groups, events, API docs and legacy routes that redirect to database-backed sections.
 
 ## Mobile Screen Count
 
@@ -62,7 +64,7 @@ pets
 groups
 ```
 
-The mobile app is intentionally scope-limited for this stage and will be connected to the same REST API in the final mobile milestone.
+The mobile app is intentionally scope-limited for this stage. The Web backend now exposes REST routes prepared for the mobile integration milestone.
 
 ## Architecture Notes
 
@@ -76,6 +78,7 @@ The mobile app is intentionally scope-limited for this stage and will be connect
 
 ```bash
 npm run typecheck
+npm run smoke:web
 npm run db:ping
 npm run db:check
 npm run build:web
@@ -87,9 +90,10 @@ npm run build:web
 2. Verify dashboard data loads from DB.
 3. Create/edit/delete a pet.
 4. View groups and group details.
-5. Join and leave an event.
-6. Add an event comment.
-7. Submit an event suggestion as regular user.
-8. Log in as `kate_manager@paws.bg` and create a group event.
-9. Log in as `kate_admin@paws.bg` and open the admin panel.
-10. Confirm non-admin users cannot access admin-only data.
+5. Join a group by invite code from `/groups/join`.
+6. Join and leave an event.
+7. Add an event comment.
+8. Submit an event suggestion as regular user.
+9. Log in as `kate_manager@paws.bg` and create a group event.
+10. Log in as `kate_admin@paws.bg` and open the admin panel.
+11. Confirm non-admin users cannot access admin-only data.

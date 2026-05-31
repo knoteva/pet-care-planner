@@ -5,7 +5,12 @@ import { EmptyState, FormCard, FormSelect, FormTextarea } from "@/components/ui-
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { createEventComment } from "@/services/comments/comment-service";
 import { listEventsForUser } from "@/services/events/event-service";
+import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
 import { listGroupsForUser } from "@/services/groups/group-service";
+
+type PageProps = {
+  searchParams?: Promise<{ error?: string | string[] }>;
+};
 
 function parseGroupId(value: FormDataEntryValue | null) {
   const id = Number(value);
@@ -13,9 +18,10 @@ function parseGroupId(value: FormDataEntryValue | null) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-export default async function SuggestEventPage() {
+export default async function SuggestEventPage({ searchParams }: PageProps) {
   const user = await requireCurrentSessionUser("/events/suggest");
   const groups = await listGroupsForUser(user.id);
+  const errorMessage = getFormError(searchParams ? await searchParams : undefined);
 
   async function suggestEventAction(formData: FormData) {
     "use server";
@@ -24,22 +30,31 @@ export default async function SuggestEventPage() {
     const groupId = parseGroupId(formData.get("groupId"));
     const text = String(formData.get("text") ?? "").trim();
 
-    if (!groupId || !text) {
-      redirect("/events/suggest");
+    if (!groupId) {
+      redirectWithFormError("/events/suggest", new Error("Избери група."));
+    }
+
+    if (!text) {
+      redirectWithFormError("/events/suggest", new Error("Опиши какво събитие предлагаш."));
     }
 
     const eventRows = await listEventsForUser(actionUser.id);
     const targetEvent = eventRows.find((event) => event.groupId === groupId);
 
     if (!targetEvent) {
-      redirect(`/groups/${groupId}`);
+      redirectWithFormError("/events/suggest", new Error("В тази група още няма активно събитие, към което да запишем предложението."));
     }
 
-    await createEventComment(
-      actionUser,
-      targetEvent.id,
-      `Предложение за ново събитие: ${text}`,
-    );
+    try {
+      await createEventComment(
+        actionUser,
+        targetEvent.id,
+        `Предложение за ново събитие: ${text}`,
+      );
+    } catch (error) {
+      redirectWithFormError("/events/suggest", error);
+    }
+
     redirect(`/events/${targetEvent.id}`);
   }
 
@@ -51,6 +66,7 @@ export default async function SuggestEventPage() {
           description="Членовете не публикуват директно нови събития. Предложението се записва като коментар към активно събитие в избраната група, за да го види мениджърът."
           submitLabel="Изпрати предложение"
           cancelHref="/groups"
+          errorMessage={errorMessage}
           action={suggestEventAction}
         >
           <FormSelect

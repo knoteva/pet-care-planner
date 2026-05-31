@@ -19,7 +19,9 @@
     "db:studio": "npm run db:studio -w pet-care-web",
     "db:check": "npm run db:check -w pet-care-web",
     "db:ping": "npm run db:ping -w pet-care-web",
-    "db:seed": "npm run db:seed -w pet-care-web"
+    "db:seed": "npm run db:seed -w pet-care-web",
+    "smoke:web": "npm run smoke -w pet-care-web",
+    "test:smoke": "npm run smoke:web"
   },
   "devDependencies": {
     "prettier": "^3.6.2"

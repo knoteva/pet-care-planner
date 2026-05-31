@@ -159,6 +159,7 @@ export function FormCard({
   description,
   submitLabel,
   cancelHref = "/dashboard",
+  errorMessage,
   action,
   children,
 }: {
@@ -166,6 +167,7 @@ export function FormCard({
   description: string;
   submitLabel: string;
   cancelHref?: string;
+  errorMessage?: string;
   action?: React.ComponentProps<"form">["action"];
   children: React.ReactNode;
 }) {
@@ -173,6 +175,14 @@ export function FormCard({
     <section className="mx-auto max-w-3xl rounded-lg border border-neutral-200 bg-white p-6">
       <h2 className="text-2xl font-bold">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-neutral-600">{description}</p>
+      {errorMessage ? (
+        <p
+          className="mt-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-800"
+          role="alert"
+        >
+          {errorMessage}
+        </p>
+      ) : null}
       <form action={action} className="mt-6 grid gap-4">
         {children}
         <div className="mt-2 flex flex-wrap gap-2">
@@ -307,5 +317,47 @@ export function FormTextarea({
         required={required}
       />
     </label>
+  );
+}
+export function PaginationControls({
+  page,
+  hasNext,
+  basePath,
+}: {
+  page: number;
+  hasNext: boolean;
+  basePath: string;
+}) {
+  if (page <= 1 && !hasNext) {
+    return null;
+  }
+
+  const previousPage = Math.max(1, page - 1);
+  const nextPage = page + 1;
+
+  return (
+    <nav className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-neutral-200 bg-white p-3 text-sm font-semibold">
+      <Link
+        aria-disabled={page <= 1}
+        className={classNames(
+          "rounded-lg border border-neutral-300 px-3 py-2",
+          page <= 1 ? "pointer-events-none text-neutral-400" : "text-neutral-800 hover:bg-neutral-50",
+        )}
+        href={`${basePath}?page=${previousPage}`}
+      >
+        Предишна
+      </Link>
+      <span className="text-neutral-600">Страница {page}</span>
+      <Link
+        aria-disabled={!hasNext}
+        className={classNames(
+          "rounded-lg border border-neutral-300 px-3 py-2",
+          hasNext ? "text-neutral-800 hover:bg-neutral-50" : "pointer-events-none text-neutral-400",
+        )}
+        href={`${basePath}?page=${nextPage}`}
+      >
+        Следваща
+      </Link>
+    </nav>
   );
 }

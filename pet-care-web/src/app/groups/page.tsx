@@ -1,6 +1,7 @@
 import { GroupsView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { listGroupsForUser } from "@/services/groups/group-service";
+import { getPageWindow, parsePage, resolvePageRows } from "@/services/pagination";
 import type { PetGroup } from "@/types";
 
 function toPetGroup(group: Awaited<ReturnType<typeof listGroupsForUser>>[number]): PetGroup {
@@ -16,9 +17,16 @@ function toPetGroup(group: Awaited<ReturnType<typeof listGroupsForUser>>[number]
   };
 }
 
-export default async function GroupsPage() {
-  const user = await requireCurrentSessionUser("/groups");
-  const groups = (await listGroupsForUser(user.id)).map(toPetGroup);
+type PageProps = {
+  searchParams?: Promise<{ page?: string | string[] }>;
+};
 
-  return <GroupsView groups={groups} />;
+export default async function GroupsPage({ searchParams }: PageProps) {
+  const user = await requireCurrentSessionUser("/groups");
+  const page = parsePage((await searchParams)?.page);
+  const groupRows = await listGroupsForUser(user.id, getPageWindow(page));
+  const { items, pagination } = resolvePageRows(groupRows, page, "/groups");
+  const groups = items.map(toPetGroup);
+
+  return <GroupsView groups={groups} pagination={pagination} />;
 }

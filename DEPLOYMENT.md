@@ -34,6 +34,9 @@ Do not commit `.env.local` or real secrets to GitHub.
 From the repository root:
 
 ```bash
+npm run typecheck -w pet-care-web
+npm run smoke:web
+
 git status
 git add .
 git commit -m "docs: polish submission documentation"
@@ -70,6 +73,7 @@ Use these routes for review:
 /pets/new
 /groups
 /groups/new
+/groups/join
 /events/new
 /events/suggest
 /api/docs
@@ -91,7 +95,7 @@ The Expo app is included in the repository and can be run locally:
 npm run dev:mobile
 ```
 
-For public review, share the Web Vercel URL first. The mobile app is a companion prototype and REST API integration is planned after the Web/backend milestone.
+For public review, share the Web Vercel URL first. The mobile app is a companion prototype; the Web backend now exposes REST routes for the upcoming mobile integration step.
 
 ## Deployment Troubleshooting
 
@@ -108,3 +112,11 @@ cd ..
 ```
 
 If Vercel fails during dependency install, confirm that the project uses `pet-care-web` as Root Directory and that `Install Command` is exactly `npm install`.
+
+Useful pre-deploy checks:
+
+```bash
+npm run typecheck -w pet-care-web
+npm run smoke:web
+npm run build:web
+```

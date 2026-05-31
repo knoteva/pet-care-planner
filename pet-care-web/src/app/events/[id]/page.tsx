@@ -4,7 +4,13 @@ import { EventPageView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { createEventComment, listEventComments } from "@/services/comments/comment-service";
 import { getEventForUser, joinEvent, leaveEvent } from "@/services/events/event-service";
+import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
 import type { CareEvent, EventComment } from "@/types";
+
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams?: Promise<{ error?: string | string[] }>;
+};
 
 function parseId(value: string) {
   const id = Number(value);
@@ -43,11 +49,7 @@ function toComment(comment: Awaited<ReturnType<typeof listEventComments>>[number
   };
 }
 
-export default async function EventPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function EventPage({ params, searchParams }: PageProps) {
   const user = await requireCurrentSessionUser("/dashboard");
   const eventId = parseId((await params).id);
 
@@ -56,7 +58,9 @@ export default async function EventPage({
   }
 
   const resolvedEventId = eventId;
+  const eventPath = `/events/${resolvedEventId}`;
   const event = await getEventForUser(resolvedEventId, user.id);
+  const errorMessage = getFormError(searchParams ? await searchParams : undefined);
 
   if (!event) {
     notFound();
@@ -67,32 +71,50 @@ export default async function EventPage({
   async function createCommentAction(formData: FormData) {
     "use server";
 
-    const actionUser = await requireCurrentSessionUser(`/events/${resolvedEventId}`);
+    const actionUser = await requireCurrentSessionUser(eventPath);
     const text = String(formData.get("text") ?? "").trim();
 
     if (!text) {
-      redirect(`/events/${resolvedEventId}`);
+      redirectWithFormError(eventPath, new Error("Коментарът не може да е празен."));
     }
 
-    await createEventComment(actionUser, resolvedEventId, text);
-    redirect(`/events/${resolvedEventId}`);
+    try {
+      await createEventComment(actionUser, resolvedEventId, text);
+    } catch (error) {
+      redirectWithFormError(eventPath, error);
+    }
+
+    redirect(eventPath);
   }
 
   async function joinEventAction() {
     "use server";
 
-    const actionUser = await requireCurrentSessionUser(`/events/${resolvedEventId}`);
-    await joinEvent(resolvedEventId, actionUser);
-    redirect(`/events/${resolvedEventId}`);
+    const actionUser = await requireCurrentSessionUser(eventPath);
+
+    try {
+      await joinEvent(resolvedEventId, actionUser);
+    } catch (error) {
+      redirectWithFormError(eventPath, error);
+    }
+
+    redirect(eventPath);
   }
 
   async function leaveEventAction() {
     "use server";
 
-    const actionUser = await requireCurrentSessionUser(`/events/${resolvedEventId}`);
-    await leaveEvent(resolvedEventId, actionUser);
-    redirect(`/events/${resolvedEventId}`);
+    const actionUser = await requireCurrentSessionUser(eventPath);
+
+    try {
+      await leaveEvent(resolvedEventId, actionUser);
+    } catch (error) {
+      redirectWithFormError(eventPath, error);
+    }
+
+    redirect(eventPath);
   }
+
   return (
     <EventPageView
       event={{ ...toCareEvent(event), commentCount: comments.length }}
@@ -100,6 +122,7 @@ export default async function EventPage({
       commentAction={createCommentAction}
       joinAction={joinEventAction}
       leaveAction={leaveEventAction}
+      errorMessage={errorMessage}
     />
   );
 }

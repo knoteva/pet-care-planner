@@ -63,6 +63,7 @@ export function EventDetailsCard({
   commentAction,
   joinAction,
   leaveAction,
+  errorMessage,
 }: {
   event: CareEvent;
   compact?: boolean;
@@ -70,6 +71,7 @@ export function EventDetailsCard({
   commentAction?: React.ComponentProps<"form">["action"];
   joinAction?: React.ComponentProps<"form">["action"];
   leaveAction?: React.ComponentProps<"form">["action"];
+  errorMessage?: string;
 }) {
   return (
     <article className="rounded-lg border border-neutral-200 bg-white p-5">
@@ -101,6 +103,12 @@ export function EventDetailsCard({
         <InfoItem label="Място" value={event.location} />
         <InfoItem label="Тип" value={eventTypeLabels[event.eventType]} />
       </dl>
+
+      {!compact && errorMessage ? (
+        <p className="mt-5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-800" role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
 
       {!compact ? (
         <div className="mt-5 flex flex-wrap gap-2">

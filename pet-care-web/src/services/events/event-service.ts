@@ -41,7 +41,7 @@ function validateCreateEventInput(input: CreateEventInput) {
   };
 }
 
-export async function listEventsForUser(userId: number) {
+export async function listEventsForUser(userId: number, options: { limit?: number; offset?: number } = {}) {
   return db
     .select({
       id: careEvents.id,
@@ -70,7 +70,9 @@ export async function listEventsForUser(userId: number) {
         isNull(petGroups.deletedAt),
       ),
     )
-    .orderBy(asc(careEvents.startsAt));
+    .orderBy(asc(careEvents.startsAt))
+    .limit(options.limit ?? 100)
+    .offset(options.offset ?? 0);
 }
 
 export async function getEventForUser(eventId: number, userId: number) {

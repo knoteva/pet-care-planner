@@ -13,11 +13,11 @@ The application supports groups, pets, care events, event participation and comm
 - Service-layer business logic for users, auth, pets, groups, events and comments.
 - Web dashboard connected to real database data.
 - Pets create/edit/delete for the logged-in user.
-- Groups create/view with creator assigned as group manager.
+- Groups create/view/join by invite code with creator assigned as group manager.
 - Events create/view for admins and group managers.
 - Event join/leave and comments for group members.
 - Regular members can suggest an event through a lightweight request/comment flow.
-- Admin panel reads real users and aggregate stats.
+- Admin panel reads real users and aggregate stats with basic pagination.
 - Expo mobile app includes 5 visual screens and is prepared for REST API integration.
 
 ## Demo Credentials
@@ -110,6 +110,7 @@ npm run dev:mobile
 ```bash
 npm run dev:web        # Start Next.js Web app
 npm run dev:mobile     # Start Expo web/mobile dev server
+npm run smoke:web
 npm run build:web      # Build Web app
 npm run typecheck      # Type-check all workspaces where available
 npm run db:ping        # Check database connection
@@ -117,11 +118,12 @@ npm run db:check       # Check Drizzle schema/migrations
 npm run db:migrate     # Apply Drizzle migrations
 npm run db:seed        # Seed demo data
 npm run db:studio      # Open Drizzle Studio
+npm run smoke:web      # Verify important Web routes/files exist
 ```
 
 ## Web Screens
 
-The Web app currently has 18 page screens:
+The Web app currently has 19 page screens:
 
 ```text
 /
@@ -136,6 +138,7 @@ The Web app currently has 18 page screens:
 /pets/raya/edit
 /groups
 /groups/new
+/groups/join
 /groups/[id]
 /groups/yuzhen-park
 /events/new
@@ -169,21 +172,26 @@ POST /api/auth/register
 POST /api/auth/login
 POST /api/auth/logout
 GET  /api/me
-GET/PATCH/DELETE /api/pets/[id]
+GET  /api/pets
+POST /api/pets
+GET  /api/pets/[id]
+PUT  /api/pets/[id]
+DELETE /api/pets/[id]
+GET  /api/groups
+POST /api/groups
+GET  /api/groups/[id]
+POST /api/groups/join
+GET  /api/events
+POST /api/events
+GET  /api/events/[id]
+POST /api/events/[id]/join
+DELETE /api/events/[id]/join
+GET  /api/events/[id]/comments
+POST /api/events/[id]/comments
 GET  /api/docs
 ```
 
-Planned mobile routes:
-
-```text
-GET  /api/events
-POST /api/events/[id]/join
-POST /api/events/[id]/leave
-GET  /api/events/[id]/comments
-POST /api/events/[id]/comments
-GET  /api/groups
-GET  /api/pets
-```
+The REST routes accept the Web session cookie and Bearer tokens, so the mobile app can use the same backend services.
 
 ## Reusable Components and Services
 
@@ -211,6 +219,8 @@ group-service.ts
 pet-service.ts
 user-service.ts
 validation.ts
+pagination.ts
+forms/form-errors.ts
 ```
 
 ## What Is Real vs Demo
@@ -230,7 +240,7 @@ Real database-backed features:
 Still demo or scope-limited:
 
 - Legacy static slug pages redirect to the real database-backed sections.
-- Invite link flow is prepared visually, not fully implemented.
+- Invite code join flow is implemented for logged-in users.
 - Mobile app is visual/scope-limited and not yet fully connected to REST API.
 - Advanced moderation and AI checklist generation are placeholders.
 
@@ -242,6 +252,7 @@ Recommended local checks before submission:
 npm run typecheck
 npm run db:ping
 npm run db:check
+npm run smoke:web
 npm run build:web
 ```
 
@@ -250,10 +261,11 @@ Manual Web checks:
 1. Open `/` and log in with `kate_user@paws.bg / kate123`.
 2. Open `/dashboard` and verify events, pets and groups load from the database.
 3. Open an event details page, join/leave the event and add a comment.
-4. Open `/events/suggest` as a regular user and submit a suggestion.
-5. Log out, then log in as `kate_manager@paws.bg / kate123`.
-6. Open `/events/new` and create an event for a managed group.
-7. Log in as `kate_admin@paws.bg / kate123` and open `/admin`.
-8. Verify a non-admin user cannot access admin-only data.
+4. Open `/groups/join` and test an invite code, for example `PAWS-SOUTH`.
+5. Open `/events/suggest` as a regular user and submit a suggestion.
+6. Log out, then log in as `kate_manager@paws.bg / kate123`.
+7. Open `/events/new` and create an event for a managed group.
+8. Log in as `kate_admin@paws.bg / kate123` and open `/admin`.
+9. Verify a non-admin user cannot access admin-only data.
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for Vercel deployment instructions and [SUBMISSION.md](./SUBMISSION.md) for a short evaluator-facing summary.

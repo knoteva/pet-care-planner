@@ -25,6 +25,7 @@ import {
   FormGuidePanel,
   FormSelect,
   FormTextarea,
+  PaginationControls,
   SectionTitle,
   StatCard,
   classNames,
@@ -265,7 +266,13 @@ export function AuthView({ mode }: { mode: "login" | "register" }) {
   );
 }
 
-export function PetsView({ pets }: { pets: Pet[] }) {
+export function PetsView({
+  pets,
+  pagination,
+}: {
+  pets: Pet[];
+  pagination?: PaginationView;
+}) {
   return (
     <AppShell active="/pets" aside={<CareChecklistPreview />}>
       <SectionTitle
@@ -289,9 +296,12 @@ export function PetsView({ pets }: { pets: Pet[] }) {
           />
         </div>
       )}
+      {pagination ? <PaginationControls {...pagination} /> : null}
     </AppShell>
   );
 }
+
+type PaginationView = { page: number; hasNext: boolean; basePath: string };
 
 type GroupMemberDisplay = {
   id: number;
@@ -302,7 +312,13 @@ type GroupMemberDisplay = {
   joinedAt: string;
 };
 
-export function GroupsView({ groups = mockGroups }: { groups?: PetGroup[] }) {
+export function GroupsView({
+  groups = mockGroups,
+  pagination,
+}: {
+  groups?: PetGroup[];
+  pagination?: PaginationView;
+}) {
   return (
     <AppShell active="/groups" aside={<InvitePanel />}>
       <SectionTitle title="Групи" action="Нова група" href="/groups/new" />
@@ -322,6 +338,7 @@ export function GroupsView({ groups = mockGroups }: { groups?: PetGroup[] }) {
           />
         </div>
       )}
+      {pagination ? <PaginationControls {...pagination} /> : null}
     </AppShell>
   );
 }
@@ -332,12 +349,14 @@ export function EventPageView({
   commentAction,
   joinAction,
   leaveAction,
+  errorMessage,
 }: {
   event?: CareEvent;
   comments?: Array<EventComment & { authorName?: string }>;
   commentAction?: React.ComponentProps<"form">["action"];
   joinAction?: React.ComponentProps<"form">["action"];
   leaveAction?: React.ComponentProps<"form">["action"];
+  errorMessage?: string;
 }) {
   return (
     <AppShell active="/dashboard" aside={<ParticipantPanel />}>
@@ -347,6 +366,7 @@ export function EventPageView({
         commentAction={commentAction}
         joinAction={joinAction}
         leaveAction={leaveAction}
+        errorMessage={errorMessage}
       />
     </AppShell>
   );
@@ -356,10 +376,12 @@ export function AdminView({
   access = "allowed",
   stats,
   users,
+  pagination,
 }: {
   access?: "allowed" | "anonymous" | "forbidden";
   stats: AdminPanelStat[];
   users: AdminPanelUser[];
+  pagination?: PaginationView;
 }) {
   const hasAccess = access === "allowed";
 
@@ -432,6 +454,7 @@ export function AdminView({
                   </div>
                 ))}
               </div>
+              {pagination ? <PaginationControls {...pagination} /> : null}
             </div>
 
             <AdminAuditPanel />
@@ -580,8 +603,10 @@ export function GroupDetailsView({
 
 export function PetFormView({
   action,
+  errorMessage,
 }: {
   action?: React.ComponentProps<"form">["action"];
+  errorMessage?: string;
 }) {
   return (
     <AppShell active="/pets" aside={<FormGuidePanel title="Любимец" />}>
@@ -589,6 +614,7 @@ export function PetFormView({
         title="Добави любимец"
         description="Тези полета са подготвени за бъдещата таблица pets и create pet service."
         submitLabel="Запази любимец"
+        errorMessage={errorMessage}
         action={action}
       >
         <FormField name="name" label="Име" placeholder="Рая" maxLength={120} />
@@ -624,9 +650,11 @@ export function PetFormView({
 export function PetEditFormView({
   pet = mockPets[0],
   action,
+  errorMessage,
 }: {
   pet?: Pet;
   action?: React.ComponentProps<"form">["action"];
+  errorMessage?: string;
 } = {}) {
   return (
     <AppShell active="/pets" aside={<FormGuidePanel title="Редакция" />}>
@@ -635,6 +663,7 @@ export function PetEditFormView({
         description="Същата форма ще се използва от бъдещия update pet service."
         submitLabel="Запази промените"
         cancelHref="/pets"
+        errorMessage={errorMessage}
         action={action}
       >
         <FormField
@@ -692,13 +721,20 @@ export function PetEditFormView({
   );
 }
 
-export function GroupFormView({ action }: { action?: React.ComponentProps<"form">["action"] }) {
+export function GroupFormView({
+  action,
+  errorMessage,
+}: {
+  action?: React.ComponentProps<"form">["action"];
+  errorMessage?: string;
+}) {
   return (
     <AppShell active="/groups" aside={<FormGuidePanel title="Група" />}>
       <FormCard
         title="Създай група"
         description="Собственикът на групата ще стане първият group manager."
         submitLabel="Създай група"
+        errorMessage={errorMessage}
         action={action}
       >
         <FormField
@@ -732,9 +768,11 @@ type EventGroupOption = { value: string; label: string };
 
 export function EventFormView({
   action,
+  errorMessage,
   groupOptions = mockGroups.map((group) => ({ value: String(group.id), label: group.title })),
 }: {
   action?: React.ComponentProps<"form">["action"];
+  errorMessage?: string;
   groupOptions?: EventGroupOption[];
 }) {
   if (groupOptions.length === 0) {
@@ -756,6 +794,7 @@ export function EventFormView({
         title="Ново събитие"
         description="Събитието се записва в базата и е видимо за членовете на избраната група."
         submitLabel="Публикувай събитие"
+        errorMessage={errorMessage}
         action={action}
       >
         <FormSelect name="groupId" label="Група" options={groupOptions} />
@@ -976,13 +1015,12 @@ function InvitePanel() {
       <div className="mt-4 rounded-lg bg-neutral-100 px-3 py-2 font-mono text-sm">
         PAWS-SOUTH
       </div>
-      <button
-        type="button"
-        disabled
-        className="mt-4 w-full cursor-not-allowed rounded-lg bg-neutral-200 px-4 py-2.5 text-sm font-bold text-neutral-500"
+      <Link
+        href="/groups/join"
+        className="mt-4 inline-flex w-full justify-center rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-800"
       >
-        Покани член (скоро)
-      </button>
+        Въведи код за покана
+      </Link>
     </div>
   );
 }

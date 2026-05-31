@@ -33,12 +33,14 @@ function validatePetInput<T extends Partial<CreatePetInput>>(input: T) {
 /**
  * Списък с всички активни любимци на конкретен потребител.
  */
-export async function listPetsForUser(userId: number) {
+export async function listPetsForUser(userId: number, options: { limit?: number; offset?: number } = {}) {
   return db
     .select()
     .from(pets)
     .where(and(eq(pets.ownerId, userId), isNull(pets.deletedAt)))
-    .orderBy(asc(pets.name));
+    .orderBy(asc(pets.name))
+    .limit(options.limit ?? 100)
+    .offset(options.offset ?? 0);
 }
 
 /**
