@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { apiErrorResponse, parseRouteId, readJsonObject, requireApiUser } from "../../../api-utils";
 import { createEventComment, listEventComments } from "@/services/comments/comment-service";
-import { getEventForUser } from "@/services/events/event-service";
+import { getEventForViewer } from "@/services/events/event-service";
 import { ValidationError } from "@/services/validation";
 
 export const runtime = "nodejs";
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   try {
     const eventId = await getEventId(context);
-    const event = await getEventForUser(eventId, user.id);
+    const event = await getEventForViewer(eventId, user);
 
     if (!event) {
       return NextResponse.json({ error: "Събитието не е намерено." }, { status: 404 });

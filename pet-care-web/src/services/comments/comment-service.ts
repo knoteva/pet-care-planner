@@ -52,11 +52,11 @@ export async function createEventComment(user: PublicUser, eventId: number, text
   return comment;
 }
 
-export async function updateEventComment(commentId: number, user: PublicUser, text: string) {
+export async function updateEventComment(commentId: number, user: PublicUser, text: string, eventId?: number) {
   const [comment] = await db
     .select({ id: eventComments.id, userId: eventComments.userId })
     .from(eventComments)
-    .where(and(eq(eventComments.id, commentId), isNull(eventComments.deletedAt)))
+    .where(and(eq(eventComments.id, commentId), eventId ? eq(eventComments.eventId, eventId) : undefined, isNull(eventComments.deletedAt)))
     .limit(1);
 
   if (!comment) {
@@ -71,17 +71,17 @@ export async function updateEventComment(commentId: number, user: PublicUser, te
   const [updatedComment] = await db
     .update(eventComments)
     .set({ text: cleanText, updatedAt: new Date() })
-    .where(eq(eventComments.id, commentId))
+    .where(and(eq(eventComments.id, commentId), eventId ? eq(eventComments.eventId, eventId) : undefined))
     .returning();
 
   return updatedComment ?? null;
 }
 
-export async function softDeleteEventComment(commentId: number, user: PublicUser) {
+export async function softDeleteEventComment(commentId: number, user: PublicUser, eventId?: number) {
   const [comment] = await db
     .select({ id: eventComments.id, userId: eventComments.userId })
     .from(eventComments)
-    .where(and(eq(eventComments.id, commentId), isNull(eventComments.deletedAt)))
+    .where(and(eq(eventComments.id, commentId), eventId ? eq(eventComments.eventId, eventId) : undefined, isNull(eventComments.deletedAt)))
     .limit(1);
 
   if (!comment) {
@@ -95,7 +95,7 @@ export async function softDeleteEventComment(commentId: number, user: PublicUser
   const [deletedComment] = await db
     .update(eventComments)
     .set({ deletedAt: new Date(), updatedAt: new Date() })
-    .where(eq(eventComments.id, commentId))
+    .where(and(eq(eventComments.id, commentId), eventId ? eq(eventComments.eventId, eventId) : undefined))
     .returning();
 
   return deletedComment ?? null;

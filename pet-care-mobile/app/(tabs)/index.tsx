@@ -33,6 +33,8 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(false);
   const [actionEventId, setActionEventId] = useState<number | null>(null);
   const [eventFeedback, setEventFeedback] = useState<Record<number, { type: "success" | "error"; message: string }>>({});
+  const [editingCommentIdByEvent, setEditingCommentIdByEvent] = useState<Record<number, number | null>>({});
+  const [editCommentInputs, setEditCommentInputs] = useState<Record<number, string>>({});
 
   const loadEvents = useCallback(async () => {
     if (!token) return;
@@ -135,6 +137,14 @@ export default function DashboardScreen() {
     }
   }
 
+  function startEditingComment(eventId: number, comment: api.MobileComment) {
+    setEditingCommentIdByEvent((current) => ({ ...current, [eventId]: comment.id }));
+    setEditCommentInputs((current) => ({ ...current, [comment.id]: comment.text }));
+  }
+
+  function cancelEditingComment(eventId: number) {
+    setEditingCommentIdByEvent((current) => ({ ...current, [eventId]: null }));
+  }
   async function submitComment(eventId: number) {
     if (!token) return;
 
@@ -171,6 +181,66 @@ export default function DashboardScreen() {
     }
   }
 
+  async function submitCommentEdit(eventId: number, commentId: number) {
+    if (!token) return;
+
+    const text = (editCommentInputs[commentId] ?? "").trim();
+
+    if (text.length < 2) {
+      setEventFeedback((current) => ({
+        ...current,
+        [eventId]: { type: "error", message: "Коментарът трябва да е поне 2 символа." },
+      }));
+      return;
+    }
+
+    setActionEventId(eventId);
+    setError(null);
+
+    try {
+      await api.updateComment(eventId, commentId, text, token);
+      const response = await api.listComments(eventId, token);
+      setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
+      setEditingCommentIdByEvent((current) => ({ ...current, [eventId]: null }));
+      setEventFeedback((current) => ({
+        ...current,
+        [eventId]: { type: "success", message: "Коментарът е обновен." },
+      }));
+    } catch (requestError) {
+      setEventFeedback((current) => ({
+        ...current,
+        [eventId]: { type: "error", message: actionErrorMessage(requestError) },
+      }));
+    } finally {
+      setActionEventId(null);
+    }
+  }
+
+  async function deleteComment(eventId: number, commentId: number) {
+    if (!token) return;
+
+    setActionEventId(eventId);
+    setError(null);
+
+    try {
+      await api.deleteComment(eventId, commentId, token);
+      const response = await api.listComments(eventId, token);
+      setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
+      setEditingCommentIdByEvent((current) => ({ ...current, [eventId]: null }));
+      setEventFeedback((current) => ({
+        ...current,
+        [eventId]: { type: "success", message: "Коментарът е изтрит." },
+      }));
+      await loadEvents();
+    } catch (requestError) {
+      setEventFeedback((current) => ({
+        ...current,
+        [eventId]: { type: "error", message: actionErrorMessage(requestError) },
+      }));
+    } finally {
+      setActionEventId(null);
+    }
+  }
   if (authLoading) {
     return (
       <Screen>
@@ -252,12 +322,69 @@ export default function DashboardScreen() {
               {isExpanded ? (
                 <View style={dashboardStyles.commentsBox}>
                   {comments.length === 0 ? <Text style={dashboardStyles.commentEmpty}>Още няма коментари.</Text> : null}
-                  {comments.map((comment) => (
-                    <View key={comment.id} style={dashboardStyles.commentItem}>
-                      <Text style={dashboardStyles.commentAuthor}>{comment.authorName ?? "Потребител"}</Text>
-                      <Text style={dashboardStyles.commentText}>{comment.text}</Text>
-                    </View>
-                  ))}
+                  {comments.map((comment) => {
+                    const canManageComment = user.role === "admin" || comment.userId === user.id;
+                    const isEditingComment = editingCommentIdByEvent[event.id] === comment.id;
+
+                    return (
+                      <View key={comment.id} style={dashboardStyles.commentItem}>
+                        <View style={dashboardStyles.commentHeader}>
+                          <View style={dashboardStyles.commentBody}>
+                            <Text style={dashboardStyles.commentAuthor}>{comment.authorName ?? "Потребител"}</Text>
+                            {isEditingComment ? (
+                              <TextInput
+                                style={dashboardStyles.commentEditInput}
+                                value={editCommentInputs[comment.id] ?? comment.text}
+                                onChangeText={(value) => setEditCommentInputs((current) => ({ ...current, [comment.id]: value }))}
+                                multiline
+                              />
+                            ) : (
+                              <Text style={dashboardStyles.commentText}>{comment.text}</Text>
+                            )}
+                          </View>
+                          {canManageComment ? (
+                            <View style={dashboardStyles.commentActions}>
+                              {isEditingComment ? (
+                                <>
+                                  <Pressable
+                                    disabled={actionInProgress}
+                                    onPress={() => void submitCommentEdit(event.id, comment.id)}
+                                    style={dashboardStyles.commentActionButton}
+                                  >
+                                    <Text style={dashboardStyles.commentActionText}>Запази</Text>
+                                  </Pressable>
+                                  <Pressable
+                                    disabled={actionInProgress}
+                                    onPress={() => cancelEditingComment(event.id)}
+                                    style={dashboardStyles.commentActionButton}
+                                  >
+                                    <Text style={dashboardStyles.commentActionText}>Отказ</Text>
+                                  </Pressable>
+                                </>
+                              ) : (
+                                <>
+                                  <Pressable
+                                    disabled={actionInProgress}
+                                    onPress={() => startEditingComment(event.id, comment)}
+                                    style={dashboardStyles.commentActionButton}
+                                  >
+                                    <Text style={dashboardStyles.commentActionText}>Редактирай</Text>
+                                  </Pressable>
+                                  <Pressable
+                                    disabled={actionInProgress}
+                                    onPress={() => void deleteComment(event.id, comment.id)}
+                                    style={dashboardStyles.commentActionButton}
+                                  >
+                                    <Text style={dashboardStyles.commentDeleteText}>Изтрий</Text>
+                                  </Pressable>
+                                </>
+                              )}
+                            </View>
+                          ) : null}
+                        </View>
+                      </View>
+                    );
+                  })}
                   <TextInput
                     style={dashboardStyles.commentInput}
                     placeholder="Напиши коментар"
@@ -351,6 +478,49 @@ const dashboardStyles = {
     borderRadius: 8,
     backgroundColor: "#f8fafc",
     padding: 10,
+  },
+  commentHeader: {
+    flexDirection: "column" as const,
+    gap: 8,
+  },
+  commentBody: {
+    minWidth: 0,
+    gap: 4,
+  },
+  commentActions: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 8,
+  },
+  commentActionButton: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  commentActionText: {
+    fontSize: 12,
+    fontWeight: "900" as const,
+    color: "#047857",
+  },
+  commentDeleteText: {
+    fontSize: 12,
+    fontWeight: "900" as const,
+    color: "#be123c",
+  },
+  commentEditInput: {
+    minHeight: 64,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    textAlignVertical: "top" as const,
+    fontSize: 14,
+    color: "#0f172a",
   },
   commentAuthor: {
     fontSize: 12,

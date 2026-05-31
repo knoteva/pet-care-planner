@@ -55,6 +55,7 @@ export type MobileComment = {
   userId: number;
   text: string;
   createdAt: string;
+  updatedAt?: string | null;
   authorName?: string | null;
 };
 
@@ -179,6 +180,21 @@ export async function createComment(eventId: number, text: string, token: string
   return apiRequest<{ comment: MobileComment }>(`/api/events/${eventId}/comments`, {
     method: "POST",
     body: { text },
+    token,
+  });
+}
+
+export async function updateComment(eventId: number, commentId: number, text: string, token: string) {
+  return apiRequest<{ comment: MobileComment }>(`/api/events/${eventId}/comments/${commentId}`, {
+    method: "PATCH",
+    body: { text },
+    token,
+  });
+}
+
+export async function deleteComment(eventId: number, commentId: number, token: string) {
+  return apiRequest<{ comment: MobileComment }>(`/api/events/${eventId}/comments/${commentId}`, {
+    method: "DELETE",
     token,
   });
 }
