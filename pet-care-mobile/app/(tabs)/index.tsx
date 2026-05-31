@@ -1,231 +1,228 @@
-﻿import { Link } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Link } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
 
-import { mobileEvents } from "@/src/services/mock-data";
+import * as api from "@/src/services/api";
+import { Badge, BrandHeader, Card, DemoProfiles, EmptyState, ErrorBanner, LoadingState, PrimaryButton, Screen, SecondaryButton, SectionTitle, Subtitle, Title, Eyebrow, styles } from "@/src/components/mobile-ui";
+import { formatCapacity, formatDuration, formatEventDate, formatEventStatus, formatEventType } from "@/src/utils/format";
+import { useAuth } from "@/src/state/auth-context";
 
-const homeStats = [
-  { label: "Днес", value: "3 събития", detail: "разходка, грижа и игра" },
-  { label: "Групи", value: "4 активни", detail: "по квартал и нужда" },
-  { label: "Предложения", value: "2 нови", detail: "чакат мениджър" },
-];
+export default function DashboardScreen() {
+  const { user, token, isLoading: authLoading } = useAuth();
+  const [events, setEvents] = useState<api.MobileEvent[]>([]);
+  const [commentsByEvent, setCommentsByEvent] = useState<Record<number, api.MobileComment[]>>({});
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
+  const [expandedEventId, setExpandedEventId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [actionEventId, setActionEventId] = useState<number | null>(null);
 
-export default function EventsScreen() {
-  return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <View style={styles.brandRow}>
-        <View style={styles.logoBox}>
-          <Text style={styles.logoText}>Л</Text>
-        </View>
-        <View>
-          <Text style={styles.brand}>Лапички</Text>
-          <Text style={styles.brandSubline}>планер за грижа</Text>
-        </View>
-      </View>
+  const loadEvents = useCallback(async () => {
+    if (!token) return;
 
-      <View style={styles.loginCard}>
-        <Text style={styles.loginTitle}>Вход в профил</Text>
-        <Text style={styles.loginCopy}>
-          Демо достъп за преглед на групи, събития и грижа.
-        </Text>
-        <Text style={styles.label}>Имейл</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="demo@paws.bg"
-          placeholderTextColor="#94a3b8"
-        />
-        <Text style={styles.label}>Парола</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="demo123"
-          placeholderTextColor="#94a3b8"
-          secureTextEntry
-        />
-        <Link href="/auth" asChild>
-          <Pressable style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>Вход</Text>
-          </Pressable>
-        </Link>
-        <View style={styles.registerRow}>
-          <Text style={styles.registerText}>Нямаш профил?</Text>
-          <Link href="/register" asChild>
-            <Pressable hitSlop={8}>
-              <Text style={styles.registerLink}>Регистрирай се!</Text>
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.listEvents(token);
+      setEvents(response.events);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Събитията не можаха да се заредят.");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    void loadEvents();
+  }, [loadEvents]);
+
+  const stats = useMemo(() => {
+    const groupNames = new Set(events.map((event) => event.groupTitle ?? String(event.groupId)));
+    const joined = events.filter((event) => event.participationStatus === "joined").length;
+
+    return [
+      { label: "Събития", value: String(events.length), detail: "видими за профила" },
+      { label: "Групи", value: String(groupNames.size), detail: "с активен достъп" },
+      { label: "Участия", value: String(joined), detail: "потвърдени" },
+    ];
+  }, [events]);
+
+  async function toggleJoin(event: api.MobileEvent) {
+    if (!token) return;
+
+    setActionEventId(event.id);
+    setError(null);
+
+    try {
+      if (event.participationStatus === "joined") {
+        await api.leaveEvent(event.id, token);
+      } else {
+        await api.joinEvent(event.id, token);
+      }
+
+      await loadEvents();
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Участието не беше записано.");
+    } finally {
+      setActionEventId(null);
+    }
+  }
+
+  async function toggleComments(eventId: number) {
+    if (!token) return;
+
+    if (expandedEventId === eventId) {
+      setExpandedEventId(null);
+      return;
+    }
+
+    setExpandedEventId(eventId);
+    setError(null);
+
+    try {
+      const response = await api.listComments(eventId, token);
+      setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Коментарите не можаха да се заредят.");
+    }
+  }
+
+  async function submitComment(eventId: number) {
+    if (!token) return;
+
+    const text = (commentInputs[eventId] ?? "").trim();
+
+    if (text.length < 2) {
+      setError("Коментарът трябва да е поне 2 символа.");
+      return;
+    }
+
+    setActionEventId(eventId);
+    setError(null);
+
+    try {
+      await api.createComment(eventId, text, token);
+      setCommentInputs((current) => ({ ...current, [eventId]: "" }));
+      const response = await api.listComments(eventId, token);
+      setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
+      await loadEvents();
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Коментарът не беше записан.");
+    } finally {
+      setActionEventId(null);
+    }
+  }
+
+  if (authLoading) {
+    return (
+      <Screen>
+        <LoadingState label="Проверявам mobile сесията..." />
+      </Screen>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Screen>
+        <BrandHeader subtitle="мобилен планер" />
+        <Card>
+          <Eyebrow>Квартална организация</Eyebrow>
+          <Title>Един споделен план за разходки, грижа и помощ с любимците.</Title>
+          <Subtitle>Mobile приложението използва REST API и Bearer token. Влез, за да видиш реалните групи, събития и любимци от базата.</Subtitle>
+          <Link href="/auth" asChild>
+            <Pressable style={styles.primaryButton}>
+              <Text style={styles.primaryButtonText}>Вход в профил</Text>
             </Pressable>
           </Link>
-        </View>
-      </View>
+          <DemoProfiles />
+        </Card>
+      </Screen>
+    );
+  }
 
-      <View style={styles.heroCard}>
-        <Text style={styles.eyebrow}>квартална организация</Text>
-        <Text style={styles.title}>
-          Един споделен план за разходки, грижа и помощ с любимците.
-        </Text>
-        <Text style={styles.subtitle}>
-          Вместо уговорки в чатове, групата вижда събития, участници,
-          коментари и предложения на едно място.
-        </Text>
-      </View>
-
-      <View style={styles.statsGrid}>
-        {homeStats.map((stat) => (
-          <View key={stat.label} style={styles.statCard}>
-            <Text style={styles.statLabel}>{stat.label}</Text>
-            <Text style={styles.statValue}>{stat.value}</Text>
-            <Text style={styles.statDetail}>{stat.detail}</Text>
+  return (
+    <Screen>
+      <BrandHeader subtitle={`здравей, ${user.name}`} />
+      <Card tone="green">
+        <Eyebrow>Активен профил</Eyebrow>
+        <Title>План за грижа днес</Title>
+        <Subtitle>{user.email}</Subtitle>
+      </Card>
+      <ErrorBanner message={error} />
+      <View style={dashboardStyles.statsGrid}>
+        {stats.map((stat) => (
+          <View key={stat.label} style={dashboardStyles.statCard}>
+            <Text style={dashboardStyles.statLabel}>{stat.label}</Text>
+            <Text style={dashboardStyles.statValue}>{stat.value}</Text>
+            <Text style={dashboardStyles.statDetail}>{stat.detail}</Text>
           </View>
         ))}
       </View>
-
-      <View style={styles.activityCard}>
-        <Text style={styles.sectionTitle}>Последни демо активности</Text>
-        <View style={styles.activityList}>
-          {mobileEvents.map((event) => (
-            <View key={event.id} style={styles.eventCard}>
-              <View style={styles.eventTop}>
-                <Text style={styles.badge}>{event.status}</Text>
-                <Text style={styles.capacity}>{event.capacity}</Text>
-              </View>
-              <Text style={styles.eventTitle}>{event.title}</Text>
-              <Text style={styles.meta}>{event.location}</Text>
-              <Text style={styles.eventTime}>{event.time}</Text>
-            </View>
-          ))}
-        </View>
+      <View style={dashboardStyles.sectionHeader}>
+        <SectionTitle>Събития</SectionTitle>
+        <SecondaryButton disabled={loading} onPress={() => void loadEvents()}>{loading ? "Зарежда..." : "Обнови"}</SecondaryButton>
       </View>
-    </ScrollView>
+      {loading && events.length === 0 ? <LoadingState /> : null}
+      {!loading && events.length === 0 ? <EmptyState title="Няма събития" text="Влез в група с код за покана или създай събитие през web приложението." /> : null}
+      <View style={dashboardStyles.list}>
+        {events.map((event) => {
+          const isJoined = event.participationStatus === "joined";
+          const isExpanded = expandedEventId === event.id;
+          const comments = commentsByEvent[event.id] ?? [];
+          const actionInProgress = actionEventId === event.id;
+
+          return (
+            <Card key={event.id}>
+              <View style={dashboardStyles.eventTop}>
+                <Badge>{formatEventStatus(event.status)}</Badge>
+                <Badge tone="gray">{formatCapacity(event)}</Badge>
+              </View>
+              <Text style={dashboardStyles.eventTitle}>{event.title}</Text>
+              <Text style={dashboardStyles.eventMeta}>{event.groupTitle ?? "Група"} · {formatEventType(event.eventType)}</Text>
+              <Text style={dashboardStyles.eventMeta}>{event.location}</Text>
+              <View style={dashboardStyles.eventFacts}>
+                <Text style={dashboardStyles.factText}>{formatEventDate(event.startsAt)}</Text>
+                <Text style={dashboardStyles.factText}>{formatDuration(event.durationMinutes)}</Text>
+                <Text style={dashboardStyles.factText}>{event.commentCount ?? 0} коментара</Text>
+              </View>
+              {event.notes ? <Text style={dashboardStyles.eventNote}>{event.notes}</Text> : null}
+              <PrimaryButton disabled={actionInProgress} onPress={() => void toggleJoin(event)}>
+                {isJoined ? "Няма да участвам" : "Ще участвам"}
+              </PrimaryButton>
+              <SecondaryButton disabled={actionInProgress} onPress={() => void toggleComments(event.id)}>
+                {isExpanded ? "Скрий коментарите" : "Коментари"}
+              </SecondaryButton>
+              {isExpanded ? (
+                <View style={dashboardStyles.commentsBox}>
+                  {comments.length === 0 ? <Text style={dashboardStyles.commentEmpty}>Още няма коментари.</Text> : null}
+                  {comments.map((comment) => (
+                    <View key={comment.id} style={dashboardStyles.commentItem}>
+                      <Text style={dashboardStyles.commentAuthor}>{comment.authorName ?? "Потребител"}</Text>
+                      <Text style={dashboardStyles.commentText}>{comment.text}</Text>
+                    </View>
+                  ))}
+                  <TextInput
+                    style={dashboardStyles.commentInput}
+                    placeholder="Напиши коментар"
+                    placeholderTextColor="#9ca3af"
+                    value={commentInputs[event.id] ?? ""}
+                    onChangeText={(value) => setCommentInputs((current) => ({ ...current, [event.id]: value }))}
+                    multiline
+                  />
+                  <PrimaryButton disabled={actionInProgress} onPress={() => void submitComment(event.id)}>Изпрати коментар</PrimaryButton>
+                </View>
+              ) : null}
+            </Card>
+          );
+        })}
+      </View>
+    </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#eef4f1",
-  },
-  content: {
-    padding: 18,
-    paddingBottom: 34,
-  },
-  brandRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginBottom: 14,
-  },
-  logoBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#047857",
-  },
-  logoText: {
-    color: "#ffffff",
-    fontSize: 20,
-    fontWeight: "900",
-  },
-  brand: {
-    fontSize: 22,
-    fontWeight: "900",
-    color: "#047857",
-  },
-  brandSubline: {
-    marginTop: 1,
-    fontSize: 12,
-    color: "#64748b",
-  },
-  loginCard: {
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#dce3df",
-    backgroundColor: "#ffffff",
-    padding: 18,
-  },
-  loginTitle: {
-    fontSize: 22,
-    fontWeight: "900",
-    color: "#0f172a",
-  },
-  loginCopy: {
-    marginTop: 8,
-    fontSize: 14,
-    lineHeight: 21,
-    color: "#475569",
-  },
-  label: {
-    marginTop: 14,
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#0f172a",
-  },
-  input: {
-    marginTop: 7,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#cbd5e1",
-    backgroundColor: "#eff6ff",
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: "#0f172a",
-  },
-  primaryButton: {
-    marginTop: 16,
-    alignItems: "center",
-    borderRadius: 8,
-    backgroundColor: "#047857",
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-  },
-  primaryButtonText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "900",
-  },
-  registerRow: {
-    marginTop: 15,
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 6,
-  },
-  registerText: {
-    fontSize: 14,
-    color: "#475569",
-  },
-  registerLink: {
-    fontSize: 14,
-    fontWeight: "900",
-    color: "#047857",
-  },
-  heroCard: {
-    marginTop: 14,
-    borderRadius: 8,
-    backgroundColor: "#ffffff",
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "#dce3df",
-  },
-  eyebrow: {
-    fontSize: 13,
-    fontWeight: "900",
-    color: "#047857",
-    textTransform: "uppercase",
-  },
-  title: {
-    marginTop: 10,
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: "900",
-    color: "#0f172a",
-  },
-  subtitle: {
-    marginTop: 12,
-    fontSize: 15,
-    lineHeight: 23,
-    color: "#475569",
-  },
+const dashboardStyles = {
   statsGrid: {
-    marginTop: 14,
     gap: 10,
   },
   statCard: {
@@ -237,84 +234,99 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 13,
-    fontWeight: "800",
+    fontWeight: "800" as const,
     color: "#64748b",
   },
   statValue: {
-    marginTop: 7,
-    fontSize: 24,
-    fontWeight: "900",
+    marginTop: 5,
+    fontSize: 26,
+    fontWeight: "900" as const,
     color: "#047857",
   },
   statDetail: {
-    marginTop: 4,
+    marginTop: 3,
     fontSize: 13,
     color: "#475569",
   },
-  activityCard: {
-    marginTop: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#dce3df",
-    backgroundColor: "#ffffff",
-    padding: 16,
+  sectionHeader: {
+    flexDirection: "row" as const,
+    justifyContent: "space-between" as const,
+    alignItems: "center" as const,
+    gap: 12,
   },
-  sectionTitle: {
-    fontSize: 19,
-    fontWeight: "900",
-    color: "#0f172a",
-  },
-  activityList: {
-    marginTop: 12,
-    gap: 11,
-  },
-  eventCard: {
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    backgroundColor: "#fbfbfa",
-    padding: 14,
+  list: {
+    gap: 12,
   },
   eventTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-  badge: {
-    overflow: "hidden",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#99f6e4",
-    backgroundColor: "#ecfdf5",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    color: "#047857",
-    fontSize: 12,
-    fontWeight: "900",
-  },
-  capacity: {
-    fontSize: 13,
-    fontWeight: "900",
-    color: "#92400e",
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 8,
   },
   eventTitle: {
-    marginTop: 11,
-    fontSize: 17,
-    lineHeight: 22,
-    fontWeight: "900",
+    marginTop: 12,
+    fontSize: 19,
+    lineHeight: 24,
+    fontWeight: "900" as const,
     color: "#0f172a",
   },
-  meta: {
+  eventMeta: {
     marginTop: 5,
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 20,
     color: "#475569",
   },
-  eventTime: {
-    marginTop: 7,
+  eventFacts: {
+    marginTop: 12,
+    gap: 6,
+  },
+  factText: {
     fontSize: 13,
-    fontWeight: "800",
+    fontWeight: "800" as const,
     color: "#0f172a",
   },
-});
+  eventNote: {
+    marginTop: 10,
+    fontSize: 14,
+    lineHeight: 21,
+    color: "#475569",
+  },
+  commentsBox: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#e5e7eb",
+    paddingTop: 12,
+    gap: 8,
+  },
+  commentEmpty: {
+    fontSize: 14,
+    color: "#64748b",
+  },
+  commentItem: {
+    borderRadius: 8,
+    backgroundColor: "#f8fafc",
+    padding: 10,
+  },
+  commentAuthor: {
+    fontSize: 12,
+    fontWeight: "900" as const,
+    color: "#047857",
+  },
+  commentText: {
+    marginTop: 4,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#0f172a",
+  },
+  commentInput: {
+    minHeight: 72,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    textAlignVertical: "top" as const,
+    fontSize: 14,
+    color: "#0f172a",
+  },
+};

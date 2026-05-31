@@ -1,176 +1,131 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Text, View } from "react-native";
 
-import { mobilePets } from "@/src/services/mock-data";
+import * as api from "@/src/services/api";
+import { Badge, BrandHeader, Card, EmptyState, ErrorBanner, LoadingState, RequireLogin, Screen, SecondaryButton, SectionTitle, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
+import { useAuth } from "@/src/state/auth-context";
+import { formatPetMeta } from "@/src/utils/format";
 
 export default function PetsScreen() {
+  const { user, token, isLoading: authLoading } = useAuth();
+  const [pets, setPets] = useState<api.MobilePet[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadPets = useCallback(async () => {
+    if (!token) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.listPets(token);
+      setPets(response.pets);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Любимците не можаха да се заредят.");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    void loadPets();
+  }, [loadPets]);
+
+  if (authLoading) {
+    return (
+      <Screen>
+        <LoadingState label="Проверявам mobile сесията..." />
+      </Screen>
+    );
+  }
+
+  if (!user || !token) {
+    return <RequireLogin />;
+  }
+
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>Профил</Text>
-        <Text style={styles.title}>Моите любимци</Text>
-        <Text style={styles.subtitle}>
-          Любимците се използват при участие в събития и при заявки за грижа.
-        </Text>
+    <Screen>
+      <BrandHeader subtitle="любимци" />
+      <Card>
+        <Eyebrow>Профил</Eyebrow>
+        <Title>Моите любимци</Title>
+        <Subtitle>Mobile приложението показва любимците от реалната база. Добавяне и редакция засега остават в web приложението.</Subtitle>
+      </Card>
+      <ErrorBanner message={error} />
+      <View style={petStyles.sectionHeader}>
+        <SectionTitle>Списък</SectionTitle>
+        <SecondaryButton disabled={loading} onPress={() => void loadPets()}>{loading ? "Зарежда..." : "Обнови"}</SecondaryButton>
       </View>
-
-      <Pressable style={styles.primaryButton}>
-        <Text style={styles.primaryButtonText}>Добави любимец</Text>
-      </Pressable>
-
-      <View style={styles.petList}>
-        {mobilePets.map((pet) => (
-          <View key={pet.id} style={styles.petCard}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{pet.name.slice(0, 1)}</Text>
+      {loading && pets.length === 0 ? <LoadingState /> : null}
+      {!loading && pets.length === 0 ? <EmptyState title="Няма любимци" text="Добави любимец през web приложението, после обнови този екран." /> : null}
+      <View style={petStyles.list}>
+        {pets.map((pet) => (
+          <Card key={pet.id}>
+            <View style={petStyles.petTop}>
+              <View style={petStyles.avatar}>
+                <Text style={petStyles.avatarText}>{pet.name.slice(0, 1).toUpperCase()}</Text>
+              </View>
+              <View style={petStyles.petInfo}>
+                <Text style={petStyles.petName}>{pet.name}</Text>
+                <Text style={petStyles.petMeta}>{formatPetMeta(pet)}</Text>
+              </View>
             </View>
-            <View style={styles.petBody}>
-              <Text style={styles.petName}>{pet.name}</Text>
-              <Text style={styles.petMeta}>
-                {pet.breed} · {pet.age}
-              </Text>
-              <Text style={styles.petNote}>{pet.note}</Text>
-              <Pressable style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>Редактирай</Text>
-              </Pressable>
-            </View>
-          </View>
+            {pet.size ? <Badge tone="gray">{pet.size}</Badge> : null}
+            {pet.notes ? <Text style={petStyles.petNotes}>{pet.notes}</Text> : null}
+          </Card>
         ))}
       </View>
-
-      <View style={styles.profileCard}>
-        <Text style={styles.profileTitle}>demo@paws.bg</Text>
-        <Text style={styles.profileText}>
-          Демо профил за бъдещия auth flow. Реалният вход ще използва REST API и
-          Bearer JWT token.
-        </Text>
-      </View>
-    </ScrollView>
+    </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#f5f7f4",
-  },
-  content: {
-    padding: 18,
-    paddingBottom: 32,
-  },
-  header: {
-    borderRadius: 8,
-    backgroundColor: "#ffffff",
-    padding: 18,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  eyebrow: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#be123c",
-    textTransform: "uppercase",
-  },
-  title: {
-    marginTop: 4,
-    fontSize: 28,
-    fontWeight: "900",
-    color: "#111827",
-  },
-  subtitle: {
-    marginTop: 8,
-    fontSize: 15,
-    lineHeight: 22,
-    color: "#4b5563",
-  },
-  primaryButton: {
-    marginTop: 14,
-    alignItems: "center",
-    borderRadius: 8,
-    backgroundColor: "#047857",
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-  },
-  primaryButtonText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "900",
-  },
-  petList: {
-    marginTop: 14,
+const petStyles = {
+  sectionHeader: {
+    flexDirection: "row" as const,
+    justifyContent: "space-between" as const,
+    alignItems: "center" as const,
     gap: 12,
   },
-  petCard: {
-    flexDirection: "row",
+  list: {
     gap: 12,
-    borderRadius: 8,
-    backgroundColor: "#ffffff",
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
+  },
+  petTop: {
+    flexDirection: "row" as const,
+    alignItems: "center" as const,
+    gap: 12,
+    marginBottom: 12,
   },
   avatar: {
-    width: 48,
-    height: 48,
+    width: 50,
+    height: 50,
     borderRadius: 8,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
     backgroundColor: "#ffe4e6",
-    alignItems: "center",
-    justifyContent: "center",
   },
   avatarText: {
     color: "#9f1239",
     fontSize: 20,
-    fontWeight: "900",
+    fontWeight: "900" as const,
   },
-  petBody: {
+  petInfo: {
     flex: 1,
   },
   petName: {
-    fontSize: 18,
-    fontWeight: "900",
-    color: "#111827",
+    fontSize: 19,
+    fontWeight: "900" as const,
+    color: "#0f172a",
   },
   petMeta: {
-    marginTop: 3,
+    marginTop: 4,
     fontSize: 14,
-    color: "#6b7280",
+    color: "#475569",
   },
-  petNote: {
-    marginTop: 8,
-    fontSize: 14,
-    lineHeight: 21,
-    color: "#374151",
-  },
-  secondaryButton: {
-    marginTop: 12,
-    alignSelf: "flex-start",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-  },
-  secondaryButtonText: {
-    color: "#111827",
-    fontSize: 13,
-    fontWeight: "800",
-  },
-  profileCard: {
-    marginTop: 14,
-    borderRadius: 8,
-    backgroundColor: "#ffffff",
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  profileTitle: {
-    fontSize: 17,
-    fontWeight: "900",
-    color: "#111827",
-  },
-  profileText: {
-    marginTop: 6,
+  petNotes: {
+    marginTop: 10,
     fontSize: 14,
     lineHeight: 21,
-    color: "#4b5563",
+    color: "#475569",
   },
-});
+};

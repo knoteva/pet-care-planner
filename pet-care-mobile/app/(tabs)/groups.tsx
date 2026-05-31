@@ -1,180 +1,173 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Text, TextInput, View } from "react-native";
 
-import { mobileGroups, mobileProposals } from "@/src/services/mock-data";
+import * as api from "@/src/services/api";
+import { Badge, BrandHeader, Card, EmptyState, ErrorBanner, LoadingState, PrimaryButton, RequireLogin, Screen, SecondaryButton, SectionTitle, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
+import { useAuth } from "@/src/state/auth-context";
 
 export default function GroupsScreen() {
+  const { user, token, isLoading: authLoading } = useAuth();
+  const [groups, setGroups] = useState<api.MobileGroup[]>([]);
+  const [inviteCode, setInviteCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadGroups = useCallback(async () => {
+    if (!token) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.listGroups(token);
+      setGroups(response.groups);
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Групите не можаха да се заредят.");
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    void loadGroups();
+  }, [loadGroups]);
+
+  async function handleJoinGroup() {
+    if (!token) return;
+
+    const cleanCode = inviteCode.trim().toUpperCase();
+
+    if (cleanCode.length < 4) {
+      setError("Кодът трябва да е поне 4 символа.");
+      return;
+    }
+
+    setJoining(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      await api.joinGroup(cleanCode, token);
+      setInviteCode("");
+      setMessage("Успешно се присъедини към групата.");
+      await loadGroups();
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Не успях да те добавя към групата.");
+    } finally {
+      setJoining(false);
+    }
+  }
+
+  if (authLoading) {
+    return (
+      <Screen>
+        <LoadingState label="Проверявам mobile сесията..." />
+      </Screen>
+    );
+  }
+
+  if (!user || !token) {
+    return <RequireLogin />;
+  }
+
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <Text style={styles.eyebrow}>Групи</Text>
-        <Text style={styles.title}>Квартална грижа</Text>
-        <Text style={styles.subtitle}>
-          Виж групите си, предложи събитие и следи заявките към мениджърите.
-        </Text>
+    <Screen>
+      <BrandHeader subtitle="моите групи" />
+      <Card>
+        <Eyebrow>Групи</Eyebrow>
+        <Title>Квартална грижа</Title>
+        <Subtitle>Виж групите, в които участваш. Нови групи и събития се управляват през web, а тук можеш да се включиш с код.</Subtitle>
+      </Card>
+      <ErrorBanner message={error} />
+      {message ? (
+        <Card tone="green">
+          <Text style={groupStyles.successText}>{message}</Text>
+        </Card>
+      ) : null}
+      <Card>
+        <SectionTitle>Вход с код за покана</SectionTitle>
+        <TextInput
+          style={groupStyles.inviteInput}
+          placeholder="Напр. PAWS-SOUTH"
+          placeholderTextColor="#9ca3af"
+          value={inviteCode}
+          onChangeText={(value) => setInviteCode(value.toUpperCase())}
+          autoCapitalize="characters"
+        />
+        <PrimaryButton disabled={joining} onPress={() => void handleJoinGroup()}>{joining ? "Добавяне..." : "Присъедини се"}</PrimaryButton>
+      </Card>
+      <View style={groupStyles.sectionHeader}>
+        <SectionTitle>Моите групи</SectionTitle>
+        <SecondaryButton disabled={loading} onPress={() => void loadGroups()}>{loading ? "Зарежда..." : "Обнови"}</SecondaryButton>
       </View>
-
-      <View style={styles.actions}>
-        <Pressable style={styles.primaryButton}>
-          <Text style={styles.primaryButtonText}>Създай група</Text>
-        </Pressable>
-        <Pressable style={styles.secondaryButton}>
-          <Text style={styles.secondaryButtonText}>Предложи събитие</Text>
-        </Pressable>
-      </View>
-
-      <Text style={styles.sectionTitle}>Моите групи</Text>
-      <View style={styles.list}>
-        {mobileGroups.map((group) => (
-          <View key={group.id} style={styles.card}>
-            <View style={styles.cardTop}>
-              <Text style={styles.badge}>{group.role}</Text>
-              <Text style={styles.memberCount}>{group.members}</Text>
+      {loading && groups.length === 0 ? <LoadingState /> : null}
+      {!loading && groups.length === 0 ? <EmptyState title="Няма групи" text="Въведи код за покана или създай група през web приложението." /> : null}
+      <View style={groupStyles.list}>
+        {groups.map((group) => (
+          <Card key={group.id}>
+            <View style={groupStyles.groupTop}>
+              <Badge>{group.role === "manager" ? "мениджър" : "член"}</Badge>
+              <Badge tone="gray">{group.inviteCode}</Badge>
             </View>
-            <Text style={styles.cardTitle}>{group.title}</Text>
-            <Text style={styles.meta}>{group.area}</Text>
-            <Text style={styles.note}>{group.description}</Text>
-          </View>
+            <Text style={groupStyles.groupTitle}>{group.title}</Text>
+            {group.area ? <Text style={groupStyles.groupMeta}>{group.area}</Text> : null}
+            {group.description ? <Text style={groupStyles.groupDescription}>{group.description}</Text> : null}
+          </Card>
         ))}
       </View>
-
-      <Text style={styles.sectionTitle}>Предложения от членове</Text>
-      <View style={styles.list}>
-        {mobileProposals.map((proposal) => (
-          <View key={proposal.id} style={styles.card}>
-            <Text style={styles.badge}>{proposal.status}</Text>
-            <Text style={styles.cardTitle}>{proposal.title}</Text>
-            <Text style={styles.meta}>
-              {proposal.author} · {proposal.time}
-            </Text>
-            <Text style={styles.note}>
-              Мениджърът може да превърне предложението в реално събитие.
-            </Text>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
+    </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#f5f7f4",
+const groupStyles = {
+  successText: {
+    fontSize: 14,
+    fontWeight: "800" as const,
+    color: "#047857",
   },
-  content: {
-    padding: 18,
-    paddingBottom: 32,
-  },
-  header: {
+  inviteInput: {
+    marginTop: 12,
     borderRadius: 8,
-    backgroundColor: "#ffffff",
-    padding: 18,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  eyebrow: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#5b21b6",
-    textTransform: "uppercase",
-  },
-  title: {
-    marginTop: 4,
-    fontSize: 28,
-    fontWeight: "900",
-    color: "#111827",
-  },
-  subtitle: {
-    marginTop: 8,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     fontSize: 15,
-    lineHeight: 22,
-    color: "#4b5563",
+    color: "#0f172a",
   },
-  actions: {
-    marginTop: 14,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  primaryButton: {
-    borderRadius: 8,
-    backgroundColor: "#047857",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  primaryButtonText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "900",
-  },
-  secondaryButton: {
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    backgroundColor: "#ffffff",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  secondaryButtonText: {
-    color: "#111827",
-    fontSize: 14,
-    fontWeight: "900",
-  },
-  sectionTitle: {
-    marginTop: 20,
-    fontSize: 20,
-    fontWeight: "900",
-    color: "#111827",
-  },
-  list: {
-    marginTop: 10,
+  sectionHeader: {
+    flexDirection: "row" as const,
+    justifyContent: "space-between" as const,
+    alignItems: "center" as const,
     gap: 12,
   },
-  card: {
-    borderRadius: 8,
-    backgroundColor: "#ffffff",
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
+  list: {
+    gap: 12,
   },
-  cardTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  groupTop: {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 8,
   },
-  badge: {
-    alignSelf: "flex-start",
-    overflow: "hidden",
-    borderRadius: 8,
-    backgroundColor: "#ecfdf5",
-    borderWidth: 1,
-    borderColor: "#bbf7d0",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    color: "#166534",
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  memberCount: {
-    fontSize: 13,
-    fontWeight: "900",
-    color: "#6b7280",
-  },
-  cardTitle: {
+  groupTitle: {
     marginTop: 12,
-    fontSize: 18,
-    fontWeight: "900",
-    color: "#111827",
+    fontSize: 19,
+    lineHeight: 24,
+    fontWeight: "900" as const,
+    color: "#0f172a",
   },
-  meta: {
+  groupMeta: {
     marginTop: 5,
     fontSize: 14,
-    color: "#6b7280",
+    color: "#475569",
   },
-  note: {
+  groupDescription: {
     marginTop: 10,
     fontSize: 14,
     lineHeight: 21,
-    color: "#374151",
+    color: "#475569",
   },
-});
+};

@@ -1,10 +1,9 @@
 import { SymbolView } from "expo-symbols";
-import { Link, Tabs } from "expo-router";
-import { Platform, Pressable } from "react-native";
+import { Tabs } from "expo-router";
 
 import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
+import { useColorScheme } from "@/components/useColorScheme";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -13,39 +12,15 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
         headerShown: useClientOnlyValue(false, true),
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Начало",
+          title: "Табло",
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: "calendar",
-                android: "calendar_month",
-                web: "calendar_month",
-              }}
-              tintColor={color}
-              size={28}
-            />
-          ),
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable style={{ marginRight: 15 }}>
-                {({ pressed }) => (
-                  <SymbolView
-                    name={{ ios: "info.circle", android: "info", web: "info" }}
-                    size={25}
-                    tintColor={Colors[colorScheme].text}
-                    style={{ opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
+            <SymbolView name={{ ios: "calendar", android: "calendar_month", web: "calendar_month" }} tintColor={color} size={28} />
           ),
         }}
       />
@@ -54,15 +29,7 @@ export default function TabLayout() {
         options={{
           title: "Любимци",
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: "heart",
-                android: "favorite",
-                web: "favorite",
-              }}
-              tintColor={color}
-              size={28}
-            />
+            <SymbolView name={{ ios: "heart", android: "favorite", web: "favorite" }} tintColor={color} size={28} />
           ),
         }}
       />
@@ -71,15 +38,7 @@ export default function TabLayout() {
         options={{
           title: "Групи",
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: "person.3",
-                android: "groups",
-                web: "groups",
-              }}
-              tintColor={color}
-              size={28}
-            />
+            <SymbolView name={{ ios: "person.3", android: "groups", web: "groups" }} tintColor={color} size={28} />
           ),
         }}
       />
@@ -88,36 +47,11 @@ export default function TabLayout() {
         options={{
           title: "Профил",
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: "person.crop.circle",
-                android: "account_circle",
-                web: "account_circle",
-              }}
-              tintColor={color}
-              size={28}
-            />
+            <SymbolView name={{ ios: "person.crop.circle", android: "account_circle", web: "account_circle" }} tintColor={color} size={28} />
           ),
         }}
       />
-      <Tabs.Screen
-        name="register"
-        options={{
-          href: null,
-          title: "Регистрация",
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: "person.badge.plus",
-                android: "person_add",
-                web: "person_add",
-              }}
-              tintColor={color}
-              size={28}
-            />
-          ),
-        }}
-      />
+      <Tabs.Screen name="register" options={{ href: null, title: "Регистрация" }} />
     </Tabs>
   );
 }
