@@ -11,9 +11,10 @@ import {
   participants,
   pets as mockPets,
 } from "@/services/mock-data";
-import type { AdminPanelStat, AdminPanelUser } from "@/services/admin/admin-service";
+import type { AdminPanelStat, AdminPanelUser, AdminUserDetails } from "@/services/admin/admin-service";
 import type { PublicUser } from "@/services/auth/auth-service";
 import type { CareEvent, EventComment, Pet, PetGroup } from "@/types";
+import type { HomeData, HomeStat } from "@/services/home/home-service";
 import { AppShell, TopNavigation } from "./app-shell";
 import { AuthForm } from "./auth-form";
 import { EventCard, EventDetailsCard } from "./event-ui";
@@ -23,6 +24,7 @@ import {
   FormCard,
   FormField,
   FormGuidePanel,
+  InfoItem,
   FormSelect,
   FormTextarea,
   PaginationControls,
@@ -98,7 +100,20 @@ export function DashboardView({
   );
 }
 
-export function HomeView({ currentUser }: { currentUser: PublicUser | null }) {
+export function HomeView({
+  currentUser,
+  homeData,
+}: {
+  currentUser: PublicUser | null;
+  homeData?: HomeData;
+}) {
+  const stats = homeData?.stats ?? ([
+    { label: "Днес", value: "3 събития", detail: "разходка, грижа и игра" },
+    { label: "Групи", value: "4 активни", detail: "по квартал и нужда" },
+    { label: "Участия", value: "15 активни", detail: "по групите" },
+  ] satisfies HomeStat[]);
+  const events = homeData?.events ?? mockEvents.slice(0, 3);
+
   return (
     <main className="min-h-screen bg-[#eef4f1] text-neutral-950">
       <TopNavigation user={currentUser} active="/" />
@@ -122,29 +137,33 @@ export function HomeView({ currentUser }: { currentUser: PublicUser | null }) {
             </p>
           </section>
 
-          <section className="grid gap-4 md:grid-cols-3">
-            {[
-              ["Днес", "3 събития", "разходка, грижа и игра"],
-              ["Групи", "4 активни", "по квартал и нужда"],
-              ["Участия", "15 активни", "по групите"],
-            ].map(([label, value, detail]) => (
-              <div key={label} className="rounded-lg bg-white p-5 shadow-sm">
-                <p className="text-sm font-bold text-neutral-500">{label}</p>
+          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {stats.map((stat) => (
+              <div key={stat.label} className="rounded-lg bg-white p-5 shadow-sm">
+                <p className="text-sm font-bold text-neutral-500">{stat.label}</p>
                 <p className="mt-2 text-2xl font-black text-emerald-700">
-                  {value}
+                  {stat.value}
                 </p>
-                <p className="mt-2 text-sm text-neutral-600">{detail}</p>
+                <p className="mt-2 text-sm text-neutral-600">{stat.detail}</p>
               </div>
             ))}
           </section>
 
           <section className="rounded-lg bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-black">Последни демо активности</h2>
-            <div className="mt-4 grid gap-3">
-              {mockEvents.slice(0, 3).map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </div>
+            <h2 className="text-xl font-black">
+              {homeData ? "Последни активности" : "Последни демо активности"}
+            </h2>
+            {events.length > 0 ? (
+              <div className="mt-4 grid gap-3">
+                {events.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            ) : (
+              <p className="mt-4 rounded-lg bg-neutral-50 p-3 text-sm text-neutral-600">
+                Още няма събития за този профил.
+              </p>
+            )}
           </section>
         </div>
       </section>
@@ -158,7 +177,7 @@ function HomeSessionCard({ user }: { user: PublicUser }) {
       <p className="text-sm font-semibold text-emerald-700">Активен профил</p>
       <h1 className="mt-2 text-2xl font-black">Здравей, {user.name}</h1>
       <p className="mt-2 text-sm leading-6 text-neutral-600">
-        Сесията е активна. Начало е публичната страница, но вече показва активния профил.
+        Сесията ти е активна. Началото вече показва реални данни за профила.
       </p>
       <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm">
         <p className="break-all font-semibold">{user.email}</p>
@@ -444,12 +463,12 @@ export function AdminView({
                       <AdminMeta label="Роля" value={user.role} />
                       <AdminMeta label="Статус" value={user.status} />
                       <AdminMeta label="От" value={user.joinedAt} />
-                      <button
-                        type="button"
-                        className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 font-semibold md:col-span-4 xl:col-span-1 xl:w-auto"
+                                            <Link
+                        href={`/admin/users/${user.id}`}
+                        className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-center font-semibold md:col-span-4 xl:col-span-1 xl:w-auto"
                       >
                         Преглед
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -765,15 +784,20 @@ export function GroupFormView({
 }
 
 type EventGroupOption = { value: string; label: string };
+type EventFormDefaults = Partial<Record<"groupId" | "title" | "eventType" | "startsAt" | "durationMinutes" | "location" | "capacity" | "notes", string>>;
 
 export function EventFormView({
   action,
   errorMessage,
   groupOptions = mockGroups.map((group) => ({ value: String(group.id), label: group.title })),
+  defaults = {},
+  minStartsAt,
 }: {
   action?: React.ComponentProps<"form">["action"];
   errorMessage?: string;
   groupOptions?: EventGroupOption[];
+  defaults?: EventFormDefaults;
+  minStartsAt?: string;
 }) {
   if (groupOptions.length === 0) {
     return (
@@ -797,17 +821,19 @@ export function EventFormView({
         errorMessage={errorMessage}
         action={action}
       >
-        <FormSelect name="groupId" label="Група" options={groupOptions} />
+        <FormSelect name="groupId" label="Група" options={groupOptions} defaultValue={defaults.groupId} />
         <FormField
           name="title"
           label="Заглавие"
           placeholder="Съботна разходка в Южния парк"
+          defaultValue={defaults.title}
           minLength={3}
           maxLength={180}
         />
         <FormSelect
           name="eventType"
           label="Тип събитие"
+          defaultValue={defaults.eventType}
           options={[
             { value: "dog_walk", label: "Разходка" },
             { value: "pet_sitting", label: "Грижа" },
@@ -822,12 +848,15 @@ export function EventFormView({
           label="Дата и час"
           placeholder="2026-05-30T11:30"
           type="datetime-local"
+          defaultValue={defaults.startsAt}
+          min={minStartsAt}
         />
         <FormField
           name="durationMinutes"
           label="Продължителност"
           placeholder="90"
           type="number"
+          defaultValue={defaults.durationMinutes}
           min={15}
           max={360}
           step={5}
@@ -836,6 +865,7 @@ export function EventFormView({
           name="location"
           label="Място"
           placeholder="Южен парк, вход откъм бул. Витоша"
+          defaultValue={defaults.location}
           minLength={3}
           maxLength={240}
         />
@@ -844,6 +874,7 @@ export function EventFormView({
           label="Капацитет"
           placeholder="8"
           type="number"
+          defaultValue={defaults.capacity}
           min={1}
           max={50}
         />
@@ -851,6 +882,7 @@ export function EventFormView({
           name="notes"
           label="Бележки"
           placeholder="Какво да носят участниците, особености, инструкции..."
+          defaultValue={defaults.notes}
           maxLength={1200}
         />
       </FormCard>
@@ -858,6 +890,45 @@ export function EventFormView({
   );
 }
 
+export function AdminUserDetailsView({ details }: { details: AdminUserDetails }) {
+  const stats = [
+    { label: "Любимци", value: String(details.petCount), tone: "violet" },
+    { label: "Групи", value: String(details.groupCount), tone: "emerald" },
+    { label: "Събития", value: String(details.eventCount), tone: "sky" },
+    { label: "Коментари", value: String(details.commentCount), tone: "amber" },
+  ];
+
+  return (
+    <AppShell active="/admin">
+      <section className="rounded-lg border border-neutral-200 bg-white p-5">
+        <p className="text-sm font-semibold text-emerald-700">Потребителски профил</p>
+        <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">{details.name}</h2>
+            <p className="mt-1 break-all text-sm text-neutral-600">{details.email}</p>
+          </div>
+          <Badge tone={details.role === "admin" ? "warning" : "neutral"}>{details.role}</Badge>
+        </div>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {stats.map((stat) => (
+            <StatCard key={stat.label} {...stat} />
+          ))}
+        </div>
+        <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
+          <InfoItem label="Статус" value={details.status} />
+          <InfoItem label="От" value={details.joinedAt} />
+          <InfoItem label="Участия" value={String(details.participationCount)} />
+        </dl>
+        <Link
+          href="/admin"
+          className="mt-5 inline-flex rounded-lg border border-neutral-300 px-4 py-3 text-sm font-bold text-neutral-800"
+        >
+          Обратно към админ панела
+        </Link>
+      </section>
+    </AppShell>
+  );
+}
 function AdminMeta({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-white px-3 py-2 md:bg-neutral-50">

@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { EventPageView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { createEventComment, listEventComments } from "@/services/comments/comment-service";
-import { getEventForUser, joinEvent, leaveEvent } from "@/services/events/event-service";
+import { getEventForViewer, joinEvent, leaveEvent } from "@/services/events/event-service";
 import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
 import type { CareEvent, EventComment } from "@/types";
 
@@ -18,7 +18,7 @@ function parseId(value: string) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-function toCareEvent(event: NonNullable<Awaited<ReturnType<typeof getEventForUser>>>): CareEvent {
+function toCareEvent(event: NonNullable<Awaited<ReturnType<typeof getEventForViewer>>>): CareEvent {
   return {
     id: event.id,
     groupId: event.groupId,
@@ -59,7 +59,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
   const resolvedEventId = eventId;
   const eventPath = `/events/${resolvedEventId}`;
-  const event = await getEventForUser(resolvedEventId, user.id);
+  const event = await getEventForViewer(resolvedEventId, user);
   const errorMessage = getFormError(searchParams ? await searchParams : undefined);
 
   if (!event) {

@@ -3,9 +3,24 @@ import { redirect } from "next/navigation";
 import { EventFormView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { createEventAsManager } from "@/services/events/event-service";
-import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
-import { listGroupsForUser } from "@/services/groups/group-service";
+import {
+  getFormError,
+  getFormValue,
+  redirectWithFormErrorAndState,
+} from "@/services/forms/form-errors";
+import { listCreatableGroupsForUser } from "@/services/groups/group-service";
 import type { EventType } from "@/types";
+
+const eventFormFields = [
+  "groupId",
+  "title",
+  "eventType",
+  "startsAt",
+  "durationMinutes",
+  "location",
+  "capacity",
+  "notes",
+];
 
 function optionalText(value: FormDataEntryValue | null) {
   const text = String(value ?? "").trim();
@@ -13,15 +28,21 @@ function optionalText(value: FormDataEntryValue | null) {
   return text.length > 0 ? text : null;
 }
 
+function toDateTimeLocalInputValue(date: Date) {
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+
+  return localDate.toISOString().slice(0, 16);
+}
+
 type PageProps = {
-  searchParams?: Promise<{ error?: string | string[] }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function NewEventPage({ searchParams }: PageProps) {
   const user = await requireCurrentSessionUser("/events/new");
-  const groups = await listGroupsForUser(user.id);
-  const creatableGroups = groups.filter((group) => user.role === "admin" || group.role === "manager");
-  const errorMessage = getFormError(searchParams ? await searchParams : undefined);
+  const groups = await listCreatableGroupsForUser(user);
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const errorMessage = getFormError(resolvedSearchParams);
 
   async function createEventAction(formData: FormData) {
     "use server";
@@ -51,7 +72,7 @@ export default async function NewEventPage({ searchParams }: PageProps) {
       });
       eventId = event.id;
     } catch (error) {
-      redirectWithFormError("/events/new", error);
+      redirectWithFormErrorAndState("/events/new", error, formData, eventFormFields);
     }
 
     redirect(`/events/${eventId}`);
@@ -61,7 +82,18 @@ export default async function NewEventPage({ searchParams }: PageProps) {
     <EventFormView
       action={createEventAction}
       errorMessage={errorMessage}
-      groupOptions={creatableGroups.map((group) => ({ value: String(group.id), label: group.title }))}
+      minStartsAt={toDateTimeLocalInputValue(new Date())}
+      defaults={{
+        groupId: getFormValue(resolvedSearchParams, "groupId"),
+        title: getFormValue(resolvedSearchParams, "title"),
+        eventType: getFormValue(resolvedSearchParams, "eventType"),
+        startsAt: getFormValue(resolvedSearchParams, "startsAt"),
+        durationMinutes: getFormValue(resolvedSearchParams, "durationMinutes"),
+        location: getFormValue(resolvedSearchParams, "location"),
+        capacity: getFormValue(resolvedSearchParams, "capacity"),
+        notes: getFormValue(resolvedSearchParams, "notes"),
+      }}
+      groupOptions={groups.map((group) => ({ value: String(group.id), label: group.title }))}
     />
   );
 }

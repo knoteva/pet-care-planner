@@ -3,6 +3,7 @@ import Link from "next/link";
 import { comments as mockComments } from "@/services/mock-data";
 import type { CareEvent, EventComment } from "@/types";
 import { eventTypeLabels, formatEventDate, statusLabels } from "./app-labels";
+import { ShareLinkButton } from "./share-link-button";
 import { Badge, InfoItem } from "./ui-primitives";
 
 type EventCommentView = EventComment & {
@@ -131,12 +132,7 @@ export function EventDetailsCard({
               </button>
             </form>
           )}
-          <button
-            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-bold text-neutral-800"
-            type="button"
-          >
-            Сподели линк
-          </button>
+                    <ShareLinkButton />
         </div>
       ) : null}
 

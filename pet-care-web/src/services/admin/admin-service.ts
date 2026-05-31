@@ -1,7 +1,7 @@
-import { and, count, desc, isNull, ne } from "drizzle-orm";
+import { and, count, desc, eq, isNull, ne } from "drizzle-orm";
 
 import { db } from "@/db";
-import { careEvents, eventComments, petGroups, pets, users } from "@/db/schema";
+import { careEvents, eventComments, eventParticipants, groupMembers, petGroups, pets, users } from "@/db/schema";
 
 export type AdminPanelStat = {
   label: string;
@@ -16,6 +16,14 @@ export type AdminPanelUser = {
   role: "user" | "admin";
   status: string;
   joinedAt: string;
+};
+
+export type AdminUserDetails = AdminPanelUser & {
+  petCount: number;
+  groupCount: number;
+  eventCount: number;
+  commentCount: number;
+  participationCount: number;
 };
 
 function formatJoinedAt(value: Date) {
@@ -72,5 +80,50 @@ export async function getAdminDashboardData(options: { limit?: number; offset?: 
       status: "активен",
       joinedAt: formatJoinedAt(user.createdAt),
     })) satisfies AdminPanelUser[],
+  };
+}
+
+export async function getAdminUserDetails(userId: number): Promise<AdminUserDetails | null> {
+  const [user] = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      role: users.role,
+      createdAt: users.createdAt,
+    })
+    .from(users)
+    .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+    .limit(1);
+
+  if (!user) {
+    return null;
+  }
+
+  const [petCount, groupCount, eventCount, commentCount, participationCount] = await Promise.all([
+    getCount(db.select({ value: count() }).from(pets).where(and(eq(pets.ownerId, user.id), isNull(pets.deletedAt)))),
+    getCount(
+      db
+        .select({ value: count() })
+        .from(groupMembers)
+        .where(and(eq(groupMembers.userId, user.id), isNull(groupMembers.removedAt))),
+    ),
+    getCount(db.select({ value: count() }).from(careEvents).where(and(eq(careEvents.createdById, user.id), isNull(careEvents.deletedAt)))),
+    getCount(db.select({ value: count() }).from(eventComments).where(and(eq(eventComments.userId, user.id), isNull(eventComments.deletedAt)))),
+    getCount(db.select({ value: count() }).from(eventParticipants).where(eq(eventParticipants.userId, user.id))),
+  ]);
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    status: "активен",
+    joinedAt: formatJoinedAt(user.createdAt),
+    petCount,
+    groupCount,
+    eventCount,
+    commentCount,
+    participationCount,
   };
 }

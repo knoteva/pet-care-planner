@@ -7,6 +7,7 @@ import {
   users,
   type NewPetGroup,
 } from "@/db/schema";
+import { isAdmin, type PublicUser } from "@/services/auth/auth-service";
 import { integerField, textField, ValidationError } from "@/services/validation";
 
 export type CreateGroupInput = Pick<NewPetGroup, "title" | "description" | "area" | "inviteCode" | "createdById">;
@@ -54,6 +55,41 @@ export async function listGroupsForUser(userId: number, options: { limit?: numbe
     .offset(options.offset ?? 0);
 }
 
+export async function listAllGroupsForAdmin(options: { limit?: number; offset?: number } = {}) {
+  const groups = await db
+    .select({
+      id: petGroups.id,
+      title: petGroups.title,
+      description: petGroups.description,
+      area: petGroups.area,
+      inviteCode: petGroups.inviteCode,
+      createdById: petGroups.createdById,
+      createdAt: petGroups.createdAt,
+      updatedAt: petGroups.updatedAt,
+    })
+    .from(petGroups)
+    .where(isNull(petGroups.deletedAt))
+    .orderBy(asc(petGroups.title))
+    .limit(options.limit ?? 100)
+    .offset(options.offset ?? 0);
+
+  return groups.map((group) => ({ ...group, role: "manager" as const }));
+}
+
+export async function listGroupsForViewer(user: PublicUser, options: { limit?: number; offset?: number } = {}) {
+  return isAdmin(user) ? listAllGroupsForAdmin(options) : listGroupsForUser(user.id, options);
+}
+
+export async function listCreatableGroupsForUser(user: PublicUser) {
+  if (isAdmin(user)) {
+    return listAllGroupsForAdmin();
+  }
+
+  const groups = await listGroupsForUser(user.id);
+
+  return groups.filter((group) => group.role === "manager");
+}
+
 export async function getGroupForUser(groupId: number, userId: number) {
   const [group] = await db
     .select({
@@ -80,6 +116,29 @@ export async function getGroupForUser(groupId: number, userId: number) {
     .limit(1);
 
   return group ?? null;
+}
+
+export async function getGroupForViewer(groupId: number, user: PublicUser) {
+  if (!isAdmin(user)) {
+    return getGroupForUser(groupId, user.id);
+  }
+
+  const [group] = await db
+    .select({
+      id: petGroups.id,
+      title: petGroups.title,
+      description: petGroups.description,
+      area: petGroups.area,
+      inviteCode: petGroups.inviteCode,
+      createdById: petGroups.createdById,
+      createdAt: petGroups.createdAt,
+      updatedAt: petGroups.updatedAt,
+    })
+    .from(petGroups)
+    .where(and(eq(petGroups.id, groupId), isNull(petGroups.deletedAt)))
+    .limit(1);
+
+  return group ? { ...group, role: "manager" as const } : null;
 }
 
 export async function createGroup(input: CreateGroupInput) {

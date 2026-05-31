@@ -2,8 +2,8 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { apiErrorResponse, parseRouteId, requireApiUser } from "../../api-utils";
-import { listEventsForUser } from "@/services/events/event-service";
-import { getGroupForUser, listGroupMembers } from "@/services/groups/group-service";
+import { listEventsForGroupForViewer } from "@/services/events/event-service";
+import { getGroupForViewer, listGroupMembers } from "@/services/groups/group-service";
 import { ValidationError } from "@/services/validation";
 
 export const runtime = "nodejs";
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   try {
     const groupId = await getGroupId(context);
-    const group = await getGroupForUser(groupId, user.id);
+    const group = await getGroupForViewer(groupId, user);
 
     if (!group) {
       return NextResponse.json({ error: "Групата не е намерена." }, { status: 404 });
@@ -34,14 +34,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const [members, events] = await Promise.all([
       listGroupMembers(groupId),
-      listEventsForUser(user.id),
+      listEventsForGroupForViewer(user, groupId),
     ]);
 
-    return NextResponse.json({
-      group,
-      members,
-      events: events.filter((event) => event.groupId === groupId),
-    });
+    return NextResponse.json({ group, members, events });
   } catch (error) {
     return apiErrorResponse(error);
   }

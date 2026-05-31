@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 
 import { GroupDetailsView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
-import { listEventsForUser } from "@/services/events/event-service";
-import { getGroupForUser, listGroupMembers } from "@/services/groups/group-service";
+import { listEventsForGroupForViewer } from "@/services/events/event-service";
+import { getGroupForViewer, listGroupMembers } from "@/services/groups/group-service";
 import type { CareEvent, PetGroup } from "@/types";
 
 function parseId(value: string) {
@@ -12,7 +12,7 @@ function parseId(value: string) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-function toPetGroup(group: NonNullable<Awaited<ReturnType<typeof getGroupForUser>>>): PetGroup {
+function toPetGroup(group: NonNullable<Awaited<ReturnType<typeof getGroupForViewer>>>): PetGroup {
   return {
     id: group.id,
     title: group.title,
@@ -25,7 +25,7 @@ function toPetGroup(group: NonNullable<Awaited<ReturnType<typeof getGroupForUser
   };
 }
 
-function toCareEvent(event: Awaited<ReturnType<typeof listEventsForUser>>[number]): CareEvent {
+function toCareEvent(event: Awaited<ReturnType<typeof listEventsForGroupForViewer>>[number]): CareEvent {
   return {
     id: event.id,
     groupId: event.groupId,
@@ -55,7 +55,7 @@ export default async function GroupPage({
     notFound();
   }
 
-  const group = await getGroupForUser(groupId, user.id);
+  const group = await getGroupForViewer(groupId, user);
 
   if (!group) {
     notFound();
@@ -63,13 +63,13 @@ export default async function GroupPage({
 
   const [members, events] = await Promise.all([
     listGroupMembers(groupId),
-    listEventsForUser(user.id),
+    listEventsForGroupForViewer(user, groupId),
   ]);
 
   return (
     <GroupDetailsView
       group={toPetGroup(group)}
-      groupEvents={events.filter((event) => event.groupId === groupId).map(toCareEvent)}
+      groupEvents={events.map(toCareEvent)}
       members={members.map((member) => ({
         id: member.id,
         name: member.name,

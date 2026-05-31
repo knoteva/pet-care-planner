@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { apiErrorResponse, readJsonObject, requireApiUser } from "../api-utils";
-import { createEventAsManager, listEventsForUser } from "@/services/events/event-service";
+import { createEventAsManager, listEventsForViewer } from "@/services/events/event-service";
 import { getPageWindow, parsePage, resolvePageRows } from "@/services/pagination";
 import type { EventType } from "@/types";
 
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   if (!user) return response;
 
   const page = parsePage(request.nextUrl.searchParams.get("page") ?? undefined);
-  const rows = await listEventsForUser(user.id, getPageWindow(page));
+  const rows = await listEventsForViewer(user, getPageWindow(page));
   const pageRows = resolvePageRows(rows, page, "/api/events");
 
   return NextResponse.json({ events: pageRows.items, pagination: pageRows.pagination });
