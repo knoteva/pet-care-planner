@@ -144,7 +144,7 @@ The Web app currently has 18 page screens:
 /events/suggest
 ```
 
-The dynamic pages are the real database-driven versions. The slug demo pages remain for visual/demo compatibility.
+The dynamic pages are the real database-driven versions. Legacy slug demo routes now redirect to the real database-backed sections.
 
 ## Mobile Screens
 
@@ -229,7 +229,7 @@ Real database-backed features:
 
 Still demo or scope-limited:
 
-- Some static slug pages kept for visual review.
+- Legacy static slug pages redirect to the real database-backed sections.
 - Invite link flow is prepared visually, not fully implemented.
 - Mobile app is visual/scope-limited and not yet fully connected to REST API.
 - Advanced moderation and AI checklist generation are placeholders.

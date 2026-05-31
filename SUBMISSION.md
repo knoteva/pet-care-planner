@@ -48,7 +48,7 @@ event_comments
 
 ## Web Screen Count
 
-The Web app has at least 17 page screens/routes, including public pages, dashboard, admin, pets, groups, events and API docs.
+The Web app has at least 18 page screens/routes, including public pages, dashboard, admin, pets, groups, events, API docs and legacy routes that redirect to database-backed sections.
 
 ## Mobile Screen Count
 

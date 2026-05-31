@@ -1,8 +1,9 @@
-import { EventPageView } from "@/components/app-ui";
+import { redirect } from "next/navigation";
+
 import { requireCurrentSessionUser } from "@/services/auth/session";
 
-export default async function EventPage() {
+export default async function LegacyEventDemoPage() {
   await requireCurrentSessionUser("/events/sabotna-razhodka");
 
-  return <EventPageView />;
+  redirect("/dashboard");
 }

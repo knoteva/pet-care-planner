@@ -1,8 +1,9 @@
-import { GroupDetailsView } from "@/components/app-ui";
+import { redirect } from "next/navigation";
+
 import { requireCurrentSessionUser } from "@/services/auth/session";
 
-export default async function GroupDetailsPage() {
+export default async function LegacyGroupDemoPage() {
   await requireCurrentSessionUser("/groups/yuzhen-park");
 
-  return <GroupDetailsView />;
+  redirect("/groups");
 }
