@@ -1,7 +1,9 @@
 import { DashboardView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { listEventsForUser } from "@/services/events/event-service";
-import type { CareEvent } from "@/types";
+import { listGroupsForUser } from "@/services/groups/group-service";
+import { listPetsForUser } from "@/services/pets/pet-service";
+import type { CareEvent, PetGroup } from "@/types";
 
 function toDashboardEvent(event: Awaited<ReturnType<typeof listEventsForUser>>[number]): CareEvent {
   return {
@@ -21,9 +23,35 @@ function toDashboardEvent(event: Awaited<ReturnType<typeof listEventsForUser>>[n
   };
 }
 
+function toDashboardGroup(group: Awaited<ReturnType<typeof listGroupsForUser>>[number]): PetGroup {
+  return {
+    id: group.id,
+    title: group.title,
+    description: group.description,
+    area: group.area,
+    inviteCode: group.inviteCode,
+    createdById: group.createdById,
+    createdAt: group.createdAt.toISOString(),
+    isManager: group.role === "manager",
+  };
+}
+
 export default async function DashboardPage() {
   const user = await requireCurrentSessionUser("/dashboard");
-  const events = (await listEventsForUser(user.id)).map(toDashboardEvent);
+  const [eventRows, pets, groupRows] = await Promise.all([
+    listEventsForUser(user.id),
+    listPetsForUser(user.id),
+    listGroupsForUser(user.id),
+  ]);
 
-  return <DashboardView events={events} />;
+  const events = eventRows.map(toDashboardEvent);
+  const groups = groupRows.map(toDashboardGroup);
+  const stats = [
+    { label: "Активни събития", value: String(events.length), tone: "emerald" },
+    { label: "Моите любимци", value: String(pets.length), tone: "sky" },
+    { label: "Групи", value: String(groups.length), tone: "violet" },
+    { label: "Участия", value: String(events.length), tone: "amber" },
+  ];
+
+  return <DashboardView events={events} groups={groups} pets={pets} stats={stats} />;
 }

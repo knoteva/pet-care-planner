@@ -9,11 +9,33 @@ import {
   type NewCareEvent,
 } from "@/db/schema";
 import { getGroupMembership, isAdmin, type PublicUser } from "@/services/auth/auth-service";
+import { dateField, enumField, integerField, textField } from "@/services/validation";
+import type { EventType } from "@/types";
 
 export type CreateEventInput = Pick<
   NewCareEvent,
   "groupId" | "createdById" | "title" | "eventType" | "startsAt" | "durationMinutes" | "location" | "capacity" | "notes"
 >;
+
+const eventTypes = ["dog_walk", "pet_sitting", "playdate", "training", "vet_support", "other"] satisfies EventType[];
+
+function validateCreateEventInput(input: CreateEventInput) {
+  const minDate = new Date(Date.now() - 5 * 60 * 1000);
+  const maxDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+
+  return {
+    ...input,
+    groupId: integerField(input.groupId, { label: "Група", min: 1, max: 2147483647 }),
+    createdById: integerField(input.createdById, { label: "Създател", min: 1, max: 2147483647 }),
+    title: textField(input.title, { label: "Заглавие", min: 3, max: 180 }),
+    eventType: enumField(input.eventType, eventTypes, "Тип събитие"),
+    startsAt: dateField(input.startsAt, { label: "Дата и час", minDate, maxDate }),
+    durationMinutes: integerField(input.durationMinutes, { label: "Продължителност", min: 15, max: 360 }),
+    location: textField(input.location, { label: "Място", min: 3, max: 240 }),
+    capacity: integerField(input.capacity, { label: "Капацитет", min: 1, max: 50 }),
+    notes: textField(input.notes, { label: "Бележки", max: 1200, required: false }),
+  };
+}
 
 export async function listEventsForUser(userId: number) {
   return db
@@ -79,13 +101,14 @@ export async function getEventForUser(eventId: number, userId: number) {
 }
 
 export async function createEventAsManager(user: PublicUser, input: CreateEventInput) {
-  const membership = await getGroupMembership(user.id, input.groupId);
+  const cleanInput = validateCreateEventInput(input);
+  const membership = await getGroupMembership(user.id, cleanInput.groupId);
 
   if (!isAdmin(user) && membership?.role !== "manager") {
     throw new Error("Only admins and group managers can create events.");
   }
 
-  const [event] = await db.insert(careEvents).values(input).returning();
+  const [event] = await db.insert(careEvents).values(cleanInput).returning();
 
   return event;
 }

@@ -3,6 +3,7 @@ import { and, asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { careEvents, eventComments, users } from "@/db/schema";
 import { getGroupMembership, isAdmin, type PublicUser } from "@/services/auth/auth-service";
+import { textField } from "@/services/validation";
 
 export async function listEventComments(eventId: number) {
   return db
@@ -46,12 +47,7 @@ export async function createEventComment(user: PublicUser, eventId: number, text
     throw new Error("Only group members can comment on events.");
   }
 
-  const cleanText = text.trim();
-
-  if (!cleanText) {
-    throw new Error("Comment text is required.");
-  }
-
+  const cleanText = textField(text, { label: "Коментар", min: 2, max: 500 });
   const [comment] = await db
     .insert(eventComments)
     .values({ eventId, userId: user.id, text: cleanText })

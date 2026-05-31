@@ -130,7 +130,7 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
         onSubmit={handleSubmit}
       >
         {!isLogin ? (
-          <AuthField name="name" label="Име" placeholder="Мария Петкова" />
+          <AuthField name="name" label="Име" placeholder="Мария Петкова" minLength={2} maxLength={120} />
         ) : null}
         <AuthField
           name="email"
@@ -138,6 +138,7 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
           placeholder=""
           type="email"
           autoComplete="email"
+          maxLength={255}
         />
         <AuthField
           name="password"
@@ -145,6 +146,8 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
           placeholder={isLogin ? "" : "Минимум 8 символа"}
           type="password"
           autoComplete={isLogin ? "current-password" : "new-password"}
+          minLength={8}
+          maxLength={128}
         />
         {!isLogin ? (
           <AuthField
@@ -153,6 +156,8 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
             placeholder="Повтори паролата"
             type="password"
             autoComplete="new-password"
+            minLength={8}
+            maxLength={128}
           />
         ) : null}
 
@@ -204,12 +209,16 @@ function AuthField({
   placeholder,
   type = "text",
   autoComplete,
+  minLength,
+  maxLength,
 }: {
   name: string;
   label: string;
   placeholder: string;
   type?: string;
   autoComplete?: string;
+  minLength?: number;
+  maxLength?: number;
 }) {
   return (
     <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -223,6 +232,9 @@ function AuthField({
         placeholder={placeholder}
         type={type}
         autoComplete={autoComplete}
+        minLength={minLength}
+        maxLength={maxLength}
+        required
       />
     </label>
   );

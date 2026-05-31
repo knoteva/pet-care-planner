@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { PetEditFormView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { getPetForUser, updatePetForUser } from "@/services/pets/pet-service";
+import { integerField } from "@/services/validation";
 import type { PetType } from "@/types";
 
 const PET_TYPES = new Set<PetType>(["dog", "cat", "bird", "rabbit", "other"]);
@@ -20,14 +21,7 @@ function optionalText(value: FormDataEntryValue | null) {
 }
 
 function optionalAge(value: FormDataEntryValue | null) {
-  const text = String(value ?? "").trim();
-  if (!text) {
-    return null;
-  }
-
-  const age = Number(text);
-
-  return Number.isInteger(age) && age >= 0 ? age : null;
+  return integerField(value, { label: "Възраст", min: 0, max: 50, required: false });
 }
 
 export default async function EditPetPage({

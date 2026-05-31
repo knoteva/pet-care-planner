@@ -6,14 +6,14 @@ import {
   dashboardStats,
   groupMembers,
   events as mockEvents,
-  groups,
+  groups as mockGroups,
   moderationQueue,
   participants,
   pets as mockPets,
 } from "@/services/mock-data";
 import type { AdminPanelStat, AdminPanelUser } from "@/services/admin/admin-service";
 import type { PublicUser } from "@/services/auth/auth-service";
-import type { CareEvent, Pet, PetGroup } from "@/types";
+import type { CareEvent, EventComment, Pet, PetGroup } from "@/types";
 import { AppShell, TopNavigation } from "./app-shell";
 import { AuthForm } from "./auth-form";
 import { EventCard, EventDetailsCard } from "./event-ui";
@@ -32,7 +32,17 @@ import {
 import { DeletePetButton } from "./delete-pet-button";
 import { LogoutButton } from "./logout-button";
 
-export function DashboardView({ events = mockEvents }: { events?: CareEvent[] }) {
+export function DashboardView({
+  events = mockEvents,
+  groups = mockGroups,
+  pets = mockPets,
+  stats = dashboardStats,
+}: {
+  events?: CareEvent[];
+  groups?: PetGroup[];
+  pets?: Pet[];
+  stats?: typeof dashboardStats;
+}) {
   const primaryEvent = events[0];
 
   return (
@@ -41,7 +51,7 @@ export function DashboardView({ events = mockEvents }: { events?: CareEvent[] })
       aside={primaryEvent ? <EventDetailsCard event={primaryEvent} compact /> : undefined}
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {dashboardStats.map((stat) => (
+        {stats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
         ))}
       </div>
@@ -71,8 +81,8 @@ export function DashboardView({ events = mockEvents }: { events?: CareEvent[] })
       </section>
 
       <section className="mt-6 grid gap-5 lg:grid-cols-2">
-        <PetPanel />
-        <GroupPanel />
+        <PetPanel pets={pets} />
+        <GroupPanel groups={groups} />
       </section>
 
       <section className="mt-6">
@@ -283,31 +293,51 @@ export function PetsView({ pets }: { pets: Pet[] }) {
   );
 }
 
-export function GroupsView() {
+type GroupMemberDisplay = {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  pets: string;
+  joinedAt: string;
+};
+
+export function GroupsView({ groups = mockGroups }: { groups?: PetGroup[] }) {
   return (
     <AppShell active="/groups" aside={<InvitePanel />}>
       <SectionTitle title="Групи" action="Нова група" href="/groups/new" />
-      <div className="mt-4 grid gap-4">
-        {groups.map((group) => (
-          <GroupCard key={group.id} group={group} />
-        ))}
-      </div>
-      <div className="mt-6">
-        <EmptyState
-          title="Няма чакащи покани"
-          description="Когато мениджър изпрати покана, тя ще се появи тук с действия за приемане или отказ."
-          actionLabel="Отвори демо група"
-          href="/groups/yuzhen-park"
-        />
-      </div>
+      {groups.length > 0 ? (
+        <div className="mt-4 grid gap-4">
+          {groups.map((group) => (
+            <GroupCard key={group.id} group={group} />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4">
+          <EmptyState
+            title="Още няма групи"
+            description="Създай първата си група, за да организираш събития и помощ за любимци."
+            actionLabel="Нова група"
+            href="/groups/new"
+          />
+        </div>
+      )}
     </AppShell>
   );
 }
 
-export function EventPageView() {
+export function EventPageView({
+  event = mockEvents[0],
+  comments,
+  commentAction,
+}: {
+  event?: CareEvent;
+  comments?: Array<EventComment & { authorName?: string }>;
+  commentAction?: React.ComponentProps<"form">["action"];
+}) {
   return (
     <AppShell active="/dashboard" aside={<ParticipantPanel />}>
-      <EventDetailsCard event={mockEvents[0]} />
+      <EventDetailsCard event={event} comments={comments} commentAction={commentAction} />
     </AppShell>
   );
 }
@@ -433,9 +463,16 @@ export function AdminView({
     </AppShell>
   );
 }
-export function GroupDetailsView() {
-  const group = groups[0];
-  const groupEvents = mockEvents.filter((event) => event.groupId === group.id);
+export function GroupDetailsView({
+  group = mockGroups[0],
+  groupEvents,
+  members = groupMembers,
+}: {
+  group?: PetGroup;
+  groupEvents?: CareEvent[];
+  members?: GroupMemberDisplay[];
+}) {
+  const eventsForGroup = groupEvents ?? mockEvents.filter((event) => event.groupId === group.id);
 
   return (
     <AppShell
@@ -450,7 +487,9 @@ export function GroupDetailsView() {
       <section className="rounded-lg border border-neutral-200 bg-white p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <Badge tone="success">мениджърски изглед</Badge>
+            <Badge tone={group.isManager ? "success" : "neutral"}>
+              {group.isManager ? "мениджърски изглед" : "член на група"}
+            </Badge>
             <h2 className="mt-3 text-3xl font-bold">{group.title}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600">
               {group.description}
@@ -460,19 +499,21 @@ export function GroupDetailsView() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link
-              href="/events/new"
-              className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
-            >
-              Ново събитие
-            </Link>
-            <button
-              type="button"
-              disabled
-              className="cursor-not-allowed rounded-lg border border-neutral-300 bg-neutral-100 px-4 py-2.5 text-sm font-bold text-neutral-500"
-            >
-              Покани член
-            </button>
+            {group.isManager ? (
+              <Link
+                href="/events/new"
+                className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
+              >
+                Ново събитие
+              </Link>
+            ) : (
+              <Link
+                href="/events/suggest"
+                className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
+              >
+                Предложи събитие
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -480,17 +521,28 @@ export function GroupDetailsView() {
       <section className="mt-6 grid gap-5">
         <div className="rounded-lg border border-neutral-200 bg-white p-5">
           <h3 className="text-xl font-bold">Събития в групата</h3>
-          <div className="mt-4 grid gap-3">
-            {groupEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
+          {eventsForGroup.length > 0 ? (
+            <div className="mt-4 grid gap-3">
+              {eventsForGroup.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4">
+              <EmptyState
+                title="Още няма събития"
+                description="Когато мениджърът създаде събитие, то ще се появи тук."
+                actionLabel={group.isManager ? "Ново събитие" : "Предложи събитие"}
+                href={group.isManager ? "/events/new" : "/events/suggest"}
+              />
+            </div>
+          )}
         </div>
 
         <div className="rounded-lg border border-neutral-200 bg-white p-5">
           <h3 className="text-xl font-bold">Членове</h3>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {groupMembers.map((member) => (
+            {members.map((member) => (
               <div
                 key={member.id}
                 className="rounded-lg border border-neutral-100 bg-neutral-50 p-3"
@@ -500,9 +552,7 @@ export function GroupDetailsView() {
                     <p className="font-bold">{member.name}</p>
                     <p className="text-sm text-neutral-500">{member.email}</p>
                   </div>
-                  <Badge
-                    tone={member.role === "мениджър" ? "success" : "neutral"}
-                  >
+                  <Badge tone={member.role === "мениджър" ? "success" : "neutral"}>
                     {member.role}
                   </Badge>
                 </div>
@@ -513,7 +563,6 @@ export function GroupDetailsView() {
             ))}
           </div>
         </div>
-
       </section>
     </AppShell>
   );
@@ -532,7 +581,7 @@ export function PetFormView({
         submitLabel="Запази любимец"
         action={action}
       >
-        <FormField name="name" label="Име" placeholder="Рая" />
+        <FormField name="name" label="Име" placeholder="Рая" maxLength={120} />
         <FormSelect
           name="type"
           label="Тип"
@@ -544,8 +593,8 @@ export function PetFormView({
             { value: "other", label: "Друго" },
           ]}
         />
-        <FormField name="breed" label="Порода" placeholder="Кокер шпаньол" />
-        <FormField name="age" label="Възраст" placeholder="4" type="number" />
+        <FormField name="breed" label="Порода" placeholder="Кокер шпаньол" maxLength={120} required={false} />
+        <FormField name="age" label="Възраст" placeholder="4" type="number" min={0} max={50} required={false} />
         <FormSelect
           name="size"
           label="Размер"
@@ -555,6 +604,7 @@ export function PetFormView({
           name="notes"
           label="Бележки"
           placeholder="Характер, страхове, храна, важни навици..."
+          maxLength={1000}
         />
       </FormCard>
     </AppShell>
@@ -582,6 +632,7 @@ export function PetEditFormView({
           label="Име"
           placeholder="Рая"
           defaultValue={pet.name}
+          maxLength={120}
         />
         <FormSelect
           name="type"
@@ -600,6 +651,8 @@ export function PetEditFormView({
           label="Порода"
           placeholder="Кокер шпаньол"
           defaultValue={pet.breed ?? ""}
+          maxLength={120}
+          required={false}
         />
         <FormField
           name="age"
@@ -607,6 +660,9 @@ export function PetEditFormView({
           placeholder="4"
           type="number"
           defaultValue={String(pet.age ?? "")}
+          min={0}
+          max={50}
+          required={false}
         />
         <FormSelect
           name="size"
@@ -619,53 +675,86 @@ export function PetEditFormView({
           label="Бележки"
           placeholder="Характер, страхове, храна, важни навици..."
           defaultValue={pet.notes ?? ""}
+          maxLength={1000}
         />
       </FormCard>
     </AppShell>
   );
 }
 
-export function GroupFormView() {
+export function GroupFormView({ action }: { action?: React.ComponentProps<"form">["action"] }) {
   return (
     <AppShell active="/groups" aside={<FormGuidePanel title="Група" />}>
       <FormCard
         title="Създай група"
         description="Собственикът на групата ще стане първият group manager."
         submitLabel="Създай група"
+        action={action}
       >
         <FormField
           name="title"
           label="Име на групата"
           placeholder="Южен парк - разходки"
+          minLength={3}
+          maxLength={160}
         />
-        <FormField name="area" label="Район" placeholder="София, Южен парк" />
+        <FormField name="area" label="Район" placeholder="София, Южен парк" maxLength={180} required={false} />
         <FormTextarea
           name="description"
           label="Описание"
           placeholder="Кога се събирате, какъв тип грижа координирате..."
+          maxLength={1000}
         />
         <FormField
           name="inviteCode"
           label="Код за покана"
           placeholder="PAWS-SOUTH"
+          minLength={4}
+          maxLength={48}
+          pattern="[A-Z0-9-]+"
         />
       </FormCard>
     </AppShell>
   );
 }
 
-export function EventFormView() {
+type EventGroupOption = { value: string; label: string };
+
+export function EventFormView({
+  action,
+  groupOptions = mockGroups.map((group) => ({ value: String(group.id), label: group.title })),
+}: {
+  action?: React.ComponentProps<"form">["action"];
+  groupOptions?: EventGroupOption[];
+}) {
+  if (groupOptions.length === 0) {
+    return (
+      <AppShell active="/dashboard" aside={<FormGuidePanel title="Събитие" />}>
+        <EmptyState
+          title="Няма група за ново събитие"
+          description="Само админ или мениджър на група може да публикува събитие директно. Създай група или използвай мениджърски профил."
+          actionLabel="Към групите"
+          href="/groups"
+        />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell active="/dashboard" aside={<FormGuidePanel title="Събитие" />}>
       <FormCard
         title="Ново събитие"
-        description="Полета, съвместими с бъдещата таблица care_events."
+        description="Събитието се записва в базата и е видимо за членовете на избраната група."
         submitLabel="Публикувай събитие"
+        action={action}
       >
+        <FormSelect name="groupId" label="Група" options={groupOptions} />
         <FormField
           name="title"
           label="Заглавие"
           placeholder="Съботна разходка в Южния парк"
+          minLength={3}
+          maxLength={180}
         />
         <FormSelect
           name="eventType"
@@ -682,29 +771,38 @@ export function EventFormView() {
         <FormField
           name="startsAt"
           label="Дата и час"
-          placeholder="2026-05-30 11:30"
+          placeholder="2026-05-30T11:30"
+          type="datetime-local"
         />
         <FormField
           name="durationMinutes"
           label="Продължителност"
           placeholder="90"
           type="number"
+          min={15}
+          max={360}
+          step={5}
         />
         <FormField
           name="location"
           label="Място"
           placeholder="Южен парк, вход откъм бул. Витоша"
+          minLength={3}
+          maxLength={240}
         />
         <FormField
           name="capacity"
           label="Капацитет"
           placeholder="8"
           type="number"
+          min={1}
+          max={50}
         />
         <FormTextarea
           name="notes"
           label="Бележки"
           placeholder="Какво да носят участниците, особености, инструкции..."
+          maxLength={1200}
         />
       </FormCard>
     </AppShell>
@@ -720,12 +818,12 @@ function AdminMeta({ label, value }: { label: string; value: string }) {
   );
 }
 
-function PetPanel() {
+function PetPanel({ pets = mockPets }: { pets?: Pet[] }) {
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-4">
       <h2 className="text-lg font-bold">Моите любимци</h2>
       <div className="mt-3 grid gap-3">
-        {mockPets.slice(0, 2).map((pet) => (
+        {pets.slice(0, 2).map((pet) => (
           <PetRow key={pet.id} pet={pet} />
         ))}
       </div>
@@ -733,7 +831,7 @@ function PetPanel() {
   );
 }
 
-function GroupPanel() {
+function GroupPanel({ groups = mockGroups }: { groups?: PetGroup[] }) {
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-4">
       <h2 className="text-lg font-bold">Активни групи</h2>
@@ -809,7 +907,7 @@ function PetAvatar({ name, small = false }: { name: string; small?: boolean }) {
 function GroupCard({ group }: { group: PetGroup }) {
   return (
     <Link
-      href="/groups/yuzhen-park"
+      href={`/groups/${group.id}`}
       className="block rounded-lg border border-neutral-200 bg-white p-5 transition hover:border-emerald-400 hover:shadow-sm"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">

@@ -1,0 +1,83 @@
+import { notFound } from "next/navigation";
+
+import { GroupDetailsView } from "@/components/app-ui";
+import { requireCurrentSessionUser } from "@/services/auth/session";
+import { listEventsForUser } from "@/services/events/event-service";
+import { getGroupForUser, listGroupMembers } from "@/services/groups/group-service";
+import type { CareEvent, PetGroup } from "@/types";
+
+function parseId(value: string) {
+  const id = Number(value);
+
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+function toPetGroup(group: NonNullable<Awaited<ReturnType<typeof getGroupForUser>>>): PetGroup {
+  return {
+    id: group.id,
+    title: group.title,
+    description: group.description,
+    area: group.area,
+    inviteCode: group.inviteCode,
+    createdById: group.createdById,
+    createdAt: group.createdAt.toISOString(),
+    isManager: group.role === "manager",
+  };
+}
+
+function toCareEvent(event: Awaited<ReturnType<typeof listEventsForUser>>[number]): CareEvent {
+  return {
+    id: event.id,
+    groupId: event.groupId,
+    title: event.title,
+    eventType: event.eventType,
+    startsAt: event.startsAt.toISOString(),
+    durationMinutes: event.durationMinutes,
+    location: event.location,
+    capacity: event.capacity,
+    canceled: event.status === "canceled",
+    notes: event.notes,
+    status: event.status,
+    participantCount: 0,
+    commentCount: 0,
+  };
+}
+
+export default async function GroupPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const user = await requireCurrentSessionUser("/groups");
+  const groupId = parseId((await params).id);
+
+  if (!groupId) {
+    notFound();
+  }
+
+  const group = await getGroupForUser(groupId, user.id);
+
+  if (!group) {
+    notFound();
+  }
+
+  const [members, events] = await Promise.all([
+    listGroupMembers(groupId),
+    listEventsForUser(user.id),
+  ]);
+
+  return (
+    <GroupDetailsView
+      group={toPetGroup(group)}
+      groupEvents={events.filter((event) => event.groupId === groupId).map(toCareEvent)}
+      members={members.map((member) => ({
+        id: member.id,
+        name: member.name,
+        email: member.email,
+        role: member.role === "manager" ? "мениджър" : "член",
+        pets: "любимци: скоро",
+        joinedAt: member.joinedAt.toLocaleDateString("bg-BG", { day: "numeric", month: "short" }),
+      }))}
+    />
+  );
+}

@@ -7,8 +7,25 @@ import {
   users,
   type NewPetGroup,
 } from "@/db/schema";
+import { integerField, textField } from "@/services/validation";
 
 export type CreateGroupInput = Pick<NewPetGroup, "title" | "description" | "area" | "inviteCode" | "createdById">;
+
+function validateGroupInput(input: CreateGroupInput) {
+  return {
+    ...input,
+    title: textField(input.title, { label: "Име на групата", min: 3, max: 160 }),
+    description: textField(input.description, { label: "Описание", max: 1000, required: false }),
+    area: textField(input.area, { label: "Район", max: 180, required: false }),
+    inviteCode: textField(input.inviteCode, {
+      label: "Код за покана",
+      min: 4,
+      max: 48,
+      pattern: /^[A-Z0-9-]+$/,
+    }).toUpperCase(),
+    createdById: integerField(input.createdById, { label: "Създател", min: 1, max: 2147483647 }),
+  };
+}
 
 export async function listGroupsForUser(userId: number) {
   return db
@@ -64,11 +81,12 @@ export async function getGroupForUser(groupId: number, userId: number) {
 }
 
 export async function createGroup(input: CreateGroupInput) {
-  const [group] = await db.insert(petGroups).values(input).returning();
+  const cleanInput = validateGroupInput(input);
+  const [group] = await db.insert(petGroups).values(cleanInput).returning();
 
   await db.insert(groupMembers).values({
     groupId: group.id,
-    userId: input.createdById,
+    userId: cleanInput.createdById,
     role: "manager",
   });
 

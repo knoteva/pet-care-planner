@@ -56,6 +56,10 @@ function validatePassword(password: string) {
   if (password.length < 8) {
     throw new AuthError("Паролата трябва да е поне 8 символа.");
   }
+
+  if (password.length > 128) {
+    throw new AuthError("Паролата трябва да е до 128 символа.");
+  }
 }
 
 export async function findUserByEmail(email: string) {
@@ -86,7 +90,11 @@ export async function registerUser(input: RegisterUserInput) {
     throw new AuthError("Името е задължително.");
   }
 
-  if (!email.includes("@")) {
+  if (name.length > 120) {
+    throw new AuthError("Името трябва да е до 120 символа.");
+  }
+
+  if (email.length > 255 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw new AuthError("Въведи валиден имейл.");
   }
 

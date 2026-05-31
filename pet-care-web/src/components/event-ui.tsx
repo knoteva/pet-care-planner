@@ -1,9 +1,13 @@
 import Link from "next/link";
 
-import { comments } from "@/services/mock-data";
-import type { CareEvent } from "@/types";
+import { comments as mockComments } from "@/services/mock-data";
+import type { CareEvent, EventComment } from "@/types";
 import { eventTypeLabels, formatEventDate, statusLabels } from "./app-labels";
 import { Badge, InfoItem } from "./ui-primitives";
+
+type EventCommentView = EventComment & {
+  authorName?: string;
+};
 
 export function EventCard({ event }: { event: CareEvent }) {
   const capacityTone =
@@ -13,7 +17,7 @@ export function EventCard({ event }: { event: CareEvent }) {
 
   return (
     <Link
-      href="/events/sabotna-razhodka"
+      href={`/events/${event.id}`}
       className="block rounded-lg border border-neutral-200 bg-white p-4 transition hover:border-emerald-400 hover:shadow-sm"
     >
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_135px] sm:items-start">
@@ -45,7 +49,7 @@ export function EventCard({ event }: { event: CareEvent }) {
             {formatEventDate(event.startsAt)}
           </p>
           <p>{event.durationMinutes} мин.</p>
-          <p>{event.commentCount} коментара</p>
+          <p>{event.commentCount ?? 0} коментара</p>
         </div>
       </div>
     </Link>
@@ -55,9 +59,13 @@ export function EventCard({ event }: { event: CareEvent }) {
 export function EventDetailsCard({
   event,
   compact = false,
+  comments = mockComments,
+  commentAction,
 }: {
   event: CareEvent;
   compact?: boolean;
+  comments?: EventCommentView[];
+  commentAction?: React.ComponentProps<"form">["action"];
 }) {
   return (
     <article className="rounded-lg border border-neutral-200 bg-white p-5">
@@ -109,16 +117,25 @@ export function EventDetailsCard({
         <div className="mt-6">
           <h3 className="font-bold">Коментари</h3>
           <div className="mt-3 grid gap-3">
-            {comments.map((comment) => (
-              <div
-                key={comment.id}
-                className="rounded-lg bg-neutral-50 p-3 text-sm text-neutral-700"
-              >
-                {comment.text}
-              </div>
-            ))}
+            {comments.length > 0 ? (
+              comments.map((comment) => (
+                <div
+                  key={comment.id}
+                  className="rounded-lg bg-neutral-50 p-3 text-sm text-neutral-700"
+                >
+                  {comment.authorName ? (
+                    <p className="mb-1 font-semibold text-neutral-900">{comment.authorName}</p>
+                  ) : null}
+                  <p>{comment.text}</p>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-lg bg-neutral-50 p-3 text-sm text-neutral-600">
+                Още няма коментари.
+              </p>
+            )}
           </div>
-          <form className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+          <form action={commentAction} className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
             <input name="eventId" type="hidden" value={event.id} />
             <label className="grid gap-2 text-sm font-semibold text-neutral-800">
               Напиши коментар
@@ -126,10 +143,13 @@ export function EventDetailsCard({
                 name="text"
                 className="min-h-24 rounded-lg border border-neutral-300 bg-white px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
                 placeholder="Например: Ще донеса вода или ще закъснея 10 мин."
+                minLength={2}
+                maxLength={500}
+                required
               />
             </label>
             <button
-              type="button"
+              type="submit"
               className="mt-3 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
             >
               Публикувай коментар

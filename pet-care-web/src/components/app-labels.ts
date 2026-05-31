@@ -5,9 +5,6 @@ export const statusLabels: Record<EventStatus, string> = {
   current: "в момента",
   past: "архив",
   canceled: "отменено",
-  under_capacity: "има места",
-  full_capacity: "запълнено",
-  over_capacity: "над капацитет",
 };
 
 export const eventTypeLabels: Record<EventType, string> = {

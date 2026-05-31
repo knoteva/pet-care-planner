@@ -200,12 +200,26 @@ export function FormField({
   placeholder,
   type = "text",
   defaultValue,
+  min,
+  max,
+  minLength,
+  maxLength,
+  step,
+  required = true,
+  pattern,
 }: {
   name?: string;
   label: string;
   placeholder: string;
   type?: string;
   defaultValue?: string;
+  min?: string | number;
+  max?: string | number;
+  minLength?: number;
+  maxLength?: number;
+  step?: string | number;
+  required?: boolean;
+  pattern?: string;
 }) {
   return (
     <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -216,6 +230,13 @@ export function FormField({
         placeholder={placeholder}
         type={type}
         defaultValue={defaultValue}
+        min={min}
+        max={max}
+        minLength={minLength}
+        maxLength={maxLength}
+        step={step}
+        required={required}
+        pattern={pattern}
       />
     </label>
   );
@@ -226,11 +247,13 @@ export function FormSelect({
   label,
   options,
   defaultValue,
+  required = true,
 }: {
   name: string;
   label: string;
   options: Array<string | { value: string; label: string }>;
   defaultValue?: string;
+  required?: boolean;
 }) {
   return (
     <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -239,6 +262,7 @@ export function FormSelect({
         name={name}
         className="rounded-lg border border-neutral-300 bg-white px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
         defaultValue={defaultValue}
+        required={required}
       >
         {options.map((option) => (
           <option
@@ -258,11 +282,17 @@ export function FormTextarea({
   label,
   placeholder,
   defaultValue,
+  minLength,
+  maxLength,
+  required = false,
 }: {
   name: string;
   label: string;
   placeholder: string;
   defaultValue?: string;
+  minLength?: number;
+  maxLength?: number;
+  required?: boolean;
 }) {
   return (
     <label className="grid gap-2 text-sm font-semibold text-neutral-800">
@@ -272,6 +302,9 @@ export function FormTextarea({
         className="min-h-32 rounded-lg border border-neutral-300 px-3 py-3 text-base font-normal outline-none transition focus:border-emerald-600"
         placeholder={placeholder}
         defaultValue={defaultValue}
+        minLength={minLength}
+        maxLength={maxLength}
+        required={required}
       />
     </label>
   );

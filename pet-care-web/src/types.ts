@@ -12,14 +12,7 @@ export type EventType =
   | "vet_support"
   | "other";
 
-export type EventStatus =
-  | "upcoming"
-  | "current"
-  | "past"
-  | "canceled"
-  | "under_capacity"
-  | "full_capacity"
-  | "over_capacity";
+export type EventStatus = "upcoming" | "current" | "past" | "canceled";
 
 export interface User {
   id: number;
