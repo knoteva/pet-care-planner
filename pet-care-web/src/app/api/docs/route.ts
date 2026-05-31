@@ -94,16 +94,15 @@ export function GET() {
             <header>
               <h1>Pet Care Planner API Docs</h1>
               <p>
-                Статичен API справочник за Expo mobile app. Реалните route handlers
-                ще използват същите URL-и и Bearer JWT auth в backend milestone-а.
+                API reference for the implemented and planned REST endpoints. Auth routes already return Bearer JWT tokens for mobile clients and set the Web session cookie for browser users.
               </p>
             </header>
             <table>
               <thead>
                 <tr>
-                  <th>Метод</th>
+                  <th>Method</th>
                   <th>Endpoint</th>
-                  <th>Цел</th>
+                  <th>Purpose</th>
                 </tr>
               </thead>
               <tbody>${rows}</tbody>

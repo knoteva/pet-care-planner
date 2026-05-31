@@ -1,13 +1,10 @@
-# Public Demo Deployment
+# Deployment Guide
 
-## Recommended Web Demo
+The Web app is deployed to Vercel. The project is a monorepo, so Vercel must point to the Web workspace.
 
-Use Vercel for the public review link.
+## Vercel Settings
 
-1. Push the latest code to GitHub.
-2. Open Vercel and choose **Add New Project**.
-3. Import `knoteva/pet-care-planner`.
-4. Use the Web app as the Vercel root:
+Use these settings for the Web project:
 
 ```text
 Framework Preset: Next.js
@@ -17,30 +14,97 @@ Build Command: npm run build
 Output Directory: .next
 ```
 
-5. Add environment variables only if Vercel asks for them. For the current static demo, no real secrets are required.
-6. Deploy and copy the generated `https://...vercel.app` URL.
+## Required Environment Variables
+
+Add these variables in Vercel Project Settings -> Environment Variables -> Production:
+
+```text
+DATABASE_URL=postgresql://...
+JWT_SECRET=long_random_secret
+NEXT_PUBLIC_APP_URL=https://your-vercel-url.vercel.app
+EXPO_PUBLIC_API_BASE_URL=https://your-vercel-url.vercel.app/api
+```
+
+`DATABASE_URL` should point to the Neon pooled connection string with SSL enabled.
+
+Do not commit `.env.local` or real secrets to GitHub.
+
+## Deploy From VS Code Terminal
+
+From the repository root:
+
+```bash
+git status
+git add .
+git commit -m "docs: polish submission documentation"
+git push
+```
+
+Then deploy the Web app:
+
+```bash
+cd pet-care-web
+npx.cmd vercel --prod --yes
+cd ..
+```
+
+The stable production alias currently used during development is:
+
+```text
+https://pet-care-web-rose.vercel.app
+```
+
+If a new production URL is generated, share the new Vercel production link instead.
 
 ## Demo Pages To Share
 
+Use these routes for review:
+
 ```text
 /
+/login
+/register
 /dashboard
-/events/sabotna-razhodka
-/events/suggest
-/groups
-/groups/yuzhen-park
-/pets
-/pets/raya/edit
 /admin
+/pets
+/pets/new
+/groups
+/groups/new
+/events/new
+/events/suggest
 /api/docs
+```
+
+Dynamic detail pages are created from database IDs, for example:
+
+```text
+/events/1
+/groups/1
+/pets/1/edit
 ```
 
 ## Mobile Demo
 
-The Expo mobile app is included as a visual prototype in the repository. For quick review today, share the Web link. The mobile app can be run locally with:
+The Expo app is included in the repository and can be run locally:
 
 ```bash
 npm run dev:mobile
 ```
 
-Later, the mobile app should consume the Web backend through REST API endpoints.
+For public review, share the Web Vercel URL first. The mobile app is a companion prototype and REST API integration is planned after the Web/backend milestone.
+
+## Deployment Troubleshooting
+
+If Vercel fails with missing database configuration:
+
+1. Check that `DATABASE_URL` exists in Vercel Production environment variables.
+2. Check that `JWT_SECRET` exists in Vercel Production environment variables.
+3. Redeploy from `pet-care-web`:
+
+```bash
+cd pet-care-web
+npx.cmd vercel --prod --yes
+cd ..
+```
+
+If Vercel fails during dependency install, confirm that the project uses `pet-care-web` as Root Directory and that `Install Command` is exactly `npm install`.
