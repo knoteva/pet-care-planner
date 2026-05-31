@@ -190,3 +190,31 @@ export async function isGroupManager(userId: number, groupId: number) {
 
   return membership?.role === "manager";
 }
+
+export function requireAdminUser(user: PublicUser) {
+  if (!isAdmin(user)) {
+    throw new AuthError("Само администратор има достъп до това действие.", 403);
+  }
+
+  return user;
+}
+
+export async function requireGroupMember(user: PublicUser, groupId: number) {
+  const membership = await getGroupMembership(user.id, groupId);
+
+  if (!isAdmin(user) && !membership) {
+    throw new AuthError("Само членове на групата имат достъп до това действие.", 403);
+  }
+
+  return membership;
+}
+
+export async function requireGroupManager(user: PublicUser, groupId: number) {
+  const membership = await getGroupMembership(user.id, groupId);
+
+  if (!isAdmin(user) && membership?.role !== "manager") {
+    throw new AuthError("Само администратор или мениджър на групата може да изпълни това действие.", 403);
+  }
+
+  return membership;
+}

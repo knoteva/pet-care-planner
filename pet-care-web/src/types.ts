@@ -60,6 +60,7 @@ export interface CareEvent {
   status: EventStatus;
   participantCount?: number;
   commentCount?: number;
+  participationStatus?: "joined" | "waitlisted" | "left" | "removed" | null;
 }
 
 export interface EventComment {

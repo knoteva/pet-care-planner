@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { EventPageView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { createEventComment, listEventComments } from "@/services/comments/comment-service";
-import { getEventForUser } from "@/services/events/event-service";
+import { getEventForUser, joinEvent, leaveEvent } from "@/services/events/event-service";
 import type { CareEvent, EventComment } from "@/types";
 
 function parseId(value: string) {
@@ -25,8 +25,9 @@ function toCareEvent(event: NonNullable<Awaited<ReturnType<typeof getEventForUse
     canceled: event.status === "canceled",
     notes: event.notes,
     status: event.status,
-    participantCount: 0,
-    commentCount: 0,
+    participantCount: event.participantCount,
+    commentCount: event.commentCount,
+    participationStatus: event.participationStatus as CareEvent["participationStatus"],
   };
 }
 
@@ -77,11 +78,28 @@ export default async function EventPage({
     redirect(`/events/${resolvedEventId}`);
   }
 
+  async function joinEventAction() {
+    "use server";
+
+    const actionUser = await requireCurrentSessionUser(`/events/${resolvedEventId}`);
+    await joinEvent(resolvedEventId, actionUser);
+    redirect(`/events/${resolvedEventId}`);
+  }
+
+  async function leaveEventAction() {
+    "use server";
+
+    const actionUser = await requireCurrentSessionUser(`/events/${resolvedEventId}`);
+    await leaveEvent(resolvedEventId, actionUser);
+    redirect(`/events/${resolvedEventId}`);
+  }
   return (
     <EventPageView
       event={{ ...toCareEvent(event), commentCount: comments.length }}
       comments={comments}
       commentAction={createCommentAction}
+      joinAction={joinEventAction}
+      leaveAction={leaveEventAction}
     />
   );
 }

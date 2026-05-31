@@ -1,14 +1,15 @@
-import { and, asc, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
   careEvents,
+  eventComments,
   eventParticipants,
   groupMembers,
   petGroups,
   type NewCareEvent,
 } from "@/db/schema";
-import { getGroupMembership, isAdmin, type PublicUser } from "@/services/auth/auth-service";
+import { requireGroupManager, requireGroupMember, type PublicUser } from "@/services/auth/auth-service";
 import { dateField, enumField, integerField, textField } from "@/services/validation";
 import type { EventType } from "@/types";
 
@@ -18,6 +19,9 @@ export type CreateEventInput = Pick<
 >;
 
 const eventTypes = ["dog_walk", "pet_sitting", "playdate", "training", "vet_support", "other"] satisfies EventType[];
+
+const participantCountSql = sql<number>`coalesce((select count(*)::int from ${eventParticipants} where ${eventParticipants.eventId} = ${careEvents.id} and ${eventParticipants.status} = 'joined'), 0)`;
+const commentCountSql = sql<number>`coalesce((select count(*)::int from ${eventComments} where ${eventComments.eventId} = ${careEvents.id} and ${eventComments.status} = 'visible' and ${eventComments.deletedAt} is null), 0)`;
 
 function validateCreateEventInput(input: CreateEventInput) {
   const minDate = new Date(Date.now() - 5 * 60 * 1000);
@@ -52,6 +56,8 @@ export async function listEventsForUser(userId: number) {
       notes: careEvents.notes,
       groupTitle: petGroups.title,
       memberRole: groupMembers.role,
+      participantCount: participantCountSql,
+      commentCount: commentCountSql,
     })
     .from(careEvents)
     .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
@@ -82,6 +88,9 @@ export async function getEventForUser(eventId: number, userId: number) {
       notes: careEvents.notes,
       groupTitle: petGroups.title,
       memberRole: groupMembers.role,
+      participantCount: participantCountSql,
+      commentCount: commentCountSql,
+      participationStatus: sql<string | null>`(select ${eventParticipants.status} from ${eventParticipants} where ${eventParticipants.eventId} = ${careEvents.id} and ${eventParticipants.userId} = ${userId} limit 1)`,
     })
     .from(careEvents)
     .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
@@ -102,21 +111,29 @@ export async function getEventForUser(eventId: number, userId: number) {
 
 export async function createEventAsManager(user: PublicUser, input: CreateEventInput) {
   const cleanInput = validateCreateEventInput(input);
-  const membership = await getGroupMembership(user.id, cleanInput.groupId);
-
-  if (!isAdmin(user) && membership?.role !== "manager") {
-    throw new Error("Only admins and group managers can create events.");
-  }
+  await requireGroupManager(user, cleanInput.groupId);
 
   const [event] = await db.insert(careEvents).values(cleanInput).returning();
 
   return event;
 }
 
-export async function joinEvent(eventId: number, userId: number, petId?: number | null) {
+export async function joinEvent(eventId: number, user: PublicUser, petId?: number | null) {
+  const [event] = await db
+    .select({ groupId: careEvents.groupId, capacity: careEvents.capacity })
+    .from(careEvents)
+    .where(and(eq(careEvents.id, eventId), isNull(careEvents.deletedAt)))
+    .limit(1);
+
+  if (!event) {
+    throw new Error("Event not found.");
+  }
+
+  await requireGroupMember(user, event.groupId);
+
   const [participant] = await db
     .insert(eventParticipants)
-    .values({ eventId, userId, petId, status: "joined" })
+    .values({ eventId, userId: user.id, petId, status: "joined" })
     .onConflictDoUpdate({
       target: [eventParticipants.eventId, eventParticipants.userId],
       set: { status: "joined", petId, leftAt: null },
@@ -126,11 +143,23 @@ export async function joinEvent(eventId: number, userId: number, petId?: number 
   return participant;
 }
 
-export async function leaveEvent(eventId: number, userId: number) {
+export async function leaveEvent(eventId: number, user: PublicUser) {
+  const [event] = await db
+    .select({ groupId: careEvents.groupId })
+    .from(careEvents)
+    .where(and(eq(careEvents.id, eventId), isNull(careEvents.deletedAt)))
+    .limit(1);
+
+  if (!event) {
+    throw new Error("Event not found.");
+  }
+
+  await requireGroupMember(user, event.groupId);
+
   const [participant] = await db
     .update(eventParticipants)
     .set({ status: "left", leftAt: new Date() })
-    .where(and(eq(eventParticipants.eventId, eventId), eq(eventParticipants.userId, userId)))
+    .where(and(eq(eventParticipants.eventId, eventId), eq(eventParticipants.userId, user.id)))
     .returning();
 
   return participant ?? null;

@@ -38,8 +38,8 @@ function toCareEvent(event: Awaited<ReturnType<typeof listEventsForUser>>[number
     canceled: event.status === "canceled",
     notes: event.notes,
     status: event.status,
-    participantCount: 0,
-    commentCount: 0,
+    participantCount: event.participantCount,
+    commentCount: event.commentCount,
   };
 }
 

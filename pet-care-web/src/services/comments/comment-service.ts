@@ -2,7 +2,7 @@ import { and, asc, eq, isNull } from "drizzle-orm";
 
 import { db } from "@/db";
 import { careEvents, eventComments, users } from "@/db/schema";
-import { getGroupMembership, isAdmin, type PublicUser } from "@/services/auth/auth-service";
+import { isAdmin, requireGroupMember, type PublicUser } from "@/services/auth/auth-service";
 import { textField } from "@/services/validation";
 
 export async function listEventComments(eventId: number) {
@@ -41,11 +41,7 @@ export async function createEventComment(user: PublicUser, eventId: number, text
     throw new Error("Event not found.");
   }
 
-  const membership = await getGroupMembership(user.id, event.groupId);
-
-  if (!isAdmin(user) && !membership) {
-    throw new Error("Only group members can comment on events.");
-  }
+  await requireGroupMember(user, event.groupId);
 
   const cleanText = textField(text, { label: "Коментар", min: 2, max: 500 });
   const [comment] = await db

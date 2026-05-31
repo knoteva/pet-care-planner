@@ -61,11 +61,15 @@ export function EventDetailsCard({
   compact = false,
   comments = mockComments,
   commentAction,
+  joinAction,
+  leaveAction,
 }: {
   event: CareEvent;
   compact?: boolean;
   comments?: EventCommentView[];
   commentAction?: React.ComponentProps<"form">["action"];
+  joinAction?: React.ComponentProps<"form">["action"];
+  leaveAction?: React.ComponentProps<"form">["action"];
 }) {
   return (
     <article className="rounded-lg border border-neutral-200 bg-white p-5">
@@ -98,20 +102,35 @@ export function EventDetailsCard({
         <InfoItem label="Тип" value={eventTypeLabels[event.eventType]} />
       </dl>
 
-      <div className="mt-5 flex flex-wrap gap-2">
-        <button
-          className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
-          type="button"
-        >
-          Ще участвам
-        </button>
-        <button
-          className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-bold text-neutral-800"
-          type="button"
-        >
-          Сподели линк
-        </button>
-      </div>
+      {!compact ? (
+        <div className="mt-5 flex flex-wrap gap-2">
+          {event.participationStatus === "joined" ? (
+            <form action={leaveAction}>
+              <button
+                className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-bold text-neutral-800"
+                type="submit"
+              >
+                Откажи участие
+              </button>
+            </form>
+          ) : (
+            <form action={joinAction}>
+              <button
+                className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
+                type="submit"
+              >
+                Ще участвам
+              </button>
+            </form>
+          )}
+          <button
+            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-bold text-neutral-800"
+            type="button"
+          >
+            Сподели линк
+          </button>
+        </div>
+      ) : null}
 
       {!compact ? (
         <div className="mt-6">

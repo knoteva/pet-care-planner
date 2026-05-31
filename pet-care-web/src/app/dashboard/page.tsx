@@ -18,8 +18,8 @@ function toDashboardEvent(event: Awaited<ReturnType<typeof listEventsForUser>>[n
     canceled: event.status === "canceled",
     notes: event.notes,
     status: event.status,
-    participantCount: 0,
-    commentCount: 0,
+    participantCount: event.participantCount,
+    commentCount: event.commentCount,
   };
 }
 

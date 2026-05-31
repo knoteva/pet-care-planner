@@ -330,14 +330,24 @@ export function EventPageView({
   event = mockEvents[0],
   comments,
   commentAction,
+  joinAction,
+  leaveAction,
 }: {
   event?: CareEvent;
   comments?: Array<EventComment & { authorName?: string }>;
   commentAction?: React.ComponentProps<"form">["action"];
+  joinAction?: React.ComponentProps<"form">["action"];
+  leaveAction?: React.ComponentProps<"form">["action"];
 }) {
   return (
     <AppShell active="/dashboard" aside={<ParticipantPanel />}>
-      <EventDetailsCard event={event} comments={comments} commentAction={commentAction} />
+      <EventDetailsCard
+        event={event}
+        comments={comments}
+        commentAction={commentAction}
+        joinAction={joinAction}
+        leaveAction={leaveAction}
+      />
     </AppShell>
   );
 }
