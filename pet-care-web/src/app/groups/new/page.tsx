@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 
 import { GroupFormView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
-import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
+import {
+  redirectWithFormError,
+  getFormError,
+} from "@/services/forms/form-errors";
 import { createGroup } from "@/services/groups/group-service";
 
 function optionalText(value: FormDataEntryValue | null) {
@@ -16,7 +19,10 @@ type PageProps = {
 };
 
 function normalizeGroupError(error: unknown) {
-  if (error instanceof Error && error.message.toLowerCase().includes("duplicate")) {
+  if (
+    error instanceof Error &&
+    error.message.toLowerCase().includes("duplicate")
+  ) {
     return new Error("Този код за покана вече се използва. Избери друг код.");
   }
 
@@ -25,21 +31,31 @@ function normalizeGroupError(error: unknown) {
 
 export default async function NewGroupPage({ searchParams }: PageProps) {
   await requireCurrentSessionUser("/groups/new");
-  const errorMessage = getFormError(searchParams ? await searchParams : undefined);
+  const errorMessage = getFormError(
+    searchParams ? await searchParams : undefined,
+  );
 
   async function createGroupAction(formData: FormData) {
     "use server";
 
     const user = await requireCurrentSessionUser("/groups/new");
     const title = String(formData.get("title") ?? "").trim();
-    const inviteCode = String(formData.get("inviteCode") ?? "").trim().toUpperCase();
+    const inviteCode = String(formData.get("inviteCode") ?? "")
+      .trim()
+      .toUpperCase();
 
     if (!title) {
-      redirectWithFormError("/groups/new", new Error("Името на групата е задължително."));
+      redirectWithFormError(
+        "/groups/new",
+        new Error("Името на групата е задължително."),
+      );
     }
 
     if (!inviteCode) {
-      redirectWithFormError("/groups/new", new Error("Кодът за покана е задължителен."));
+      redirectWithFormError(
+        "/groups/new",
+        new Error("Кодът за покана е задължителен."),
+      );
     }
 
     try {
@@ -57,5 +73,7 @@ export default async function NewGroupPage({ searchParams }: PageProps) {
     redirect("/groups");
   }
 
-  return <GroupFormView action={createGroupAction} errorMessage={errorMessage} />;
+  return (
+    <GroupFormView action={createGroupAction} errorMessage={errorMessage} />
+  );
 }

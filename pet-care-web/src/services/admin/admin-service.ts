@@ -1,7 +1,15 @@
 import { and, count, desc, eq, isNull, ne } from "drizzle-orm";
 
 import { db } from "@/db";
-import { careEvents, eventComments, eventParticipants, groupMembers, petGroups, pets, users } from "@/db/schema";
+import {
+  careEvents,
+  eventComments,
+  eventParticipants,
+  groupMembers,
+  petGroups,
+  pets,
+  users,
+} from "@/db/schema";
 
 export type AdminPanelStat = {
   label: string;
@@ -39,31 +47,51 @@ async function getCount<T extends number>(query: Promise<Array<{ value: T }>>) {
   return Number(row?.value ?? 0);
 }
 
-export async function getAdminDashboardData(options: { limit?: number; offset?: number } = {}) {
-  const [userCount, groupCount, petCount, signalCount, adminUsers] = await Promise.all([
-    getCount(db.select({ value: count() }).from(users).where(isNull(users.deletedAt))),
-    getCount(db.select({ value: count() }).from(petGroups).where(isNull(petGroups.deletedAt))),
-    getCount(db.select({ value: count() }).from(pets).where(isNull(pets.deletedAt))),
-    getCount(
+export async function getAdminDashboardData(
+  options: { limit?: number; offset?: number } = {},
+) {
+  const [userCount, groupCount, petCount, signalCount, adminUsers] =
+    await Promise.all([
+      getCount(
+        db
+          .select({ value: count() })
+          .from(users)
+          .where(isNull(users.deletedAt)),
+      ),
+      getCount(
+        db
+          .select({ value: count() })
+          .from(petGroups)
+          .where(isNull(petGroups.deletedAt)),
+      ),
+      getCount(
+        db.select({ value: count() }).from(pets).where(isNull(pets.deletedAt)),
+      ),
+      getCount(
+        db
+          .select({ value: count() })
+          .from(eventComments)
+          .where(
+            and(
+              isNull(eventComments.deletedAt),
+              ne(eventComments.status, "visible"),
+            ),
+          ),
+      ),
       db
-        .select({ value: count() })
-        .from(eventComments)
-        .where(and(isNull(eventComments.deletedAt), ne(eventComments.status, "visible"))),
-    ),
-    db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        role: users.role,
-        createdAt: users.createdAt,
-      })
-      .from(users)
-      .where(isNull(users.deletedAt))
-      .orderBy(desc(users.createdAt))
-      .limit(options.limit ?? 50)
-      .offset(options.offset ?? 0),
-  ]);
+        .select({
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          role: users.role,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(isNull(users.deletedAt))
+        .orderBy(desc(users.createdAt))
+        .limit(options.limit ?? 50)
+        .offset(options.offset ?? 0),
+    ]);
 
   return {
     stats: [
@@ -83,7 +111,9 @@ export async function getAdminDashboardData(options: { limit?: number; offset?: 
   };
 }
 
-export async function getAdminUserDetails(userId: number): Promise<AdminUserDetails | null> {
+export async function getAdminUserDetails(
+  userId: number,
+): Promise<AdminUserDetails | null> {
   const [user] = await db
     .select({
       id: users.id,
@@ -100,18 +130,54 @@ export async function getAdminUserDetails(userId: number): Promise<AdminUserDeta
     return null;
   }
 
-  const [petCount, groupCount, eventCount, commentCount, participationCount] = await Promise.all([
-    getCount(db.select({ value: count() }).from(pets).where(and(eq(pets.ownerId, user.id), isNull(pets.deletedAt)))),
-    getCount(
-      db
-        .select({ value: count() })
-        .from(groupMembers)
-        .where(and(eq(groupMembers.userId, user.id), isNull(groupMembers.removedAt))),
-    ),
-    getCount(db.select({ value: count() }).from(careEvents).where(and(eq(careEvents.createdById, user.id), isNull(careEvents.deletedAt)))),
-    getCount(db.select({ value: count() }).from(eventComments).where(and(eq(eventComments.userId, user.id), isNull(eventComments.deletedAt)))),
-    getCount(db.select({ value: count() }).from(eventParticipants).where(eq(eventParticipants.userId, user.id))),
-  ]);
+  const [petCount, groupCount, eventCount, commentCount, participationCount] =
+    await Promise.all([
+      getCount(
+        db
+          .select({ value: count() })
+          .from(pets)
+          .where(and(eq(pets.ownerId, user.id), isNull(pets.deletedAt))),
+      ),
+      getCount(
+        db
+          .select({ value: count() })
+          .from(groupMembers)
+          .where(
+            and(
+              eq(groupMembers.userId, user.id),
+              isNull(groupMembers.removedAt),
+            ),
+          ),
+      ),
+      getCount(
+        db
+          .select({ value: count() })
+          .from(careEvents)
+          .where(
+            and(
+              eq(careEvents.createdById, user.id),
+              isNull(careEvents.deletedAt),
+            ),
+          ),
+      ),
+      getCount(
+        db
+          .select({ value: count() })
+          .from(eventComments)
+          .where(
+            and(
+              eq(eventComments.userId, user.id),
+              isNull(eventComments.deletedAt),
+            ),
+          ),
+      ),
+      getCount(
+        db
+          .select({ value: count() })
+          .from(eventParticipants)
+          .where(eq(eventParticipants.userId, user.id)),
+      ),
+    ]);
 
   return {
     id: user.id,

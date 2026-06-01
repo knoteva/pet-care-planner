@@ -63,8 +63,11 @@ export function formatCapacity(event: MobileEvent) {
 }
 
 export function formatPetMeta(pet: MobilePet) {
-  const parts = [formatPetType(pet.type), pet.breed, pet.age === null || pet.age === undefined ? null : `${pet.age} г.`]
-    .filter(Boolean);
+  const parts = [
+    formatPetType(pet.type),
+    pet.breed,
+    pet.age === null || pet.age === undefined ? null : `${pet.age} г.`,
+  ].filter(Boolean);
 
   return parts.join(" · ");
 }

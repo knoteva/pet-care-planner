@@ -2,7 +2,20 @@ import { useCallback, useEffect, useState } from "react";
 import { Text, View } from "react-native";
 
 import * as api from "@/src/services/api";
-import { AppHeader, Badge, Card, EmptyState, ErrorBanner, LoadingState, RequireLogin, Screen, SectionTitle, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
+import {
+  AppHeader,
+  Badge,
+  Card,
+  EmptyState,
+  ErrorBanner,
+  LoadingState,
+  RequireLogin,
+  Screen,
+  SectionTitle,
+  Subtitle,
+  Title,
+  Eyebrow,
+} from "@/src/components/mobile-ui";
 import { useAuth } from "@/src/state/auth-context";
 import { formatPetMeta } from "@/src/utils/format";
 
@@ -22,7 +35,11 @@ export default function PetsScreen() {
       const response = await api.listPets(token);
       setPets(response.pets);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Любимците не можаха да се заредят.");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Любимците не можаха да се заредят.",
+      );
     } finally {
       setLoading(false);
     }
@@ -50,18 +67,28 @@ export default function PetsScreen() {
       <Card>
         <Eyebrow>Профил</Eyebrow>
         <Title>Моите любимци</Title>
-        <Subtitle>Mobile приложението показва любимците от реалната база. Добавяне и редакция засега остават в web приложението.</Subtitle>
+        <Subtitle>
+          Mobile приложението показва любимците от реалната база. Добавяне и
+          редакция засега остават в web приложението.
+        </Subtitle>
       </Card>
       <ErrorBanner message={error} />
       <SectionTitle>Списък</SectionTitle>
       {loading && pets.length === 0 ? <LoadingState /> : null}
-      {!loading && pets.length === 0 ? <EmptyState title="Няма любимци" text="Добави любимец през web приложението, после отвори този екран отново." /> : null}
+      {!loading && pets.length === 0 ? (
+        <EmptyState
+          title="Няма любимци"
+          text="Добави любимец през web приложението, после отвори този екран отново."
+        />
+      ) : null}
       <View style={petStyles.list}>
         {pets.map((pet) => (
           <Card key={pet.id}>
             <View style={petStyles.petTop}>
               <View style={petStyles.avatar}>
-                <Text style={petStyles.avatarText}>{pet.name.slice(0, 1).toUpperCase()}</Text>
+                <Text style={petStyles.avatarText}>
+                  {pet.name.slice(0, 1).toUpperCase()}
+                </Text>
               </View>
               <View style={petStyles.petInfo}>
                 <Text style={petStyles.petName}>{pet.name}</Text>
@@ -69,7 +96,9 @@ export default function PetsScreen() {
               </View>
             </View>
             {pet.size ? <Badge tone="gray">{pet.size}</Badge> : null}
-            {pet.notes ? <Text style={petStyles.petNotes}>{pet.notes}</Text> : null}
+            {pet.notes ? (
+              <Text style={petStyles.petNotes}>{pet.notes}</Text>
+            ) : null}
           </Card>
         ))}
       </View>

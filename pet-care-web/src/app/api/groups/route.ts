@@ -2,8 +2,15 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { apiErrorResponse, readJsonObject, requireApiUser } from "../api-utils";
-import { createGroup, listGroupsForViewer } from "@/services/groups/group-service";
-import { getPageWindow, parsePage, resolvePageRows } from "@/services/pagination";
+import {
+  createGroup,
+  listGroupsForViewer,
+} from "@/services/groups/group-service";
+import {
+  getPageWindow,
+  parsePage,
+  resolvePageRows,
+} from "@/services/pagination";
 
 export const runtime = "nodejs";
 
@@ -21,7 +28,10 @@ export async function GET(request: NextRequest) {
   const rows = await listGroupsForViewer(user, getPageWindow(page));
   const pageRows = resolvePageRows(rows, page, "/api/groups");
 
-  return NextResponse.json({ groups: pageRows.items, pagination: pageRows.pagination });
+  return NextResponse.json({
+    groups: pageRows.items,
+    pagination: pageRows.pagination,
+  });
 }
 
 export async function POST(request: NextRequest) {

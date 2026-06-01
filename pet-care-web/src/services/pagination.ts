@@ -20,7 +20,12 @@ export function getPageWindow(page: number, pageSize = DEFAULT_PAGE_SIZE) {
   };
 }
 
-export function resolvePageRows<T>(rows: T[], page: number, basePath: string, pageSize = DEFAULT_PAGE_SIZE) {
+export function resolvePageRows<T>(
+  rows: T[],
+  page: number,
+  basePath: string,
+  pageSize = DEFAULT_PAGE_SIZE,
+) {
   return {
     items: rows.slice(0, pageSize),
     pagination: {

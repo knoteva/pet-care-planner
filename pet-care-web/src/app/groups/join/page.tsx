@@ -3,7 +3,10 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { FormCard, FormField } from "@/components/ui-primitives";
 import { requireCurrentSessionUser } from "@/services/auth/session";
-import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
+import {
+  redirectWithFormError,
+  getFormError,
+} from "@/services/forms/form-errors";
 import { joinGroupByInviteCode } from "@/services/groups/group-service";
 
 type PageProps = {
@@ -12,13 +15,17 @@ type PageProps = {
 
 export default async function JoinGroupPage({ searchParams }: PageProps) {
   await requireCurrentSessionUser("/groups/join");
-  const errorMessage = getFormError(searchParams ? await searchParams : undefined);
+  const errorMessage = getFormError(
+    searchParams ? await searchParams : undefined,
+  );
 
   async function joinGroupAction(formData: FormData) {
     "use server";
 
     const user = await requireCurrentSessionUser("/groups/join");
-    const inviteCode = String(formData.get("inviteCode") ?? "").trim().toUpperCase();
+    const inviteCode = String(formData.get("inviteCode") ?? "")
+      .trim()
+      .toUpperCase();
 
     let groupId: number;
 

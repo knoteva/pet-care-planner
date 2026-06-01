@@ -7,7 +7,9 @@ function getDatabaseUrl() {
   const databaseUrl = process.env.DATABASE_URL;
 
   if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required to initialize the database client.");
+    throw new Error(
+      "DATABASE_URL is required to initialize the database client.",
+    );
   }
 
   return databaseUrl;

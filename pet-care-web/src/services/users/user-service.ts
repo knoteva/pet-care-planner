@@ -3,7 +3,10 @@ import { asc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { users, type UserRow } from "@/db/schema";
 
-export type UserListItem = Pick<UserRow, "id" | "email" | "name" | "role" | "createdAt">;
+export type UserListItem = Pick<
+  UserRow,
+  "id" | "email" | "name" | "role" | "createdAt"
+>;
 
 export async function listUsers() {
   return db
@@ -20,11 +23,7 @@ export async function listUsers() {
 }
 
 export async function getUserById(id: number) {
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, id))
-    .limit(1);
+  const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
 
   return user ?? null;
 }

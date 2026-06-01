@@ -2,7 +2,17 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { AppHeader, Card, ErrorBanner, Field, PrimaryButton, Screen, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
+import {
+  AppHeader,
+  Card,
+  ErrorBanner,
+  Field,
+  PrimaryButton,
+  Screen,
+  Subtitle,
+  Title,
+  Eyebrow,
+} from "@/src/components/mobile-ui";
 import { useAuth } from "@/src/state/auth-context";
 
 export default function RegisterScreen() {
@@ -53,7 +63,9 @@ export default function RegisterScreen() {
           <Eyebrow>Профил</Eyebrow>
           <Title>{user.name}</Title>
           <Subtitle>Вече си в профил. Можеш да продължиш към таблото.</Subtitle>
-          <PrimaryButton onPress={() => router.replace("/")}>Към таблото</PrimaryButton>
+          <PrimaryButton onPress={() => router.replace("/")}>
+            Към таблото
+          </PrimaryButton>
         </Card>
       </Screen>
     );
@@ -65,13 +77,45 @@ export default function RegisterScreen() {
       <Card>
         <Eyebrow>Регистрация</Eyebrow>
         <Title>Създай профил</Title>
-        <Subtitle>След регистрация mobile приложението пази Bearer token и използва същото API като web клиента.</Subtitle>
+        <Subtitle>
+          След регистрация mobile приложението пази Bearer token и използва
+          същото API като web клиента.
+        </Subtitle>
         <ErrorBanner message={localError ?? error} />
-        <Field label="Име" value={name} onChangeText={setName} textContentType="name" />
-        <Field label="Имейл" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" textContentType="emailAddress" />
-        <Field label="Парола" value={password} onChangeText={setPassword} secureTextEntry textContentType="newPassword" />
-        <Field label="Потвърди парола" value={confirmPassword} onChangeText={setConfirmPassword} secureTextEntry textContentType="newPassword" />
-        <PrimaryButton disabled={isLoading} onPress={() => void handleRegister()}>{isLoading ? "Създаване..." : "Създай профил"}</PrimaryButton>
+        <Field
+          label="Име"
+          value={name}
+          onChangeText={setName}
+          textContentType="name"
+        />
+        <Field
+          label="Имейл"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+        />
+        <Field
+          label="Парола"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          textContentType="newPassword"
+        />
+        <Field
+          label="Потвърди парола"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          textContentType="newPassword"
+        />
+        <PrimaryButton
+          disabled={isLoading}
+          onPress={() => void handleRegister()}
+        >
+          {isLoading ? "Създаване..." : "Създай профил"}
+        </PrimaryButton>
         <View style={registerStyles.switchRow}>
           <Text style={registerStyles.switchText}>Вече имаш профил?</Text>
           <Link href="/auth" asChild>

@@ -19,7 +19,9 @@ export type HomeData = {
   events: CareEvent[];
 };
 
-function toCareEvent(event: Awaited<ReturnType<typeof listLatestEventsForViewer>>[number]): CareEvent {
+function toCareEvent(
+  event: Awaited<ReturnType<typeof listLatestEventsForViewer>>[number],
+): CareEvent {
   return {
     id: event.id,
     groupId: event.groupId,
@@ -49,7 +51,12 @@ async function countUserParticipations(userId: number) {
   const [row] = await db
     .select({ value: count() })
     .from(eventParticipants)
-    .where(and(eq(eventParticipants.userId, userId), eq(eventParticipants.status, "joined")));
+    .where(
+      and(
+        eq(eventParticipants.userId, userId),
+        eq(eventParticipants.status, "joined"),
+      ),
+    );
 
   return Number(row?.value ?? 0);
 }
@@ -62,14 +69,32 @@ export async function getHomeDataForUser(user: PublicUser): Promise<HomeData> {
     countUserParticipations(user.id),
   ]);
   const today = new Date();
-  const todayCount = events.filter((event) => isSameLocalDay(event.startsAt, today)).length;
+  const todayCount = events.filter((event) =>
+    isSameLocalDay(event.startsAt, today),
+  ).length;
 
   return {
     stats: [
-      { label: "Днес", value: `${todayCount} събития`, detail: "от реалната база" },
-      { label: "Групи", value: `${groups.length} активни`, detail: user.role === "admin" ? "всички групи" : "моите групи" },
-      { label: "Участия", value: `${participationCount} активни`, detail: "потвърдени участия" },
-      { label: "Любимци", value: `${pets.length} профила`, detail: "моите любимци" },
+      {
+        label: "Днес",
+        value: `${todayCount} събития`,
+        detail: "от реалната база",
+      },
+      {
+        label: "Групи",
+        value: `${groups.length} активни`,
+        detail: user.role === "admin" ? "всички групи" : "моите групи",
+      },
+      {
+        label: "Участия",
+        value: `${participationCount} активни`,
+        detail: "потвърдени участия",
+      },
+      {
+        label: "Любимци",
+        value: `${pets.length} профила`,
+        detail: "моите любимци",
+      },
     ],
     events: events.slice(0, 3).map(toCareEvent),
   };

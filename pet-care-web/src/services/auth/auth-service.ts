@@ -24,7 +24,10 @@ export type LoginUserInput = {
 };
 
 export class AuthError extends Error {
-  constructor(message: string, public readonly status = 400) {
+  constructor(
+    message: string,
+    public readonly status = 400,
+  ) {
     super(message);
     this.name = "AuthError";
   }
@@ -139,7 +142,9 @@ export async function loginUser(input: LoginUserInput) {
   };
 }
 
-export async function getCurrentUserFromToken(token: string | null | undefined) {
+export async function getCurrentUserFromToken(
+  token: string | null | undefined,
+) {
   if (!token) {
     return null;
   }
@@ -203,7 +208,10 @@ export async function requireGroupMember(user: PublicUser, groupId: number) {
   const membership = await getGroupMembership(user.id, groupId);
 
   if (!isAdmin(user) && !membership) {
-    throw new AuthError("Само членове на групата имат достъп до това действие.", 403);
+    throw new AuthError(
+      "Само членове на групата имат достъп до това действие.",
+      403,
+    );
   }
 
   return membership;
@@ -213,7 +221,10 @@ export async function requireGroupManager(user: PublicUser, groupId: number) {
   const membership = await getGroupMembership(user.id, groupId);
 
   if (!isAdmin(user) && membership?.role !== "manager") {
-    throw new AuthError("Само администратор или мениджър на групата може да изпълни това действие.", 403);
+    throw new AuthError(
+      "Само администратор или мениджър на групата може да изпълни това действие.",
+      403,
+    );
   }
 
   return membership;

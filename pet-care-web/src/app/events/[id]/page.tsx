@@ -2,9 +2,22 @@ import { notFound, redirect } from "next/navigation";
 
 import { EventPageView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
-import { createEventComment, listEventComments, softDeleteEventComment, updateEventComment } from "@/services/comments/comment-service";
-import { getEventForViewer, joinEvent, leaveEvent, listEventParticipantsForViewer } from "@/services/events/event-service";
-import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
+import {
+  createEventComment,
+  listEventComments,
+  softDeleteEventComment,
+  updateEventComment,
+} from "@/services/comments/comment-service";
+import {
+  getEventForViewer,
+  joinEvent,
+  leaveEvent,
+  listEventParticipantsForViewer,
+} from "@/services/events/event-service";
+import {
+  redirectWithFormError,
+  getFormError,
+} from "@/services/forms/form-errors";
 import type { CareEvent, EventComment } from "@/types";
 
 type PageProps = {
@@ -18,7 +31,9 @@ function parseId(value: string) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-function toCareEvent(event: NonNullable<Awaited<ReturnType<typeof getEventForViewer>>>): CareEvent {
+function toCareEvent(
+  event: NonNullable<Awaited<ReturnType<typeof getEventForViewer>>>,
+): CareEvent {
   return {
     id: event.id,
     groupId: event.groupId,
@@ -33,7 +48,8 @@ function toCareEvent(event: NonNullable<Awaited<ReturnType<typeof getEventForVie
     status: event.status,
     participantCount: event.participantCount,
     commentCount: event.commentCount,
-    participationStatus: event.participationStatus as CareEvent["participationStatus"],
+    participationStatus:
+      event.participationStatus as CareEvent["participationStatus"],
   };
 }
 
@@ -64,7 +80,9 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const resolvedEventId = eventId;
   const eventPath = `/events/${resolvedEventId}`;
   const event = await getEventForViewer(resolvedEventId, user);
-  const errorMessage = getFormError(searchParams ? await searchParams : undefined);
+  const errorMessage = getFormError(
+    searchParams ? await searchParams : undefined,
+  );
 
   if (!event) {
     notFound();
@@ -83,7 +101,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     const text = String(formData.get("text") ?? "").trim();
 
     if (!text) {
-      redirectWithFormError(eventPath, new Error("Коментарът не може да е празен."));
+      redirectWithFormError(
+        eventPath,
+        new Error("Коментарът не може да е празен."),
+      );
     }
 
     try {
@@ -103,7 +124,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     const text = String(formData.get("text") ?? "").trim();
 
     if (!commentId || !text) {
-      redirectWithFormError(eventPath, new Error("Коментарът не може да е празен."));
+      redirectWithFormError(
+        eventPath,
+        new Error("Коментарът не може да е празен."),
+      );
     }
 
     try {

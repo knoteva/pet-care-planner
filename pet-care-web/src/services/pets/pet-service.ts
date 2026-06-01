@@ -21,19 +21,53 @@ const petTypes = ["dog", "cat", "bird", "rabbit", "other"] satisfies PetType[];
 function validatePetInput<T extends Partial<CreatePetInput>>(input: T) {
   return {
     ...input,
-    name: input.name === undefined ? input.name : textField(input.name, { label: "Име", max: 120 }),
-    type: input.type === undefined ? input.type : enumField(input.type, petTypes, "Тип"),
-    breed: input.breed === undefined ? input.breed : textField(input.breed, { label: "Порода", max: 120, required: false }),
-    age: input.age === undefined ? input.age : integerField(input.age, { label: "Възраст", min: 0, max: 50, required: false }),
-    size: input.size === undefined ? input.size : textField(input.size, { label: "Размер", max: 40, required: false }),
-    notes: input.notes === undefined ? input.notes : textField(input.notes, { label: "Бележки", max: 1000, required: false }),
+    name:
+      input.name === undefined
+        ? input.name
+        : textField(input.name, { label: "Име", max: 120 }),
+    type:
+      input.type === undefined
+        ? input.type
+        : enumField(input.type, petTypes, "Тип"),
+    breed:
+      input.breed === undefined
+        ? input.breed
+        : textField(input.breed, {
+            label: "Порода",
+            max: 120,
+            required: false,
+          }),
+    age:
+      input.age === undefined
+        ? input.age
+        : integerField(input.age, {
+            label: "Възраст",
+            min: 0,
+            max: 50,
+            required: false,
+          }),
+    size:
+      input.size === undefined
+        ? input.size
+        : textField(input.size, { label: "Размер", max: 40, required: false }),
+    notes:
+      input.notes === undefined
+        ? input.notes
+        : textField(input.notes, {
+            label: "Бележки",
+            max: 1000,
+            required: false,
+          }),
   } satisfies T;
 }
 
 /**
  * Списък с всички активни любимци на конкретен потребител.
  */
-export async function listPetsForUser(userId: number, options: { limit?: number; offset?: number } = {}) {
+export async function listPetsForUser(
+  userId: number,
+  options: { limit?: number; offset?: number } = {},
+) {
   return db
     .select()
     .from(pets)
@@ -50,29 +84,44 @@ export async function getPetForUser(petId: number, userId: number) {
   const [pet] = await db
     .select()
     .from(pets)
-    .where(and(eq(pets.id, petId), eq(pets.ownerId, userId), isNull(pets.deletedAt)))
+    .where(
+      and(eq(pets.id, petId), eq(pets.ownerId, userId), isNull(pets.deletedAt)),
+    )
     .limit(1);
 
   return pet ?? null;
 }
 
 export async function createPet(input: CreatePetInput) {
-  const ownerId = integerField(input.ownerId, { label: "Собственик", min: 1, max: 2147483647 });
+  const ownerId = integerField(input.ownerId, {
+    label: "Собственик",
+    min: 1,
+    max: 2147483647,
+  });
   const cleanInput = validatePetInput(input);
 
-  const [pet] = await db.insert(pets).values({ ...cleanInput, ownerId }).returning();
+  const [pet] = await db
+    .insert(pets)
+    .values({ ...cleanInput, ownerId })
+    .returning();
 
   return pet;
 }
 
-export async function updatePetForUser(petId: number, userId: number, input: UpdatePetInput) {
+export async function updatePetForUser(
+  petId: number,
+  userId: number,
+  input: UpdatePetInput,
+) {
   integerField(petId, { label: "Любимец", min: 1, max: 2147483647 });
   integerField(userId, { label: "Потребител", min: 1, max: 2147483647 });
 
   const [pet] = await db
     .update(pets)
     .set({ ...validatePetInput(input), updatedAt: new Date() })
-    .where(and(eq(pets.id, petId), eq(pets.ownerId, userId), isNull(pets.deletedAt)))
+    .where(
+      and(eq(pets.id, petId), eq(pets.ownerId, userId), isNull(pets.deletedAt)),
+    )
     .returning();
 
   return pet ?? null;
@@ -82,7 +131,9 @@ export async function softDeletePetForUser(petId: number, userId: number) {
   const [pet] = await db
     .update(pets)
     .set({ deletedAt: new Date(), updatedAt: new Date() })
-    .where(and(eq(pets.id, petId), eq(pets.ownerId, userId), isNull(pets.deletedAt)))
+    .where(
+      and(eq(pets.id, petId), eq(pets.ownerId, userId), isNull(pets.deletedAt)),
+    )
     .returning();
 
   return pet ?? null;

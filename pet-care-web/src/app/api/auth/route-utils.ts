@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { AuthError, type PublicUser } from "@/services/auth/auth-service";
-import { AUTH_COOKIE_NAME, AUTH_TOKEN_TTL_SECONDS } from "@/services/auth/tokens";
+import {
+  AUTH_COOKIE_NAME,
+  AUTH_TOKEN_TTL_SECONDS,
+} from "@/services/auth/tokens";
 
 export type AuthResult = {
   user: PublicUser;
@@ -37,7 +40,10 @@ export function createAuthRedirectResponse(
     redirectUrl = new URL(fallbackPath, requestUrl.origin);
   }
 
-  return setAuthCookie(NextResponse.redirect(redirectUrl, { status: 303 }), result.token);
+  return setAuthCookie(
+    NextResponse.redirect(redirectUrl, { status: 303 }),
+    result.token,
+  );
 }
 
 export function clearAuthCookieResponse() {
@@ -53,7 +59,10 @@ export function clearAuthCookieResponse() {
 
   return response;
 }
-export function clearAuthCookieRedirectResponse(request: Request, fallbackPath = "/") {
+export function clearAuthCookieRedirectResponse(
+  request: Request,
+  fallbackPath = "/",
+) {
   const requestUrl = new URL(request.url);
   const redirectParam = requestUrl.searchParams.get("redirect") ?? fallbackPath;
   let redirectUrl = new URL(redirectParam, requestUrl.origin);
@@ -77,7 +86,10 @@ export function clearAuthCookieRedirectResponse(request: Request, fallbackPath =
 
 export function authErrorResponse(error: unknown) {
   if (error instanceof AuthError) {
-    return NextResponse.json({ error: error.message }, { status: error.status });
+    return NextResponse.json(
+      { error: error.message },
+      { status: error.status },
+    );
   }
 
   console.error(error);

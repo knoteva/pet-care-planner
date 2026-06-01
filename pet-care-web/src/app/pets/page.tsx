@@ -1,6 +1,10 @@
 import { PetsView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
-import { getPageWindow, parsePage, resolvePageRows } from "@/services/pagination";
+import {
+  getPageWindow,
+  parsePage,
+  resolvePageRows,
+} from "@/services/pagination";
 import { listPetsForUser } from "@/services/pets/pet-service";
 
 type PageProps = {

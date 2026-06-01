@@ -76,7 +76,10 @@ export function TopNavigation({
     <header className="border-b border-neutral-200 bg-white shadow-sm">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-7">
-          <Link href="/" className="text-3xl font-black tracking-normal text-emerald-700">
+          <Link
+            href="/"
+            className="text-3xl font-black tracking-normal text-emerald-700"
+          >
             Лапички
           </Link>
           <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-neutral-700">
@@ -100,10 +103,16 @@ export function TopNavigation({
           {user ? (
             <div className="flex items-center gap-2 text-right">
               <span className="grid size-9 shrink-0 place-items-center rounded-full border border-emerald-200 bg-emerald-50 text-sm font-black text-emerald-700">
-                {user.name.split(" ").slice(0, 2).map(w => w[0]).join("")}
+                {user.name
+                  .split(" ")
+                  .slice(0, 2)
+                  .map((w) => w[0])
+                  .join("")}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-neutral-800">{user.name}</p>
+                <p className="truncate text-sm font-semibold text-neutral-800">
+                  {user.name}
+                </p>
                 <div className="flex items-center justify-end gap-1.5 text-xs font-semibold text-neutral-600">
                   <Link href="/" className="hover:text-emerald-700">
                     Начало
@@ -140,7 +149,9 @@ function HeaderBar({ user }: { user: PublicUser | null }) {
 
   return (
     <header className="rounded-lg border border-neutral-200 bg-white p-4">
-      <p className="text-sm font-medium text-emerald-700">Здравей, {displayName}</p>
+      <p className="text-sm font-medium text-emerald-700">
+        Здравей, {displayName}
+      </p>
       <h1 className="text-2xl font-bold tracking-normal text-neutral-950">
         План за разходки и грижа
       </h1>

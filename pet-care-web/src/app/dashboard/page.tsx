@@ -5,7 +5,9 @@ import { listGroupsForUser } from "@/services/groups/group-service";
 import { listPetsForUser } from "@/services/pets/pet-service";
 import type { CareEvent, PetGroup } from "@/types";
 
-function toDashboardEvent(event: Awaited<ReturnType<typeof listEventsForUser>>[number]): CareEvent {
+function toDashboardEvent(
+  event: Awaited<ReturnType<typeof listEventsForUser>>[number],
+): CareEvent {
   return {
     id: event.id,
     groupId: event.groupId,
@@ -23,7 +25,9 @@ function toDashboardEvent(event: Awaited<ReturnType<typeof listEventsForUser>>[n
   };
 }
 
-function toDashboardGroup(group: Awaited<ReturnType<typeof listGroupsForUser>>[number]): PetGroup {
+function toDashboardGroup(
+  group: Awaited<ReturnType<typeof listGroupsForUser>>[number],
+): PetGroup {
   return {
     id: group.id,
     title: group.title,
@@ -53,5 +57,7 @@ export default async function DashboardPage() {
     { label: "Участия", value: String(events.length), tone: "amber" },
   ];
 
-  return <DashboardView events={events} groups={groups} pets={pets} stats={stats} />;
+  return (
+    <DashboardView events={events} groups={groups} pets={pets} stats={stats} />
+  );
 }

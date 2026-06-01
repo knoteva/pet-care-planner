@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 
 import { EventFormView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
-import { createEventAsManager, getMinimumEventStartDate } from "@/services/events/event-service";
+import {
+  createEventAsManager,
+  getMinimumEventStartDate,
+} from "@/services/events/event-service";
 import {
   getFormError,
   getFormValue,
@@ -29,7 +32,9 @@ function optionalText(value: FormDataEntryValue | null) {
 }
 
 function toDateTimeLocalInputValue(date: Date) {
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  const localDate = new Date(
+    date.getTime() - date.getTimezoneOffset() * 60_000,
+  );
 
   return localDate.toISOString().slice(0, 16);
 }
@@ -72,7 +77,12 @@ export default async function NewEventPage({ searchParams }: PageProps) {
       });
       eventId = event.id;
     } catch (error) {
-      redirectWithFormErrorAndState("/events/new", error, formData, eventFormFields);
+      redirectWithFormErrorAndState(
+        "/events/new",
+        error,
+        formData,
+        eventFormFields,
+      );
     }
 
     redirect(`/events/${eventId}`);
@@ -93,7 +103,10 @@ export default async function NewEventPage({ searchParams }: PageProps) {
         capacity: getFormValue(resolvedSearchParams, "capacity"),
         notes: getFormValue(resolvedSearchParams, "notes"),
       }}
-      groupOptions={groups.map((group) => ({ value: String(group.id), label: group.title }))}
+      groupOptions={groups.map((group) => ({
+        value: String(group.id),
+        label: group.title,
+      }))}
     />
   );
 }

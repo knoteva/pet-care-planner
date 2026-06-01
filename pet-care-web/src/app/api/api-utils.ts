@@ -1,7 +1,11 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { AuthError, getCurrentUserFromToken, type PublicUser } from "@/services/auth/auth-service";
+import {
+  AuthError,
+  getCurrentUserFromToken,
+  type PublicUser,
+} from "@/services/auth/auth-service";
 import { AUTH_COOKIE_NAME } from "@/services/auth/tokens";
 import { ValidationError } from "@/services/validation";
 
@@ -15,14 +19,22 @@ export function getBearerToken(request: NextRequest) {
   return header.slice("bearer ".length).trim();
 }
 
-export async function getApiUser(request: NextRequest): Promise<PublicUser | null> {
-  const token = getBearerToken(request) ?? request.cookies.get(AUTH_COOKIE_NAME)?.value ?? null;
+export async function getApiUser(
+  request: NextRequest,
+): Promise<PublicUser | null> {
+  const token =
+    getBearerToken(request) ??
+    request.cookies.get(AUTH_COOKIE_NAME)?.value ??
+    null;
 
   return getCurrentUserFromToken(token);
 }
 
 export function unauthorizedResponse() {
-  return NextResponse.json({ error: "Не си влязъл в профила." }, { status: 401 });
+  return NextResponse.json(
+    { error: "Не си влязъл в профила." },
+    { status: 401 },
+  );
 }
 
 export async function requireApiUser(request: NextRequest) {
@@ -55,7 +67,10 @@ export async function readJsonObject(request: NextRequest) {
 
 export function apiErrorResponse(error: unknown) {
   if (error instanceof AuthError) {
-    return NextResponse.json({ error: error.message }, { status: error.status });
+    return NextResponse.json(
+      { error: error.message },
+      { status: error.status },
+    );
   }
 
   if (error instanceof ValidationError) {

@@ -2,7 +2,12 @@ import Link from "next/link";
 
 import { comments as mockComments } from "@/services/mock-data";
 import type { CareEvent, EventComment } from "@/types";
-import { eventTypeLabels, formatCommentCount, formatEventDate, statusLabels } from "./app-labels";
+import {
+  eventTypeLabels,
+  formatCommentCount,
+  formatEventDate,
+  statusLabels,
+} from "./app-labels";
 import { ShareLinkButton } from "./share-link-button";
 import { Badge, InfoItem } from "./ui-primitives";
 
@@ -110,7 +115,6 @@ export function EventDetailsCard({
         <InfoItem label="Тип" value={eventTypeLabels[event.eventType]} />
       </dl>
 
-
       {!compact ? (
         <div className="mt-5 flex flex-wrap gap-2">
           {event.participationStatus === "joined" ? (
@@ -150,9 +154,13 @@ export function EventDetailsCard({
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       {comment.authorName ? (
-                        <p className="font-semibold text-neutral-900">{comment.authorName}</p>
+                        <p className="font-semibold text-neutral-900">
+                          {comment.authorName}
+                        </p>
                       ) : null}
-                      <p className="mt-1 break-words leading-6">{comment.text}</p>
+                      <p className="mt-1 break-words leading-6">
+                        {comment.text}
+                      </p>
                     </div>
                     {comment.canManage ? (
                       <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
@@ -161,8 +169,15 @@ export function EventDetailsCard({
                             <summary className="inline-flex cursor-pointer list-none rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50 marker:content-[''] [&::-webkit-details-marker]:hidden">
                               Редактирай
                             </summary>
-                            <form action={editCommentAction} className="mt-2 grid min-w-72 gap-2 rounded-lg border border-neutral-200 bg-white p-3 shadow-sm">
-                              <input name="commentId" type="hidden" value={comment.id} />
+                            <form
+                              action={editCommentAction}
+                              className="mt-2 grid min-w-72 gap-2 rounded-lg border border-neutral-200 bg-white p-3 shadow-sm"
+                            >
+                              <input
+                                name="commentId"
+                                type="hidden"
+                                value={comment.id}
+                              />
                               <textarea
                                 name="text"
                                 className="min-h-20 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-emerald-600"
@@ -182,7 +197,11 @@ export function EventDetailsCard({
                         ) : null}
                         {deleteCommentAction ? (
                           <form action={deleteCommentAction}>
-                            <input name="commentId" type="hidden" value={comment.id} />
+                            <input
+                              name="commentId"
+                              type="hidden"
+                              value={comment.id}
+                            />
                             <button
                               type="submit"
                               className="rounded-lg border border-rose-200 bg-white px-3 py-1.5 text-sm font-bold text-rose-700 transition hover:bg-rose-50"
@@ -202,10 +221,16 @@ export function EventDetailsCard({
               </p>
             )}
           </div>
-          <form action={commentAction} className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+          <form
+            action={commentAction}
+            className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3"
+          >
             <input name="eventId" type="hidden" value={event.id} />
             {errorMessage ? (
-              <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold leading-6 text-rose-800" role="alert">
+              <p
+                className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold leading-6 text-rose-800"
+                role="alert"
+              >
                 {errorMessage}
               </p>
             ) : null}

@@ -1,7 +1,12 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { apiErrorResponse, parseRouteId, readJsonObject, requireApiUser } from "../../../api-utils";
+import {
+  apiErrorResponse,
+  parseRouteId,
+  readJsonObject,
+  requireApiUser,
+} from "../../../api-utils";
 import { joinEvent, leaveEvent } from "@/services/events/event-service";
 import { ValidationError } from "@/services/validation";
 
@@ -28,7 +33,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if ((request.headers.get("content-length") ?? "0") !== "0") {
       const body = await readJsonObject(request);
-      petId = body.petId === undefined || body.petId === null || body.petId === "" ? null : Number(body.petId);
+      petId =
+        body.petId === undefined || body.petId === null || body.petId === ""
+          ? null
+          : Number(body.petId);
     }
 
     const participant = await joinEvent(await getEventId(context), user, petId);

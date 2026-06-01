@@ -1,19 +1,42 @@
 import { Link } from "expo-router";
 import type { ReactNode } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type TextInputProps,
+} from "react-native";
 
 import { useAuth } from "@/src/state/auth-context";
 
 export function Screen({ children }: { children: ReactNode }) {
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={styles.screen}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
       {children}
     </ScrollView>
   );
 }
 
-export function Card({ children, tone = "default" }: { children: ReactNode; tone?: "default" | "green" }) {
-  return <View style={[styles.card, tone === "green" && styles.greenCard]}>{children}</View>;
+export function Card({
+  children,
+  tone = "default",
+}: {
+  children: ReactNode;
+  tone?: "default" | "green";
+}) {
+  return (
+    <View style={[styles.card, tone === "green" && styles.greenCard]}>
+      {children}
+    </View>
+  );
 }
 
 export function BrandHeader({ subtitle }: { subtitle?: string }) {
@@ -38,7 +61,9 @@ export function AppHeader({ subtitle }: { subtitle?: string }) {
       <BrandHeader subtitle={subtitle} />
       {user ? (
         <View style={styles.sessionActions}>
-          <Text numberOfLines={1} style={styles.sessionName}>{user.name}</Text>
+          <Text numberOfLines={1} style={styles.sessionName}>
+            {user.name}
+          </Text>
           <Pressable hitSlop={8} onPress={() => void signOut()}>
             <Text style={styles.logoutText}>Изход</Text>
           </Pressable>
@@ -68,29 +93,68 @@ export function Field({ label, ...props }: TextInputProps & { label: string }) {
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput placeholderTextColor="#9ca3af" style={styles.input} {...props} />
+      <TextInput
+        placeholderTextColor="#9ca3af"
+        style={styles.input}
+        {...props}
+      />
     </View>
   );
 }
 
-export function PrimaryButton({ children, disabled, onPress }: { children: ReactNode; disabled?: boolean; onPress?: () => void }) {
+export function PrimaryButton({
+  children,
+  disabled,
+  onPress,
+}: {
+  children: ReactNode;
+  disabled?: boolean;
+  onPress?: () => void;
+}) {
   return (
-    <Pressable disabled={disabled} onPress={onPress} style={[styles.primaryButton, disabled && styles.disabledButton]}>
+    <Pressable
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.primaryButton, disabled && styles.disabledButton]}
+    >
       <Text style={styles.primaryButtonText}>{children}</Text>
     </Pressable>
   );
 }
 
-export function SecondaryButton({ children, disabled, onPress }: { children: ReactNode; disabled?: boolean; onPress?: () => void }) {
+export function SecondaryButton({
+  children,
+  disabled,
+  onPress,
+}: {
+  children: ReactNode;
+  disabled?: boolean;
+  onPress?: () => void;
+}) {
   return (
-    <Pressable disabled={disabled} onPress={onPress} style={[styles.secondaryButton, disabled && styles.disabledButton]}>
+    <Pressable
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.secondaryButton, disabled && styles.disabledButton]}
+    >
       <Text style={styles.secondaryButtonText}>{children}</Text>
     </Pressable>
   );
 }
 
-export function Badge({ children, tone = "green" }: { children: ReactNode; tone?: "green" | "gray" | "amber" }) {
-  const toneStyle = tone === "amber" ? styles.amberBadge : tone === "gray" ? styles.grayBadge : styles.greenBadge;
+export function Badge({
+  children,
+  tone = "green",
+}: {
+  children: ReactNode;
+  tone?: "green" | "gray" | "amber";
+}) {
+  const toneStyle =
+    tone === "amber"
+      ? styles.amberBadge
+      : tone === "gray"
+        ? styles.grayBadge
+        : styles.greenBadge;
 
   return <Text style={[styles.badge, toneStyle]}>{children}</Text>;
 }
@@ -140,7 +204,9 @@ export function RequireLogin() {
       <Card>
         <Eyebrow>Достъп</Eyebrow>
         <Title>Влез в профил</Title>
-        <Subtitle>Този екран чете данни от API-то и изисква активна mobile сесия.</Subtitle>
+        <Subtitle>
+          Този екран чете данни от API-то и изисква активна mobile сесия.
+        </Subtitle>
         <Link href="/auth" asChild>
           <Pressable style={styles.primaryButton}>
             <Text style={styles.primaryButtonText}>Към вход</Text>

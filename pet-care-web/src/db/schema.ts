@@ -1,4 +1,8 @@
-import { relations, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
+import {
+  relations,
+  type InferInsertModel,
+  type InferSelectModel,
+} from "drizzle-orm";
 import {
   index,
   integer,
@@ -64,8 +68,12 @@ export const users = pgTable(
     name: varchar("name", { length: 120 }).notNull(),
     role: userRoleEnum("role").notNull().default("user"),
     photoUrl: text("photo_url"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => [
@@ -88,8 +96,12 @@ export const pets = pgTable(
     size: varchar("size", { length: 40 }),
     notes: text("notes"),
     photoUrl: text("photo_url"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => [
@@ -110,8 +122,12 @@ export const petGroups = pgTable(
     createdById: integer("created_by_id")
       .notNull()
       .references(() => users.id, { onDelete: "restrict" }),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => [
@@ -132,11 +148,16 @@ export const groupMembers = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     role: groupMemberRoleEnum("role").notNull().default("member"),
-    joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),
+    joinedAt: timestamp("joined_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     removedAt: timestamp("removed_at", { withTimezone: true }),
   },
   (table) => [
-    uniqueIndex("group_members_group_id_user_id_unique").on(table.groupId, table.userId),
+    uniqueIndex("group_members_group_id_user_id_unique").on(
+      table.groupId,
+      table.userId,
+    ),
     index("group_members_group_id_idx").on(table.groupId),
     index("group_members_user_id_idx").on(table.userId),
   ],
@@ -160,8 +181,12 @@ export const careEvents = pgTable(
     capacity: integer("capacity").notNull().default(1),
     status: eventStatusEnum("status").notNull().default("upcoming"),
     notes: text("notes"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => [
@@ -183,14 +208,21 @@ export const eventParticipants = pgTable(
     userId: integer("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    petId: integer("pet_id").references(() => pets.id, { onDelete: "set null" }),
+    petId: integer("pet_id").references(() => pets.id, {
+      onDelete: "set null",
+    }),
     status: eventParticipantStatusEnum("status").notNull().default("joined"),
     notes: text("notes"),
-    joinedAt: timestamp("joined_at", { withTimezone: true }).defaultNow().notNull(),
+    joinedAt: timestamp("joined_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     leftAt: timestamp("left_at", { withTimezone: true }),
   },
   (table) => [
-    uniqueIndex("event_participants_event_id_user_id_unique").on(table.eventId, table.userId),
+    uniqueIndex("event_participants_event_id_user_id_unique").on(
+      table.eventId,
+      table.userId,
+    ),
     index("event_participants_event_id_idx").on(table.eventId),
     index("event_participants_user_id_idx").on(table.userId),
     index("event_participants_pet_id_idx").on(table.petId),
@@ -210,8 +242,12 @@ export const eventComments = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     text: text("text").notNull(),
     status: eventCommentStatusEnum("status").notNull().default("visible"),
-    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => [
@@ -272,20 +308,23 @@ export const careEventsRelations = relations(careEvents, ({ one, many }) => ({
   comments: many(eventComments),
 }));
 
-export const eventParticipantsRelations = relations(eventParticipants, ({ one }) => ({
-  event: one(careEvents, {
-    fields: [eventParticipants.eventId],
-    references: [careEvents.id],
+export const eventParticipantsRelations = relations(
+  eventParticipants,
+  ({ one }) => ({
+    event: one(careEvents, {
+      fields: [eventParticipants.eventId],
+      references: [careEvents.id],
+    }),
+    user: one(users, {
+      fields: [eventParticipants.userId],
+      references: [users.id],
+    }),
+    pet: one(pets, {
+      fields: [eventParticipants.petId],
+      references: [pets.id],
+    }),
   }),
-  user: one(users, {
-    fields: [eventParticipants.userId],
-    references: [users.id],
-  }),
-  pet: one(pets, {
-    fields: [eventParticipants.petId],
-    references: [pets.id],
-  }),
-}));
+);
 
 export const eventCommentsRelations = relations(eventComments, ({ one }) => ({
   event: one(careEvents, {

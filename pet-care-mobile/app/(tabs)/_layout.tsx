@@ -20,7 +20,15 @@ export default function TabLayout() {
         options={{
           title: "Табло",
           tabBarIcon: ({ color }) => (
-            <SymbolView name={{ ios: "calendar", android: "calendar_month", web: "calendar_month" }} tintColor={color} size={28} />
+            <SymbolView
+              name={{
+                ios: "calendar",
+                android: "calendar_month",
+                web: "calendar_month",
+              }}
+              tintColor={color}
+              size={28}
+            />
           ),
         }}
       />
@@ -29,7 +37,11 @@ export default function TabLayout() {
         options={{
           title: "Любимци",
           tabBarIcon: ({ color }) => (
-            <SymbolView name={{ ios: "heart", android: "favorite", web: "favorite" }} tintColor={color} size={28} />
+            <SymbolView
+              name={{ ios: "heart", android: "favorite", web: "favorite" }}
+              tintColor={color}
+              size={28}
+            />
           ),
         }}
       />
@@ -38,7 +50,11 @@ export default function TabLayout() {
         options={{
           title: "Групи",
           tabBarIcon: ({ color }) => (
-            <SymbolView name={{ ios: "person.3", android: "groups", web: "groups" }} tintColor={color} size={28} />
+            <SymbolView
+              name={{ ios: "person.3", android: "groups", web: "groups" }}
+              tintColor={color}
+              size={28}
+            />
           ),
         }}
       />
@@ -47,11 +63,22 @@ export default function TabLayout() {
         options={{
           title: "Профил",
           tabBarIcon: ({ color }) => (
-            <SymbolView name={{ ios: "person.crop.circle", android: "account_circle", web: "account_circle" }} tintColor={color} size={28} />
+            <SymbolView
+              name={{
+                ios: "person.crop.circle",
+                android: "account_circle",
+                web: "account_circle",
+              }}
+              tintColor={color}
+              size={28}
+            />
           ),
         }}
       />
-      <Tabs.Screen name="register" options={{ href: null, title: "Регистрация" }} />
+      <Tabs.Screen
+        name="register"
+        options={{ href: null, title: "Регистрация" }}
+      />
     </Tabs>
   );
 }

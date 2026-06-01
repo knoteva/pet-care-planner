@@ -2,7 +2,10 @@ import { notFound, redirect } from "next/navigation";
 
 import { PetEditFormView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
-import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
+import {
+  redirectWithFormError,
+  getFormError,
+} from "@/services/forms/form-errors";
 import { getPetForUser, updatePetForUser } from "@/services/pets/pet-service";
 import { integerField } from "@/services/validation";
 import type { PetType } from "@/types";
@@ -27,7 +30,12 @@ function optionalText(value: FormDataEntryValue | null) {
 }
 
 function optionalAge(value: FormDataEntryValue | null) {
-  return integerField(value, { label: "Възраст", min: 0, max: 50, required: false });
+  return integerField(value, {
+    label: "Възраст",
+    min: 0,
+    max: 50,
+    required: false,
+  });
 }
 
 export default async function EditPetPage({ params, searchParams }: PageProps) {
@@ -41,7 +49,9 @@ export default async function EditPetPage({ params, searchParams }: PageProps) {
   const resolvedPetId = petId;
   const editPath = `/pets/${resolvedPetId}/edit`;
   const pet = await getPetForUser(resolvedPetId, user.id);
-  const errorMessage = getFormError(searchParams ? await searchParams : undefined);
+  const errorMessage = getFormError(
+    searchParams ? await searchParams : undefined,
+  );
 
   if (!pet) {
     notFound();
@@ -74,7 +84,10 @@ export default async function EditPetPage({ params, searchParams }: PageProps) {
       });
 
       if (!updatedPet) {
-        redirectWithFormError(editPath, new Error("Любимецът не беше намерен или нямаш достъп до него."));
+        redirectWithFormError(
+          editPath,
+          new Error("Любимецът не беше намерен или нямаш достъп до него."),
+        );
       }
     } catch (error) {
       redirectWithFormError(editPath, error);
@@ -83,5 +96,11 @@ export default async function EditPetPage({ params, searchParams }: PageProps) {
     redirect("/pets");
   }
 
-  return <PetEditFormView action={updatePetAction} pet={pet} errorMessage={errorMessage} />;
+  return (
+    <PetEditFormView
+      action={updatePetAction}
+      pet={pet}
+      errorMessage={errorMessage}
+    />
+  );
 }

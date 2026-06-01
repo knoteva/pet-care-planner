@@ -10,7 +10,9 @@ function isAllowedApiOrigin(origin: string | null) {
     return true;
   }
 
-  return /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}):\d+$/.test(origin);
+  return /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}):\d+$/.test(
+    origin,
+  );
 }
 
 function setCorsHeaders(response: NextResponse, request: NextRequest) {
@@ -21,8 +23,14 @@ function setCorsHeaders(response: NextResponse, request: NextRequest) {
     response.headers.set("Vary", "Origin");
   }
 
-  response.headers.set("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
-  response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  response.headers.set(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PATCH,DELETE,OPTIONS",
+  );
+  response.headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization",
+  );
   response.headers.set("Access-Control-Max-Age", "86400");
 
   return response;

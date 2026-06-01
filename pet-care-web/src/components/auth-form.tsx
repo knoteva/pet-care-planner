@@ -25,11 +25,6 @@ type AuthApiResponse = {
   error?: string;
 };
 
-const demoCredentials = {
-  email: "kate_user@paws.bg",
-  password: "kate123",
-};
-
 const demoAccounts = [
   { label: "Админ", email: "kate_admin@paws.bg" },
   { label: "Мениджър", email: "kate_manager@paws.bg" },
@@ -37,7 +32,9 @@ const demoAccounts = [
 ];
 
 function getAuthRedirectPath() {
-  const redirectTo = new URLSearchParams(window.location.search).get("redirect");
+  const redirectTo = new URLSearchParams(window.location.search).get(
+    "redirect",
+  );
 
   if (redirectTo?.startsWith("/") && !redirectTo.startsWith("//")) {
     return redirectTo;
@@ -49,7 +46,9 @@ async function readAuthResponse(response: Response) {
   try {
     return (await response.json()) as AuthApiResponse;
   } catch {
-    return { error: "Сървърът върна неочакван отговор." } satisfies AuthApiResponse;
+    return {
+      error: "Сървърът върна неочакван отговор.",
+    } satisfies AuthApiResponse;
   }
 }
 
@@ -92,11 +91,16 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(isLogin ? "/api/auth/login" : "/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(isLogin ? { email, password } : { name, email, password }),
-      });
+      const response = await fetch(
+        isLogin ? "/api/auth/login" : "/api/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            isLogin ? { email, password } : { name, email, password },
+          ),
+        },
+      );
       const result = await readAuthResponse(response);
 
       if (!response.ok || !result.user) {
@@ -124,13 +128,23 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
       </h2>
 
       <form
-        action={isLogin ? "/api/auth/login?redirect=/dashboard" : "/api/auth/register?redirect=/dashboard"}
+        action={
+          isLogin
+            ? "/api/auth/login?redirect=/dashboard"
+            : "/api/auth/register?redirect=/dashboard"
+        }
         className="mt-6 grid gap-4"
         method="post"
         onSubmit={handleSubmit}
       >
         {!isLogin ? (
-          <AuthField name="name" label="Име" placeholder="Мария Петкова" minLength={2} maxLength={120} />
+          <AuthField
+            name="name"
+            label="Име"
+            placeholder="Мария Петкова"
+            minLength={2}
+            maxLength={120}
+          />
         ) : null}
         <AuthField
           name="email"
@@ -177,7 +191,11 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Моля изчакай..." : isLogin ? "Влез" : "Създай профил"}
+          {isSubmitting
+            ? "Моля изчакай..."
+            : isLogin
+              ? "Влез"
+              : "Създай профил"}
         </button>
       </form>
 
@@ -185,17 +203,25 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
         <p className="font-bold">Тестови профили</p>
         <div className="mt-2 grid gap-1.5">
           {demoAccounts.map((account) => (
-            <p key={account.email} className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between">
+            <p
+              key={account.email}
+              className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between"
+            >
               <span className="font-semibold">{account.label}</span>
               <span className="break-all">{account.email}</span>
             </p>
           ))}
         </div>
-        <p className="mt-2 text-emerald-800">Парола за всички: <span className="font-semibold">kate123</span></p>
+        <p className="mt-2 text-emerald-800">
+          Парола за всички: <span className="font-semibold">kate123</span>
+        </p>
       </div>
       <p className="mt-4 text-sm text-neutral-600">
-        {isLogin ? "Нямаш профил?" : "Вече имаш профил?"} {" "}
-        <Link href={isLogin ? "/register" : "/login"} className="font-bold text-emerald-700">
+        {isLogin ? "Нямаш профил?" : "Вече имаш профил?"}{" "}
+        <Link
+          href={isLogin ? "/register" : "/login"}
+          className="font-bold text-emerald-700"
+        >
           {isLogin ? "Регистрирай се" : "Влез"}
         </Link>
       </p>

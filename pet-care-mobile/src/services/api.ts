@@ -2,7 +2,12 @@ declare const process: { env?: Record<string, string | undefined> };
 
 export type UserRole = "user" | "admin";
 export type GroupRole = "member" | "manager";
-export type ParticipationStatus = "joined" | "waitlisted" | "left" | "removed" | null;
+export type ParticipationStatus =
+  | "joined"
+  | "waitlisted"
+  | "left"
+  | "removed"
+  | null;
 
 export type PaginationMeta = {
   page: number;
@@ -84,7 +89,11 @@ export class ApiError extends Error {
 export function getApiBaseUrl() {
   const configuredUrl = process.env?.EXPO_PUBLIC_API_BASE_URL?.trim();
 
-  return (configuredUrl && configuredUrl.length > 0 ? configuredUrl : "http://localhost:3000").replace(/\/$/, "");
+  return (
+    configuredUrl && configuredUrl.length > 0
+      ? configuredUrl
+      : "http://localhost:3000"
+  ).replace(/\/$/, "");
 }
 
 async function readResponse(response: Response) {
@@ -113,7 +122,10 @@ function errorMessage(payload: unknown, fallback: string) {
   return fallback;
 }
 
-export async function apiRequest<T>(path: string, options: RequestOptions = {}) {
+export async function apiRequest<T>(
+  path: string,
+  options: RequestOptions = {},
+) {
   const headers: Record<string, string> = {
     Accept: "application/json",
   };
@@ -135,7 +147,10 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}) 
   const payload = await readResponse(response);
 
   if (!response.ok) {
-    throw new ApiError(errorMessage(payload, "Заявката не беше успешна."), response.status);
+    throw new ApiError(
+      errorMessage(payload, "Заявката не беше успешна."),
+      response.status,
+    );
   }
 
   return payload as T;
@@ -160,7 +175,10 @@ export async function getMe(token: string) {
 }
 
 export async function listEvents(token: string, page = 1) {
-  return apiRequest<{ events: MobileEvent[]; pagination: PaginationMeta }>(`/api/events?page=${page}`, { token });
+  return apiRequest<{ events: MobileEvent[]; pagination: PaginationMeta }>(
+    `/api/events?page=${page}`,
+    { token },
+  );
 }
 
 export async function joinEvent(eventId: number, token: string) {
@@ -179,30 +197,55 @@ export async function leaveEvent(eventId: number, token: string) {
 }
 
 export async function listComments(eventId: number, token: string, page = 1) {
-  return apiRequest<{ comments: MobileComment[]; pagination: PaginationMeta }>(`/api/events/${eventId}/comments?page=${page}`, { token });
+  return apiRequest<{ comments: MobileComment[]; pagination: PaginationMeta }>(
+    `/api/events/${eventId}/comments?page=${page}`,
+    { token },
+  );
 }
 
-export async function createComment(eventId: number, text: string, token: string) {
-  return apiRequest<{ comment: MobileComment }>(`/api/events/${eventId}/comments`, {
-    method: "POST",
-    body: { text },
-    token,
-  });
+export async function createComment(
+  eventId: number,
+  text: string,
+  token: string,
+) {
+  return apiRequest<{ comment: MobileComment }>(
+    `/api/events/${eventId}/comments`,
+    {
+      method: "POST",
+      body: { text },
+      token,
+    },
+  );
 }
 
-export async function updateComment(eventId: number, commentId: number, text: string, token: string) {
-  return apiRequest<{ comment: MobileComment }>(`/api/events/${eventId}/comments/${commentId}`, {
-    method: "PATCH",
-    body: { text },
-    token,
-  });
+export async function updateComment(
+  eventId: number,
+  commentId: number,
+  text: string,
+  token: string,
+) {
+  return apiRequest<{ comment: MobileComment }>(
+    `/api/events/${eventId}/comments/${commentId}`,
+    {
+      method: "PATCH",
+      body: { text },
+      token,
+    },
+  );
 }
 
-export async function deleteComment(eventId: number, commentId: number, token: string) {
-  return apiRequest<{ comment: MobileComment }>(`/api/events/${eventId}/comments/${commentId}`, {
-    method: "DELETE",
-    token,
-  });
+export async function deleteComment(
+  eventId: number,
+  commentId: number,
+  token: string,
+) {
+  return apiRequest<{ comment: MobileComment }>(
+    `/api/events/${eventId}/comments/${commentId}`,
+    {
+      method: "DELETE",
+      token,
+    },
+  );
 }
 
 export async function listGroups(token: string) {

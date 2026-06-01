@@ -12,7 +12,10 @@ function readProjectFile(relativePath) {
 
 function assertIncludes(relativePath, expected, label = expected) {
   const content = readProjectFile(relativePath);
-  assert.ok(content.includes(expected), `${relativePath} should include ${label}`);
+  assert.ok(
+    content.includes(expected),
+    `${relativePath} should include ${label}`,
+  );
 }
 
 const webScreens = [
@@ -66,12 +69,20 @@ const serviceFiles = [
   "pet-care-web/src/services/pagination.ts",
 ];
 
-for (const file of [...webScreens, ...mobileScreens, ...apiRoutes, ...serviceFiles]) {
+for (const file of [
+  ...webScreens,
+  ...mobileScreens,
+  ...apiRoutes,
+  ...serviceFiles,
+]) {
   readProjectFile(file);
 }
 
 assert.ok(webScreens.length >= 10, "Web app should have at least 10 screens");
-assert.ok(mobileScreens.length >= 5, "Mobile app should have at least 5 screens");
+assert.ok(
+  mobileScreens.length >= 5,
+  "Mobile app should have at least 5 screens",
+);
 
 for (const file of [
   "pet-care-web/src/services/pets/pet-service.ts",
@@ -79,14 +90,34 @@ for (const file of [
   "pet-care-web/src/services/events/event-service.ts",
   "pet-care-web/src/services/comments/comment-service.ts",
 ]) {
-  assertIncludes(file, ".limit(options.limit ??", "database-level limit pagination");
-  assertIncludes(file, ".offset(options.offset ??", "database-level offset pagination");
+  assertIncludes(
+    file,
+    ".limit(options.limit ??",
+    "database-level limit pagination",
+  );
+  assertIncludes(
+    file,
+    ".offset(options.offset ??",
+    "database-level offset pagination",
+  );
 }
 
-assertIncludes("pet-care-web/src/services/auth/auth-service.ts", "requireAdminUser");
-assertIncludes("pet-care-web/src/services/auth/auth-service.ts", "requireGroupMember");
-assertIncludes("pet-care-web/src/services/auth/auth-service.ts", "requireGroupManager");
-assertIncludes("pet-care-web/src/components/app-labels.ts", "formatCommentCount");
+assertIncludes(
+  "pet-care-web/src/services/auth/auth-service.ts",
+  "requireAdminUser",
+);
+assertIncludes(
+  "pet-care-web/src/services/auth/auth-service.ts",
+  "requireGroupMember",
+);
+assertIncludes(
+  "pet-care-web/src/services/auth/auth-service.ts",
+  "requireGroupManager",
+);
+assertIncludes(
+  "pet-care-web/src/components/app-labels.ts",
+  "formatCommentCount",
+);
 assertIncludes("pet-care-mobile/src/utils/format.ts", "formatCommentCount");
 
 console.log("Contract checks OK:");

@@ -1,22 +1,32 @@
 import { and, asc, eq, isNull } from "drizzle-orm";
 
 import { db } from "@/db";
-import {
-  groupMembers,
-  petGroups,
-  users,
-  type NewPetGroup,
-} from "@/db/schema";
+import { groupMembers, petGroups, users, type NewPetGroup } from "@/db/schema";
 import { isAdmin, type PublicUser } from "@/services/auth/auth-service";
-import { integerField, textField, ValidationError } from "@/services/validation";
+import {
+  integerField,
+  textField,
+  ValidationError,
+} from "@/services/validation";
 
-export type CreateGroupInput = Pick<NewPetGroup, "title" | "description" | "area" | "inviteCode" | "createdById">;
+export type CreateGroupInput = Pick<
+  NewPetGroup,
+  "title" | "description" | "area" | "inviteCode" | "createdById"
+>;
 
 function validateGroupInput(input: CreateGroupInput) {
   return {
     ...input,
-    title: textField(input.title, { label: "Име на групата", min: 3, max: 160 }),
-    description: textField(input.description, { label: "Описание", max: 1000, required: false }),
+    title: textField(input.title, {
+      label: "Име на групата",
+      min: 3,
+      max: 160,
+    }),
+    description: textField(input.description, {
+      label: "Описание",
+      max: 1000,
+      required: false,
+    }),
     area: textField(input.area, { label: "Район", max: 180, required: false }),
     inviteCode: textField(input.inviteCode, {
       label: "Код за покана",
@@ -24,11 +34,18 @@ function validateGroupInput(input: CreateGroupInput) {
       max: 48,
       pattern: /^[A-Z0-9-]+$/,
     }).toUpperCase(),
-    createdById: integerField(input.createdById, { label: "Създател", min: 1, max: 2147483647 }),
+    createdById: integerField(input.createdById, {
+      label: "Създател",
+      min: 1,
+      max: 2147483647,
+    }),
   };
 }
 
-export async function listGroupsForUser(userId: number, options: { limit?: number; offset?: number } = {}) {
+export async function listGroupsForUser(
+  userId: number,
+  options: { limit?: number; offset?: number } = {},
+) {
   return db
     .select({
       id: petGroups.id,
@@ -55,7 +72,9 @@ export async function listGroupsForUser(userId: number, options: { limit?: numbe
     .offset(options.offset ?? 0);
 }
 
-export async function listAllGroupsForAdmin(options: { limit?: number; offset?: number } = {}) {
+export async function listAllGroupsForAdmin(
+  options: { limit?: number; offset?: number } = {},
+) {
   const groups = await db
     .select({
       id: petGroups.id,
@@ -76,8 +95,13 @@ export async function listAllGroupsForAdmin(options: { limit?: number; offset?: 
   return groups.map((group) => ({ ...group, role: "manager" as const }));
 }
 
-export async function listGroupsForViewer(user: PublicUser, options: { limit?: number; offset?: number } = {}) {
-  return isAdmin(user) ? listAllGroupsForAdmin(options) : listGroupsForUser(user.id, options);
+export async function listGroupsForViewer(
+  user: PublicUser,
+  options: { limit?: number; offset?: number } = {},
+) {
+  return isAdmin(user)
+    ? listAllGroupsForAdmin(options)
+    : listGroupsForUser(user.id, options);
 }
 
 export async function listCreatableGroupsForUser(user: PublicUser) {
@@ -154,8 +178,15 @@ export async function createGroup(input: CreateGroupInput) {
   return group;
 }
 
-export async function joinGroupByInviteCode(userId: number, inviteCode: string) {
-  const cleanUserId = integerField(userId, { label: "Потребител", min: 1, max: 2147483647 });
+export async function joinGroupByInviteCode(
+  userId: number,
+  inviteCode: string,
+) {
+  const cleanUserId = integerField(userId, {
+    label: "Потребител",
+    min: 1,
+    max: 2147483647,
+  });
   const cleanInviteCode = textField(inviteCode, {
     label: "Код за покана",
     min: 4,
@@ -166,7 +197,12 @@ export async function joinGroupByInviteCode(userId: number, inviteCode: string) 
   const [group] = await db
     .select({ id: petGroups.id })
     .from(petGroups)
-    .where(and(eq(petGroups.inviteCode, cleanInviteCode), isNull(petGroups.deletedAt)))
+    .where(
+      and(
+        eq(petGroups.inviteCode, cleanInviteCode),
+        isNull(petGroups.deletedAt),
+      ),
+    )
     .limit(1);
 
   if (!group) {
@@ -176,7 +212,12 @@ export async function joinGroupByInviteCode(userId: number, inviteCode: string) 
   const [existingMembership] = await db
     .select({ id: groupMembers.id, removedAt: groupMembers.removedAt })
     .from(groupMembers)
-    .where(and(eq(groupMembers.groupId, group.id), eq(groupMembers.userId, cleanUserId)))
+    .where(
+      and(
+        eq(groupMembers.groupId, group.id),
+        eq(groupMembers.userId, cleanUserId),
+      ),
+    )
     .limit(1);
 
   if (existingMembership && !existingMembership.removedAt) {
@@ -214,6 +255,12 @@ export async function listGroupMembers(groupId: number) {
     })
     .from(groupMembers)
     .innerJoin(users, eq(users.id, groupMembers.userId))
-    .where(and(eq(groupMembers.groupId, groupId), isNull(groupMembers.removedAt), isNull(users.deletedAt)))
+    .where(
+      and(
+        eq(groupMembers.groupId, groupId),
+        isNull(groupMembers.removedAt),
+        isNull(users.deletedAt),
+      ),
+    )
     .orderBy(asc(users.name));
 }

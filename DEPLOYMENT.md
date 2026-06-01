@@ -129,6 +129,17 @@ npm run smoke:api
 ```
 
 By default this checks `https://pet-care-web-rose.vercel.app`. To check another deployment URL, set `SMOKE_API_BASE_URL` first.
+
+## Optional Scalability Seed
+
+For staging/reviewer proof of database-level pagination with a large dataset, run:
+
+```bash
+npm run db:seed:large
+```
+
+This creates a dedicated `LOAD-TEST-PETS` group with 10,000 generated care events and comments. It is optional and should not be part of the normal demo reset unless large-list testing is needed.
+
 ## GitHub Actions Secrets
 
 Add these repository secrets in GitHub -> Settings -> Secrets and variables -> Actions:

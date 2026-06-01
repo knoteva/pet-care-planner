@@ -25,6 +25,7 @@ kate_user@paws.bg     / kate123   regular user/group member
 - Web UI connected to real database data for dashboard, pets, groups, events, participants and comments.
 - Mobile app connected to REST API for login/register/logout, events, join/leave, comments, pets and groups.
 - Database-level pagination through Drizzle `limit` and `offset` in service queries.
+- Optional `npm run db:seed:large` script for 10,000-row scalability/pagination proof without bloating normal demo setup.
 - GitHub Actions CI for typecheck, smoke tests, contract tests and live API smoke testing.
 - GitHub Actions workflow for scheduled/manual Neon Postgres backup artifacts.
 

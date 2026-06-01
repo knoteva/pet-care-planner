@@ -11,16 +11,41 @@ import {
   users,
   type NewCareEvent,
 } from "@/db/schema";
-import { isAdmin, requireGroupManager, requireGroupMember, type PublicUser } from "@/services/auth/auth-service";
-import { dateField, enumField, integerField, textField } from "@/services/validation";
+import {
+  isAdmin,
+  requireGroupManager,
+  requireGroupMember,
+  type PublicUser,
+} from "@/services/auth/auth-service";
+import {
+  dateField,
+  enumField,
+  integerField,
+  textField,
+} from "@/services/validation";
 import type { EventType } from "@/types";
 
 export type CreateEventInput = Pick<
   NewCareEvent,
-  "groupId" | "createdById" | "title" | "eventType" | "startsAt" | "durationMinutes" | "location" | "capacity" | "notes"
+  | "groupId"
+  | "createdById"
+  | "title"
+  | "eventType"
+  | "startsAt"
+  | "durationMinutes"
+  | "location"
+  | "capacity"
+  | "notes"
 >;
 
-const eventTypes = ["dog_walk", "pet_sitting", "playdate", "training", "vet_support", "other"] satisfies EventType[];
+const eventTypes = [
+  "dog_walk",
+  "pet_sitting",
+  "playdate",
+  "training",
+  "vet_support",
+  "other",
+] satisfies EventType[];
 
 const eventStartStepMinutes = 15;
 const eventStartMinHour = 8;
@@ -32,14 +57,18 @@ function roundUpToEventStep(date: Date) {
   const remainder = rounded.getMinutes() % eventStartStepMinutes;
 
   if (remainder > 0) {
-    rounded.setMinutes(rounded.getMinutes() + eventStartStepMinutes - remainder);
+    rounded.setMinutes(
+      rounded.getMinutes() + eventStartStepMinutes - remainder,
+    );
   }
 
   return rounded;
 }
 
 export function getMinimumEventStartDate(now = new Date()) {
-  const rounded = roundUpToEventStep(new Date(now.getTime() + eventStartStepMinutes * 60 * 1000));
+  const rounded = roundUpToEventStep(
+    new Date(now.getTime() + eventStartStepMinutes * 60 * 1000),
+  );
   const earliestToday = new Date(rounded);
   earliestToday.setHours(eventStartMinHour, 0, 0, 0);
   const latestToday = new Date(rounded);
@@ -63,7 +92,11 @@ function assertAllowedEventStart(startsAt: Date) {
   const minutes = startsAt.getMinutes();
   const hour = startsAt.getHours();
 
-  if (minutes % eventStartStepMinutes !== 0 || startsAt.getSeconds() !== 0 || startsAt.getMilliseconds() !== 0) {
+  if (
+    minutes % eventStartStepMinutes !== 0 ||
+    startsAt.getSeconds() !== 0 ||
+    startsAt.getMilliseconds() !== 0
+  ) {
     throw new Error("Дата и час трябва да са на интервал от 15 минути.");
   }
 
@@ -78,26 +111,52 @@ const commentCountSql = sql<number>`coalesce((select count(*)::int from ${eventC
 function validateCreateEventInput(input: CreateEventInput) {
   const minDate = getMinimumEventStartDate();
   const maxDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-  const startsAt = dateField(input.startsAt, { label: "Дата и час", minDate, maxDate });
+  const startsAt = dateField(input.startsAt, {
+    label: "Дата и час",
+    minDate,
+    maxDate,
+  });
 
   assertAllowedEventStart(startsAt);
 
   return {
     ...input,
-    groupId: integerField(input.groupId, { label: "Група", min: 1, max: 2147483647 }),
-    createdById: integerField(input.createdById, { label: "Създател", min: 1, max: 2147483647 }),
+    groupId: integerField(input.groupId, {
+      label: "Група",
+      min: 1,
+      max: 2147483647,
+    }),
+    createdById: integerField(input.createdById, {
+      label: "Създател",
+      min: 1,
+      max: 2147483647,
+    }),
     title: textField(input.title, { label: "Заглавие", min: 3, max: 180 }),
     eventType: enumField(input.eventType, eventTypes, "Тип събитие"),
     startsAt,
-    durationMinutes: integerField(input.durationMinutes, { label: "Продължителност", min: 15, max: 360 }),
+    durationMinutes: integerField(input.durationMinutes, {
+      label: "Продължителност",
+      min: 15,
+      max: 360,
+    }),
     location: textField(input.location, { label: "Място", min: 3, max: 240 }),
-    capacity: integerField(input.capacity, { label: "Капацитет", min: 1, max: 50 }),
-    notes: textField(input.notes, { label: "Бележки", max: 1200, required: false }),
+    capacity: integerField(input.capacity, {
+      label: "Капацитет",
+      min: 1,
+      max: 50,
+    }),
+    notes: textField(input.notes, {
+      label: "Бележки",
+      max: 1200,
+      required: false,
+    }),
   };
 }
 
 function participationStatusSql(userId: number) {
-  return sql<string | null>`(select ${eventParticipants.status} from ${eventParticipants} where ${eventParticipants.eventId} = ${careEvents.id} and ${eventParticipants.userId} = ${userId} limit 1)`;
+  return sql<
+    string | null
+  >`(select ${eventParticipants.status} from ${eventParticipants} where ${eventParticipants.eventId} = ${careEvents.id} and ${eventParticipants.userId} = ${userId} limit 1)`;
 }
 
 function eventSelect(userId?: number) {
@@ -140,7 +199,10 @@ function adminEventSelect(userId?: number) {
   };
 }
 
-export async function listEventsForUser(userId: number, options: { limit?: number; offset?: number } = {}) {
+export async function listEventsForUser(
+  userId: number,
+  options: { limit?: number; offset?: number } = {},
+) {
   return db
     .select(eventSelect(userId))
     .from(careEvents)
@@ -159,7 +221,10 @@ export async function listEventsForUser(userId: number, options: { limit?: numbe
     .offset(options.offset ?? 0);
 }
 
-export async function listEventsForAdmin(options: { limit?: number; offset?: number } = {}, userId?: number) {
+export async function listEventsForAdmin(
+  options: { limit?: number; offset?: number } = {},
+  userId?: number,
+) {
   return db
     .select(adminEventSelect(userId))
     .from(careEvents)
@@ -170,11 +235,19 @@ export async function listEventsForAdmin(options: { limit?: number; offset?: num
     .offset(options.offset ?? 0);
 }
 
-export async function listEventsForViewer(user: PublicUser, options: { limit?: number; offset?: number } = {}) {
-  return isAdmin(user) ? listEventsForAdmin(options, user.id) : listEventsForUser(user.id, options);
+export async function listEventsForViewer(
+  user: PublicUser,
+  options: { limit?: number; offset?: number } = {},
+) {
+  return isAdmin(user)
+    ? listEventsForAdmin(options, user.id)
+    : listEventsForUser(user.id, options);
 }
 
-export async function listLatestEventsForViewer(user: PublicUser, options: { limit?: number; offset?: number } = {}) {
+export async function listLatestEventsForViewer(
+  user: PublicUser,
+  options: { limit?: number; offset?: number } = {},
+) {
   const rows = isAdmin(user)
     ? await db
         .select(adminEventSelect(user.id))
@@ -204,7 +277,10 @@ export async function listLatestEventsForViewer(user: PublicUser, options: { lim
   return rows;
 }
 
-export async function listUpcomingEventsForViewer(user: PublicUser, options: { limit?: number; offset?: number } = {}) {
+export async function listUpcomingEventsForViewer(
+  user: PublicUser,
+  options: { limit?: number; offset?: number } = {},
+) {
   const now = new Date();
 
   const rows = isAdmin(user)
@@ -212,7 +288,13 @@ export async function listUpcomingEventsForViewer(user: PublicUser, options: { l
         .select(adminEventSelect(user.id))
         .from(careEvents)
         .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
-        .where(and(gte(careEvents.startsAt, now), isNull(careEvents.deletedAt), isNull(petGroups.deletedAt)))
+        .where(
+          and(
+            gte(careEvents.startsAt, now),
+            isNull(careEvents.deletedAt),
+            isNull(petGroups.deletedAt),
+          ),
+        )
         .orderBy(asc(careEvents.startsAt))
         .limit(options.limit ?? 100)
         .offset(options.offset ?? 0)
@@ -237,20 +319,33 @@ export async function listUpcomingEventsForViewer(user: PublicUser, options: { l
   return rows;
 }
 
-export async function listEventsForGroupForViewer(user: PublicUser, groupId: number, options: { limit?: number; offset?: number } = {}) {
+export async function listEventsForGroupForViewer(
+  user: PublicUser,
+  groupId: number,
+  options: { limit?: number; offset?: number } = {},
+) {
   await requireGroupMember(user, groupId);
 
   return db
     .select(isAdmin(user) ? adminEventSelect(user.id) : eventSelect(user.id))
     .from(careEvents)
     .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
-    .where(and(eq(careEvents.groupId, groupId), isNull(careEvents.deletedAt), isNull(petGroups.deletedAt)))
+    .where(
+      and(
+        eq(careEvents.groupId, groupId),
+        isNull(careEvents.deletedAt),
+        isNull(petGroups.deletedAt),
+      ),
+    )
     .orderBy(asc(careEvents.startsAt))
     .limit(options.limit ?? 100)
     .offset(options.offset ?? 0);
 }
 
-export async function listEventParticipantsForViewer(eventId: number, user: PublicUser) {
+export async function listEventParticipantsForViewer(
+  eventId: number,
+  user: PublicUser,
+) {
   const [event] = await db
     .select({ groupId: careEvents.groupId })
     .from(careEvents)
@@ -276,7 +371,10 @@ export async function listEventParticipantsForViewer(eventId: number, user: Publ
     })
     .from(eventParticipants)
     .innerJoin(users, eq(users.id, eventParticipants.userId))
-    .leftJoin(pets, and(eq(pets.id, eventParticipants.petId), isNull(pets.deletedAt)))
+    .leftJoin(
+      pets,
+      and(eq(pets.id, eventParticipants.petId), isNull(pets.deletedAt)),
+    )
     .where(
       and(
         eq(eventParticipants.eventId, eventId),
@@ -316,13 +414,22 @@ export async function getEventForViewer(eventId: number, user: PublicUser) {
     .select(adminEventSelect(user.id))
     .from(careEvents)
     .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
-    .where(and(eq(careEvents.id, eventId), isNull(careEvents.deletedAt), isNull(petGroups.deletedAt)))
+    .where(
+      and(
+        eq(careEvents.id, eventId),
+        isNull(careEvents.deletedAt),
+        isNull(petGroups.deletedAt),
+      ),
+    )
     .limit(1);
 
   return event ?? null;
 }
 
-export async function createEventAsManager(user: PublicUser, input: CreateEventInput) {
+export async function createEventAsManager(
+  user: PublicUser,
+  input: CreateEventInput,
+) {
   const cleanInput = validateCreateEventInput(input);
   await requireGroupManager(user, cleanInput.groupId);
 
@@ -331,7 +438,11 @@ export async function createEventAsManager(user: PublicUser, input: CreateEventI
   return event;
 }
 
-export async function joinEvent(eventId: number, user: PublicUser, petId?: number | null) {
+export async function joinEvent(
+  eventId: number,
+  user: PublicUser,
+  petId?: number | null,
+) {
   const [event] = await db
     .select({ groupId: careEvents.groupId, capacity: careEvents.capacity })
     .from(careEvents)
@@ -372,7 +483,12 @@ export async function leaveEvent(eventId: number, user: PublicUser) {
   const [participant] = await db
     .update(eventParticipants)
     .set({ status: "left", leftAt: new Date() })
-    .where(and(eq(eventParticipants.eventId, eventId), eq(eventParticipants.userId, user.id)))
+    .where(
+      and(
+        eq(eventParticipants.eventId, eventId),
+        eq(eventParticipants.userId, user.id),
+      ),
+    )
     .returning();
 
   return participant ?? null;

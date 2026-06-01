@@ -13,8 +13,14 @@ type TextOptions = {
   pattern?: RegExp;
 };
 
-export function textField(value: unknown, options: TextOptions & { required: false }): string | null;
-export function textField(value: unknown, options: TextOptions & { required?: true }): string;
+export function textField(
+  value: unknown,
+  options: TextOptions & { required: false },
+): string | null;
+export function textField(
+  value: unknown,
+  options: TextOptions & { required?: true },
+): string;
 export function textField(value: unknown, options: TextOptions): string | null {
   const { label, min = 1, max, required = true, pattern } = options;
   const text = String(value ?? "").trim();
@@ -49,9 +55,18 @@ type IntegerOptions = {
   required?: boolean;
 };
 
-export function integerField(value: unknown, options: IntegerOptions & { required: false }): number | null;
-export function integerField(value: unknown, options: IntegerOptions & { required?: true }): number;
-export function integerField(value: unknown, options: IntegerOptions): number | null {
+export function integerField(
+  value: unknown,
+  options: IntegerOptions & { required: false },
+): number | null;
+export function integerField(
+  value: unknown,
+  options: IntegerOptions & { required?: true },
+): number;
+export function integerField(
+  value: unknown,
+  options: IntegerOptions,
+): number | null {
   const { label, min, max, required = true } = options;
   const raw = String(value ?? "").trim();
 
@@ -76,7 +91,11 @@ export function integerField(value: unknown, options: IntegerOptions): number | 
   return numberValue;
 }
 
-export function enumField<T extends string>(value: unknown, allowedValues: readonly T[], label: string) {
+export function enumField<T extends string>(
+  value: unknown,
+  allowedValues: readonly T[],
+  label: string,
+) {
   const text = String(value ?? "").trim();
 
   if (!allowedValues.includes(text as T)) {

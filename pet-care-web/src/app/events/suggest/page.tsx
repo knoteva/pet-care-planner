@@ -1,11 +1,19 @@
 import { redirect } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
-import { EmptyState, FormCard, FormSelect, FormTextarea } from "@/components/ui-primitives";
+import {
+  EmptyState,
+  FormCard,
+  FormSelect,
+  FormTextarea,
+} from "@/components/ui-primitives";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { createEventComment } from "@/services/comments/comment-service";
 import { listEventsForUser } from "@/services/events/event-service";
-import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
+import {
+  redirectWithFormError,
+  getFormError,
+} from "@/services/forms/form-errors";
 import { listGroupsForUser } from "@/services/groups/group-service";
 
 type PageProps = {
@@ -21,7 +29,9 @@ function parseGroupId(value: FormDataEntryValue | null) {
 export default async function SuggestEventPage({ searchParams }: PageProps) {
   const user = await requireCurrentSessionUser("/events/suggest");
   const groups = await listGroupsForUser(user.id);
-  const errorMessage = getFormError(searchParams ? await searchParams : undefined);
+  const errorMessage = getFormError(
+    searchParams ? await searchParams : undefined,
+  );
 
   async function suggestEventAction(formData: FormData) {
     "use server";
@@ -35,14 +45,22 @@ export default async function SuggestEventPage({ searchParams }: PageProps) {
     }
 
     if (!text) {
-      redirectWithFormError("/events/suggest", new Error("Опиши какво събитие предлагаш."));
+      redirectWithFormError(
+        "/events/suggest",
+        new Error("Опиши какво събитие предлагаш."),
+      );
     }
 
     const eventRows = await listEventsForUser(actionUser.id);
     const targetEvent = eventRows.find((event) => event.groupId === groupId);
 
     if (!targetEvent) {
-      redirectWithFormError("/events/suggest", new Error("В тази група още няма активно събитие, към което да запишем предложението."));
+      redirectWithFormError(
+        "/events/suggest",
+        new Error(
+          "В тази група още няма активно събитие, към което да запишем предложението.",
+        ),
+      );
     }
 
     try {
@@ -72,7 +90,10 @@ export default async function SuggestEventPage({ searchParams }: PageProps) {
           <FormSelect
             name="groupId"
             label="Група"
-            options={groups.map((group) => ({ value: String(group.id), label: group.title }))}
+            options={groups.map((group) => ({
+              value: String(group.id),
+              label: group.title,
+            }))}
           />
           <FormTextarea
             name="text"

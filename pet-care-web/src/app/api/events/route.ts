@@ -2,8 +2,15 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { apiErrorResponse, readJsonObject, requireApiUser } from "../api-utils";
-import { createEventAsManager, listEventsForViewer } from "@/services/events/event-service";
-import { getPageWindow, parsePage, resolvePageRows } from "@/services/pagination";
+import {
+  createEventAsManager,
+  listEventsForViewer,
+} from "@/services/events/event-service";
+import {
+  getPageWindow,
+  parsePage,
+  resolvePageRows,
+} from "@/services/pagination";
 import type { EventType } from "@/types";
 
 export const runtime = "nodejs";
@@ -22,7 +29,10 @@ export async function GET(request: NextRequest) {
   const rows = await listEventsForViewer(user, getPageWindow(page));
   const pageRows = resolvePageRows(rows, page, "/api/events");
 
-  return NextResponse.json({ events: pageRows.items, pagination: pageRows.pagination });
+  return NextResponse.json({
+    events: pageRows.items,
+    pagination: pageRows.pagination,
+  });
 }
 
 export async function POST(request: NextRequest) {

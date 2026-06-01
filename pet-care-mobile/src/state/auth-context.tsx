@@ -1,7 +1,19 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 import * as api from "@/src/services/api";
-import { clearStoredToken, getStoredToken, setStoredToken } from "@/src/services/token-storage";
+import {
+  clearStoredToken,
+  getStoredToken,
+  setStoredToken,
+} from "@/src/services/token-storage";
 
 type AuthContextValue = {
   user: api.MobileUser | null;
@@ -39,11 +51,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const applySession = useCallback(async (nextUser: api.MobileUser, nextToken: string) => {
-    setUser(nextUser);
-    setToken(nextToken);
-    await setStoredToken(nextToken);
-  }, []);
+  const applySession = useCallback(
+    async (nextUser: api.MobileUser, nextToken: string) => {
+      setUser(nextUser);
+      setToken(nextToken);
+      await setStoredToken(nextToken);
+    },
+    [],
+  );
 
   const refreshSession = useCallback(async () => {
     setIsLoading(true);
@@ -99,7 +114,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(null);
 
       try {
-        const response = await api.register(name.trim(), email.trim(), password);
+        const response = await api.register(
+          name.trim(),
+          email.trim(),
+          password,
+        );
         await applySession(response.user, response.token);
       } catch (requestError) {
         setError(friendlyError(requestError));

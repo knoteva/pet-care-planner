@@ -23,7 +23,8 @@ export function hashPassword(password: string) {
 }
 
 export function verifyPassword(password: string, storedHash: string) {
-  const [scheme, cost, blockSize, parallelization, salt, hash] = storedHash.split(":");
+  const [scheme, cost, blockSize, parallelization, salt, hash] =
+    storedHash.split(":");
 
   if (
     scheme !== "scrypt" ||

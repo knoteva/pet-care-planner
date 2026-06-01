@@ -2,7 +2,11 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 import { apiErrorResponse, readJsonObject, requireApiUser } from "../api-utils";
-import { getPageWindow, parsePage, resolvePageRows } from "@/services/pagination";
+import {
+  getPageWindow,
+  parsePage,
+  resolvePageRows,
+} from "@/services/pagination";
 import { createPet, listPetsForUser } from "@/services/pets/pet-service";
 import type { PetType } from "@/types";
 
@@ -22,7 +26,10 @@ export async function GET(request: NextRequest) {
   const rows = await listPetsForUser(user.id, getPageWindow(page));
   const pageRows = resolvePageRows(rows, page, "/api/pets");
 
-  return NextResponse.json({ pets: pageRows.items, pagination: pageRows.pagination });
+  return NextResponse.json({
+    pets: pageRows.items,
+    pagination: pageRows.pagination,
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -36,7 +43,10 @@ export async function POST(request: NextRequest) {
       name: String(body.name ?? ""),
       type: String(body.type ?? "") as PetType,
       breed: nullableText(body.breed),
-      age: body.age === undefined || body.age === null || body.age === "" ? null : Number(body.age),
+      age:
+        body.age === undefined || body.age === null || body.age === ""
+          ? null
+          : Number(body.age),
       size: nullableText(body.size),
       notes: nullableText(body.notes),
       photoUrl: nullableText(body.photoUrl),

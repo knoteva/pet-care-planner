@@ -102,6 +102,7 @@ Pagination is implemented at database query level with Drizzle `limit` and `offs
 - `event-service.ts`, `pet-service.ts`, `group-service.ts`, `admin-service.ts` and `comment-service.ts` accept `{ limit, offset }` options.
 - API routes such as `/api/events?page=1`, `/api/pets?page=1`, `/api/groups?page=1` and `/api/events/[id]/comments?page=1` return pagination metadata.
 - Web list screens and the mobile events screen use paged data instead of loading unlimited rows.
+- `npm run db:seed:large` is an optional reviewer/staging script that creates a 10,000-row load-test event dataset for pagination proof. It is not run during normal demo setup.
 
 ## Web Screens
 
@@ -198,6 +199,12 @@ npm run db:migrate
 npm run db:seed
 ```
 
+Optional large-dataset proof for pagination/scalability:
+
+```bash
+npm run db:seed:large
+```
+
 Run the Web app:
 
 ```bash
@@ -216,7 +223,6 @@ For mobile API calls, set `EXPO_PUBLIC_API_BASE_URL` to the Web/backend root URL
 https://pet-care-web-rose.vercel.app
 ```
 
-
 ## GitHub Actions
 
 The repository includes two GitHub Actions workflows:
@@ -232,6 +238,7 @@ For the optional Web build and DB backup workflow, add repository secrets in Git
 DATABASE_URL
 JWT_SECRET
 ```
+
 ## Useful Scripts
 
 ```bash
@@ -243,6 +250,7 @@ npm run db:ping
 npm run db:check
 npm run db:migrate
 npm run db:seed
+npm run db:seed:large
 npm run smoke:web
 npm run smoke:api
 ```
@@ -258,6 +266,13 @@ npm run db:check
 npm run smoke:web
 npm run smoke:api
 npm run build:web
+```
+
+Optional scalability proof:
+
+```bash
+npm run db:seed:large
+npm run smoke:api
 ```
 
 Manual Web checks:

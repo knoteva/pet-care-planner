@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { GroupDetailsView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { listEventsForGroupForViewer } from "@/services/events/event-service";
-import { getGroupForViewer, listGroupMembers } from "@/services/groups/group-service";
+import {
+  getGroupForViewer,
+  listGroupMembers,
+} from "@/services/groups/group-service";
 import type { CareEvent, PetGroup } from "@/types";
 
 function parseId(value: string) {
@@ -12,7 +15,9 @@ function parseId(value: string) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-function toPetGroup(group: NonNullable<Awaited<ReturnType<typeof getGroupForViewer>>>): PetGroup {
+function toPetGroup(
+  group: NonNullable<Awaited<ReturnType<typeof getGroupForViewer>>>,
+): PetGroup {
   return {
     id: group.id,
     title: group.title,
@@ -25,7 +30,9 @@ function toPetGroup(group: NonNullable<Awaited<ReturnType<typeof getGroupForView
   };
 }
 
-function toCareEvent(event: Awaited<ReturnType<typeof listEventsForGroupForViewer>>[number]): CareEvent {
+function toCareEvent(
+  event: Awaited<ReturnType<typeof listEventsForGroupForViewer>>[number],
+): CareEvent {
   return {
     id: event.id,
     groupId: event.groupId,
@@ -76,7 +83,10 @@ export default async function GroupPage({
         email: member.email,
         role: member.role === "manager" ? "мениджър" : "член",
         pets: "любимци: скоро",
-        joinedAt: member.joinedAt.toLocaleDateString("bg-BG", { day: "numeric", month: "short" }),
+        joinedAt: member.joinedAt.toLocaleDateString("bg-BG", {
+          day: "numeric",
+          month: "short",
+        }),
       }))}
     />
   );

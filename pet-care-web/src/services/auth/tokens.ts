@@ -36,7 +36,9 @@ function encodeBase64Url(value: object | string) {
 }
 
 function signContent(content: string) {
-  return createHmac("sha256", getJwtSecret()).update(content).digest("base64url");
+  return createHmac("sha256", getJwtSecret())
+    .update(content)
+    .digest("base64url");
 }
 
 function safeCompare(left: string, right: string) {
@@ -81,10 +83,18 @@ export function verifyAuthToken(token: string): AuthTokenPayload | null {
   }
 
   try {
-    const parsed = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as AuthTokenPayload;
+    const parsed = JSON.parse(
+      Buffer.from(payload, "base64url").toString("utf8"),
+    ) as AuthTokenPayload;
     const now = Math.floor(Date.now() / 1000);
 
-    if (!parsed.sub || !parsed.email || !parsed.name || !parsed.role || parsed.exp <= now) {
+    if (
+      !parsed.sub ||
+      !parsed.email ||
+      !parsed.name ||
+      !parsed.role ||
+      parsed.exp <= now
+    ) {
       return null;
     }
 

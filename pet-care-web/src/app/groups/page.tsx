@@ -1,10 +1,16 @@
 import { GroupsView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { listGroupsForViewer } from "@/services/groups/group-service";
-import { getPageWindow, parsePage, resolvePageRows } from "@/services/pagination";
+import {
+  getPageWindow,
+  parsePage,
+  resolvePageRows,
+} from "@/services/pagination";
 import type { PetGroup } from "@/types";
 
-function toPetGroup(group: Awaited<ReturnType<typeof listGroupsForViewer>>[number]): PetGroup {
+function toPetGroup(
+  group: Awaited<ReturnType<typeof listGroupsForViewer>>[number],
+): PetGroup {
   return {
     id: group.id,
     title: group.title,

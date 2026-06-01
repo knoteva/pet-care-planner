@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 
 import { PetFormView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
-import { redirectWithFormError, getFormError } from "@/services/forms/form-errors";
+import {
+  redirectWithFormError,
+  getFormError,
+} from "@/services/forms/form-errors";
 import { createPet } from "@/services/pets/pet-service";
 import { integerField } from "@/services/validation";
 import type { PetType } from "@/types";
@@ -20,12 +23,19 @@ function optionalText(value: FormDataEntryValue | null) {
 }
 
 function optionalAge(value: FormDataEntryValue | null) {
-  return integerField(value, { label: "Възраст", min: 0, max: 50, required: false });
+  return integerField(value, {
+    label: "Възраст",
+    min: 0,
+    max: 50,
+    required: false,
+  });
 }
 
 export default async function NewPetPage({ searchParams }: PageProps) {
   await requireCurrentSessionUser("/pets/new");
-  const errorMessage = getFormError(searchParams ? await searchParams : undefined);
+  const errorMessage = getFormError(
+    searchParams ? await searchParams : undefined,
+  );
 
   async function createPetAction(formData: FormData) {
     "use server";
@@ -39,7 +49,10 @@ export default async function NewPetPage({ searchParams }: PageProps) {
     }
 
     if (!PET_TYPES.has(typeValue as PetType)) {
-      redirectWithFormError("/pets/new", new Error("Избери валиден тип любимец."));
+      redirectWithFormError(
+        "/pets/new",
+        new Error("Избери валиден тип любимец."),
+      );
     }
 
     try {

@@ -1,7 +1,11 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { apiErrorResponse, parseRouteId, requireApiUser } from "../../api-utils";
+import {
+  apiErrorResponse,
+  parseRouteId,
+  requireApiUser,
+} from "../../api-utils";
 import { listEventComments } from "@/services/comments/comment-service";
 import { getEventForViewer } from "@/services/events/event-service";
 import { ValidationError } from "@/services/validation";
@@ -29,7 +33,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const event = await getEventForViewer(eventId, user);
 
     if (!event) {
-      return NextResponse.json({ error: "Събитието не е намерено." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Събитието не е намерено." },
+        { status: 404 },
+      );
     }
 
     const comments = await listEventComments(eventId);

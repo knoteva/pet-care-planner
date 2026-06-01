@@ -22,11 +22,16 @@ function AuthSidePanel() {
         Координирай грижа без хаос.
       </h3>
       <div className="mt-6 grid gap-3">
-        {["Групи със съседи", "Събития и участие", "Коментари и грижа"].map((item) => (
-          <div key={item} className="rounded-lg bg-white p-4 text-sm font-bold">
-            {item}
-          </div>
-        ))}
+        {["Групи със съседи", "Събития и участие", "Коментари и грижа"].map(
+          (item) => (
+            <div
+              key={item}
+              className="rounded-lg bg-white p-4 text-sm font-bold"
+            >
+              {item}
+            </div>
+          ),
+        )}
       </div>
     </div>
   );

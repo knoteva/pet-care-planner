@@ -14,7 +14,10 @@ function getWebStorage(): LocalStorageLike | null {
     return null;
   }
 
-  return (globalThis as unknown as { localStorage?: LocalStorageLike }).localStorage ?? null;
+  return (
+    (globalThis as unknown as { localStorage?: LocalStorageLike })
+      .localStorage ?? null
+  );
 }
 
 export async function getStoredToken() {

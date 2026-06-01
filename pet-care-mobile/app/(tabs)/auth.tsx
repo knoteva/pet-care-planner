@@ -2,7 +2,19 @@ import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { AppHeader, Card, DemoProfiles, ErrorBanner, Field, PrimaryButton, Screen, SecondaryButton, Subtitle, Title, Eyebrow } from "@/src/components/mobile-ui";
+import {
+  AppHeader,
+  Card,
+  DemoProfiles,
+  ErrorBanner,
+  Field,
+  PrimaryButton,
+  Screen,
+  SecondaryButton,
+  Subtitle,
+  Title,
+  Eyebrow,
+} from "@/src/components/mobile-ui";
 import { useAuth } from "@/src/state/auth-context";
 
 export default function AuthScreen() {
@@ -37,8 +49,12 @@ export default function AuthScreen() {
           <Eyebrow>Профил</Eyebrow>
           <Title>{user.name}</Title>
           <Subtitle>{user.email}</Subtitle>
-          <PrimaryButton onPress={() => router.replace("/")}>Към таблото</PrimaryButton>
-          <SecondaryButton onPress={() => void signOut()}>Изход</SecondaryButton>
+          <PrimaryButton onPress={() => router.replace("/")}>
+            Към таблото
+          </PrimaryButton>
+          <SecondaryButton onPress={() => void signOut()}>
+            Изход
+          </SecondaryButton>
         </Card>
       </Screen>
     );
@@ -50,11 +66,28 @@ export default function AuthScreen() {
       <Card>
         <Eyebrow>Вход в профил</Eyebrow>
         <Title>Добре дошла обратно</Title>
-        <Subtitle>Влез с тестов профил или с нов акаунт, създаден през регистрацията.</Subtitle>
+        <Subtitle>
+          Влез с тестов профил или с нов акаунт, създаден през регистрацията.
+        </Subtitle>
         <ErrorBanner message={localError ?? error} />
-        <Field label="Имейл" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" textContentType="emailAddress" />
-        <Field label="Парола" value={password} onChangeText={setPassword} secureTextEntry textContentType="password" />
-        <PrimaryButton disabled={isLoading} onPress={() => void handleLogin()}>{isLoading ? "Проверка..." : "Влез"}</PrimaryButton>
+        <Field
+          label="Имейл"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+        />
+        <Field
+          label="Парола"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          textContentType="password"
+        />
+        <PrimaryButton disabled={isLoading} onPress={() => void handleLogin()}>
+          {isLoading ? "Проверка..." : "Влез"}
+        </PrimaryButton>
         <DemoProfiles />
         <View style={profileStyles.switchRow}>
           <Text style={profileStyles.switchText}>Нямаш профил?</Text>

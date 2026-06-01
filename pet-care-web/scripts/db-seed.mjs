@@ -10,7 +10,9 @@ const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
   console.error("DATABASE_URL is missing.");
-  console.error("Create pet-care-web/.env.local with DATABASE_URL=your_neon_connection_string");
+  console.error(
+    "Create pet-care-web/.env.local with DATABASE_URL=your_neon_connection_string",
+  );
   process.exit(1);
 }
 
@@ -74,7 +76,13 @@ async function upsertPet({ ownerId, name, type, breed, age, size, notes }) {
   return Number(rows[0].id);
 }
 
-async function upsertGroup({ title, description, area, inviteCode, createdById }) {
+async function upsertGroup({
+  title,
+  description,
+  area,
+  inviteCode,
+  createdById,
+}) {
   const rows = await sql`
     insert into pet_groups (title, description, area, invite_code, created_by_id, updated_at, deleted_at)
     values (${title}, ${description}, ${area}, ${inviteCode}, ${createdById}, now(), null)
@@ -104,7 +112,18 @@ async function upsertGroupMember({ groupId, userId, role }) {
   return Number(rows[0].id);
 }
 
-async function upsertEvent({ groupId, createdById, title, eventType, startsAt, durationMinutes, location, capacity, status, notes }) {
+async function upsertEvent({
+  groupId,
+  createdById,
+  title,
+  eventType,
+  startsAt,
+  durationMinutes,
+  location,
+  capacity,
+  status,
+  notes,
+}) {
   const existing = await sql`
     select id from care_events
     where group_id = ${groupId} and title = ${title}
@@ -345,7 +364,8 @@ try {
   });
   const mladostGroupId = await upsertGroup({
     title: "Младост: помощ за любимци",
-    description: "Съседи, които си помагат с хранене, разходки и ветеринарни часове.",
+    description:
+      "Съседи, които си помагат с хранене, разходки и ветеринарни часове.",
     area: "София, Младост",
     inviteCode: "MLADOST-PETS",
     createdById: elenaId,
@@ -359,18 +379,66 @@ try {
   });
 
   await Promise.all([
-    upsertGroupMember({ groupId: southGroupId, userId: mariaId, role: "manager" }),
-    upsertGroupMember({ groupId: southGroupId, userId: ivanId, role: "member" }),
-    upsertGroupMember({ groupId: southGroupId, userId: elenaId, role: "member" }),
-    upsertGroupMember({ groupId: southGroupId, userId: nikolayId, role: "member" }),
-    upsertGroupMember({ groupId: mladostGroupId, userId: elenaId, role: "manager" }),
-    upsertGroupMember({ groupId: mladostGroupId, userId: mariaId, role: "member" }),
-    upsertGroupMember({ groupId: mladostGroupId, userId: nikolayId, role: "member" }),
-    upsertGroupMember({ groupId: lozenetsGroupId, userId: ivanId, role: "manager" }),
-    upsertGroupMember({ groupId: lozenetsGroupId, userId: adminId, role: "member" }),
-    upsertGroupMember({ groupId: southGroupId, userId: kateAdminId, role: "member" }),
-    upsertGroupMember({ groupId: southGroupId, userId: kateManagerId, role: "manager" }),
-    upsertGroupMember({ groupId: southGroupId, userId: kateUserId, role: "member" }),
+    upsertGroupMember({
+      groupId: southGroupId,
+      userId: mariaId,
+      role: "manager",
+    }),
+    upsertGroupMember({
+      groupId: southGroupId,
+      userId: ivanId,
+      role: "member",
+    }),
+    upsertGroupMember({
+      groupId: southGroupId,
+      userId: elenaId,
+      role: "member",
+    }),
+    upsertGroupMember({
+      groupId: southGroupId,
+      userId: nikolayId,
+      role: "member",
+    }),
+    upsertGroupMember({
+      groupId: mladostGroupId,
+      userId: elenaId,
+      role: "manager",
+    }),
+    upsertGroupMember({
+      groupId: mladostGroupId,
+      userId: mariaId,
+      role: "member",
+    }),
+    upsertGroupMember({
+      groupId: mladostGroupId,
+      userId: nikolayId,
+      role: "member",
+    }),
+    upsertGroupMember({
+      groupId: lozenetsGroupId,
+      userId: ivanId,
+      role: "manager",
+    }),
+    upsertGroupMember({
+      groupId: lozenetsGroupId,
+      userId: adminId,
+      role: "member",
+    }),
+    upsertGroupMember({
+      groupId: southGroupId,
+      userId: kateAdminId,
+      role: "member",
+    }),
+    upsertGroupMember({
+      groupId: southGroupId,
+      userId: kateManagerId,
+      role: "manager",
+    }),
+    upsertGroupMember({
+      groupId: southGroupId,
+      userId: kateUserId,
+      role: "member",
+    }),
   ]);
 
   for (let index = 1; index <= 12; index += 1) {
@@ -389,7 +457,9 @@ try {
       upsertGroupMember({ groupId, userId: kateAdminId, role: "member" }),
     ]);
 
-    const startsAt = new Date(Date.UTC(2026, 5, 10 + index, 8 + (index % 8), (index % 4) * 15, 0)).toISOString();
+    const startsAt = new Date(
+      Date.UTC(2026, 5, 10 + index, 8 + (index % 8), (index % 4) * 15, 0),
+    ).toISOString();
     const eventId = await upsertEvent({
       groupId,
       createdById: kateManagerId,
@@ -404,7 +474,13 @@ try {
     });
 
     if (index % 3 === 0) {
-      await upsertParticipant({ eventId, userId: kateUserId, petId: null, status: "joined", notes: "Demo pagination participant." });
+      await upsertParticipant({
+        eventId,
+        userId: kateUserId,
+        petId: null,
+        status: "joined",
+        notes: "Demo pagination participant.",
+      });
     }
   }
   const walkEventId = await upsertEvent({
@@ -457,24 +533,105 @@ try {
   });
 
   await Promise.all([
-    upsertParticipant({ eventId: walkEventId, userId: mariaId, petId: rayaId, status: "joined", notes: "Идвам с Рая." }),
-    upsertParticipant({ eventId: walkEventId, userId: ivanId, petId: archieId, status: "joined", notes: "Арчи ще носи топка." }),
-    upsertParticipant({ eventId: walkEventId, userId: elenaId, petId: belaId, status: "joined", notes: "Бела е за по-спокойна група." }),
-    upsertParticipant({ eventId: walkEventId, userId: nikolayId, petId: null, status: "joined", notes: "Помощник без любимец." }),
-    upsertParticipant({ eventId: careEventId, userId: mariaId, petId: rayaId, status: "joined", notes: "Собственик." }),
-    upsertParticipant({ eventId: careEventId, userId: elenaId, petId: belaId, status: "joined", notes: "Ще помогна с храненето." }),
-    upsertParticipant({ eventId: playEventId, userId: mariaId, petId: maxId, status: "joined", notes: "Макс е социален." }),
-    upsertParticipant({ eventId: playEventId, userId: ivanId, petId: archieId, status: "joined", notes: "Организирам играта." }),
-    upsertParticipant({ eventId: playEventId, userId: nikolayId, petId: null, status: "waitlisted", notes: "Ще дойда, ако има място." }),
-    upsertParticipant({ eventId: vetEventId, userId: ivanId, petId: archieId, status: "left", notes: "Събитието е отменено." }),
+    upsertParticipant({
+      eventId: walkEventId,
+      userId: mariaId,
+      petId: rayaId,
+      status: "joined",
+      notes: "Идвам с Рая.",
+    }),
+    upsertParticipant({
+      eventId: walkEventId,
+      userId: ivanId,
+      petId: archieId,
+      status: "joined",
+      notes: "Арчи ще носи топка.",
+    }),
+    upsertParticipant({
+      eventId: walkEventId,
+      userId: elenaId,
+      petId: belaId,
+      status: "joined",
+      notes: "Бела е за по-спокойна група.",
+    }),
+    upsertParticipant({
+      eventId: walkEventId,
+      userId: nikolayId,
+      petId: null,
+      status: "joined",
+      notes: "Помощник без любимец.",
+    }),
+    upsertParticipant({
+      eventId: careEventId,
+      userId: mariaId,
+      petId: rayaId,
+      status: "joined",
+      notes: "Собственик.",
+    }),
+    upsertParticipant({
+      eventId: careEventId,
+      userId: elenaId,
+      petId: belaId,
+      status: "joined",
+      notes: "Ще помогна с храненето.",
+    }),
+    upsertParticipant({
+      eventId: playEventId,
+      userId: mariaId,
+      petId: maxId,
+      status: "joined",
+      notes: "Макс е социален.",
+    }),
+    upsertParticipant({
+      eventId: playEventId,
+      userId: ivanId,
+      petId: archieId,
+      status: "joined",
+      notes: "Организирам играта.",
+    }),
+    upsertParticipant({
+      eventId: playEventId,
+      userId: nikolayId,
+      petId: null,
+      status: "waitlisted",
+      notes: "Ще дойда, ако има място.",
+    }),
+    upsertParticipant({
+      eventId: vetEventId,
+      userId: ivanId,
+      petId: archieId,
+      status: "left",
+      notes: "Събитието е отменено.",
+    }),
   ]);
 
   await Promise.all([
-    upsertComment({ eventId: walkEventId, userId: ivanId, text: "Ще закъснея 10 мин., но идвам с Макс." }),
-    upsertComment({ eventId: walkEventId, userId: elenaId, text: "Ще донеса резервна купичка и вода." }),
-    upsertComment({ eventId: walkEventId, userId: nikolayId, text: "Може ли да дойда като помощник без любимец?" }),
-    upsertComment({ eventId: careEventId, userId: mariaId, text: "Моля проверете храната в шкафа." }),
-    upsertComment({ eventId: playEventId, userId: ivanId, text: "Ако завали, ще преместим срещата за утре.", status: "reported" }),
+    upsertComment({
+      eventId: walkEventId,
+      userId: ivanId,
+      text: "Ще закъснея 10 мин., но идвам с Макс.",
+    }),
+    upsertComment({
+      eventId: walkEventId,
+      userId: elenaId,
+      text: "Ще донеса резервна купичка и вода.",
+    }),
+    upsertComment({
+      eventId: walkEventId,
+      userId: nikolayId,
+      text: "Може ли да дойда като помощник без любимец?",
+    }),
+    upsertComment({
+      eventId: careEventId,
+      userId: mariaId,
+      text: "Моля проверете храната в шкафа.",
+    }),
+    upsertComment({
+      eventId: playEventId,
+      userId: ivanId,
+      text: "Ако завали, ще преместим срещата за утре.",
+      status: "reported",
+    }),
   ]);
 
   console.log("Database seed completed.");

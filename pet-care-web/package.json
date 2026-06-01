@@ -14,7 +14,8 @@
     "db:check": "drizzle-kit check",
     "db:ping": "node scripts/db-ping.mjs",
     "db:seed": "node scripts/db-seed.mjs",
-    "smoke": "node scripts/smoke-routes.mjs"
+    "smoke": "node scripts/smoke-routes.mjs",
+    "db:seed:large": "node scripts/db-seed-large.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

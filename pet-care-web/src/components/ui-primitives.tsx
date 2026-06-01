@@ -1,10 +1,18 @@
 import Link from "next/link";
 
-export function classNames(...values: Array<string | false | null | undefined>) {
+export function classNames(
+  ...values: Array<string | false | null | undefined>
+) {
   return values.filter(Boolean).join(" ").trim();
 }
 
-export type BadgeTone = "success" | "warning" | "danger" | "info" | "neutral" | "ok";
+export type BadgeTone =
+  | "success"
+  | "warning"
+  | "danger"
+  | "info"
+  | "neutral"
+  | "ok";
 
 export function Badge({
   tone,
@@ -49,7 +57,8 @@ export function StatCard({
     violet: "border-violet-100 bg-violet-50 text-violet-800",
     amber: "border-amber-100 bg-amber-50 text-amber-800",
   };
-  const toneClass = toneClasses[tone] ?? "border-neutral-100 bg-white text-neutral-900";
+  const toneClass =
+    toneClasses[tone] ?? "border-neutral-100 bg-white text-neutral-900";
 
   return (
     <div
@@ -341,7 +350,9 @@ export function PaginationControls({
         aria-disabled={page <= 1}
         className={classNames(
           "rounded-lg border border-neutral-300 px-3 py-2",
-          page <= 1 ? "pointer-events-none text-neutral-400" : "text-neutral-800 hover:bg-neutral-50",
+          page <= 1
+            ? "pointer-events-none text-neutral-400"
+            : "text-neutral-800 hover:bg-neutral-50",
         )}
         href={`${basePath}?page=${previousPage}`}
       >
@@ -352,7 +363,9 @@ export function PaginationControls({
         aria-disabled={!hasNext}
         className={classNames(
           "rounded-lg border border-neutral-300 px-3 py-2",
-          hasNext ? "text-neutral-800 hover:bg-neutral-50" : "pointer-events-none text-neutral-400",
+          hasNext
+            ? "text-neutral-800 hover:bg-neutral-50"
+            : "pointer-events-none text-neutral-400",
         )}
         href={`${basePath}?page=${nextPage}`}
       >

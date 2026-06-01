@@ -2,7 +2,22 @@ import { useCallback, useEffect, useState } from "react";
 import { Text, TextInput, View } from "react-native";
 
 import * as api from "@/src/services/api";
-import { AppHeader, Badge, Card, EmptyState, ErrorBanner, LoadingState, PrimaryButton, RequireLogin, Screen, SectionTitle, Subtitle, SuccessBanner, Title, Eyebrow } from "@/src/components/mobile-ui";
+import {
+  AppHeader,
+  Badge,
+  Card,
+  EmptyState,
+  ErrorBanner,
+  LoadingState,
+  PrimaryButton,
+  RequireLogin,
+  Screen,
+  SectionTitle,
+  Subtitle,
+  SuccessBanner,
+  Title,
+  Eyebrow,
+} from "@/src/components/mobile-ui";
 import { useAuth } from "@/src/state/auth-context";
 
 export default function GroupsScreen() {
@@ -24,7 +39,11 @@ export default function GroupsScreen() {
       const response = await api.listGroups(token);
       setGroups(response.groups);
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Групите не можаха да се заредят.");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Групите не можаха да се заредят.",
+      );
     } finally {
       setLoading(false);
     }
@@ -54,7 +73,11 @@ export default function GroupsScreen() {
       setMessage("Успешно се присъедини към групата.");
       await loadGroups();
     } catch (requestError) {
-      setError(requestError instanceof Error ? requestError.message : "Не успях да те добавя към групата.");
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Не успях да те добавя към групата.",
+      );
     } finally {
       setJoining(false);
     }
@@ -78,7 +101,10 @@ export default function GroupsScreen() {
       <Card>
         <Eyebrow>Квартална грижа</Eyebrow>
         <Title>Моите групи</Title>
-        <Subtitle>Виж групите, в които участваш. Нови групи и събития се управляват през web, а тук можеш да се включиш с код.</Subtitle>
+        <Subtitle>
+          Виж групите, в които участваш. Нови групи и събития се управляват през
+          web, а тук можеш да се включиш с код.
+        </Subtitle>
       </Card>
       <ErrorBanner message={error} />
       <SuccessBanner message={message} />
@@ -92,11 +118,21 @@ export default function GroupsScreen() {
           onChangeText={(value) => setInviteCode(value.toUpperCase())}
           autoCapitalize="characters"
         />
-        <PrimaryButton disabled={joining} onPress={() => void handleJoinGroup()}>{joining ? "Добавяне..." : "Присъедини се"}</PrimaryButton>
+        <PrimaryButton
+          disabled={joining}
+          onPress={() => void handleJoinGroup()}
+        >
+          {joining ? "Добавяне..." : "Присъедини се"}
+        </PrimaryButton>
       </Card>
       <SectionTitle>Групи</SectionTitle>
       {loading && groups.length === 0 ? <LoadingState /> : null}
-      {!loading && groups.length === 0 ? <EmptyState title="Няма групи" text="Въведи код за покана или създай група през web приложението." /> : null}
+      {!loading && groups.length === 0 ? (
+        <EmptyState
+          title="Няма групи"
+          text="Въведи код за покана или създай група през web приложението."
+        />
+      ) : null}
       <View style={groupStyles.list}>
         {groups.map((group) => (
           <Card key={group.id}>
@@ -105,8 +141,14 @@ export default function GroupsScreen() {
               <Badge tone="gray">{group.inviteCode}</Badge>
             </View>
             <Text style={groupStyles.groupTitle}>{group.title}</Text>
-            {group.area ? <Text style={groupStyles.groupMeta}>{group.area}</Text> : null}
-            {group.description ? <Text style={groupStyles.groupDescription}>{group.description}</Text> : null}
+            {group.area ? (
+              <Text style={groupStyles.groupMeta}>{group.area}</Text>
+            ) : null}
+            {group.description ? (
+              <Text style={groupStyles.groupDescription}>
+                {group.description}
+              </Text>
+            ) : null}
           </Card>
         ))}
       </View>

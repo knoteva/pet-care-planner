@@ -3,8 +3,32 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 
 import * as api from "@/src/services/api";
-import { AppHeader, Badge, Card, DemoProfiles, EmptyState, ErrorBanner, LoadingState, PrimaryButton, Screen, SecondaryButton, SectionTitle, Subtitle, SuccessBanner, Title, Eyebrow, styles } from "@/src/components/mobile-ui";
-import { formatCapacity, formatCommentCount, formatDuration, formatEventDate, formatEventStatus, formatEventType } from "@/src/utils/format";
+import {
+  AppHeader,
+  Badge,
+  Card,
+  DemoProfiles,
+  EmptyState,
+  ErrorBanner,
+  LoadingState,
+  PrimaryButton,
+  Screen,
+  SecondaryButton,
+  SectionTitle,
+  Subtitle,
+  SuccessBanner,
+  Title,
+  Eyebrow,
+  styles,
+} from "@/src/components/mobile-ui";
+import {
+  formatCapacity,
+  formatCommentCount,
+  formatDuration,
+  formatEventDate,
+  formatEventStatus,
+  formatEventType,
+} from "@/src/utils/format";
 import { useAuth } from "@/src/state/auth-context";
 
 function actionErrorMessage(error: unknown) {
@@ -20,14 +44,20 @@ function actionErrorMessage(error: unknown) {
     return error.message;
   }
 
-  return error instanceof Error ? error.message : "Действието не беше записано.";
+  return error instanceof Error
+    ? error.message
+    : "Действието не беше записано.";
 }
 
 export default function DashboardScreen() {
   const { user, token, isLoading: authLoading } = useAuth();
   const [events, setEvents] = useState<api.MobileEvent[]>([]);
-  const [commentsByEvent, setCommentsByEvent] = useState<Record<number, api.MobileComment[]>>({});
-  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
+  const [commentsByEvent, setCommentsByEvent] = useState<
+    Record<number, api.MobileComment[]>
+  >({});
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>(
+    {},
+  );
   const [expandedEventId, setExpandedEventId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -35,53 +65,68 @@ export default function DashboardScreen() {
   const [eventPage, setEventPage] = useState(1);
   const [eventsHasNext, setEventsHasNext] = useState(false);
   const [actionEventId, setActionEventId] = useState<number | null>(null);
-  const [eventFeedback, setEventFeedback] = useState<Record<number, { type: "success" | "error"; message: string }>>({});
-  const [editingCommentIdByEvent, setEditingCommentIdByEvent] = useState<Record<number, number | null>>({});
-  const [editCommentInputs, setEditCommentInputs] = useState<Record<number, string>>({});
-  const [commentErrors, setCommentErrors] = useState<Record<number, string>>({});
+  const [eventFeedback, setEventFeedback] = useState<
+    Record<number, { type: "success" | "error"; message: string }>
+  >({});
+  const [editingCommentIdByEvent, setEditingCommentIdByEvent] = useState<
+    Record<number, number | null>
+  >({});
+  const [editCommentInputs, setEditCommentInputs] = useState<
+    Record<number, string>
+  >({});
+  const [commentErrors, setCommentErrors] = useState<Record<number, string>>(
+    {},
+  );
 
-  const loadEvents = useCallback(async (page = 1, append = false) => {
-    if (!token) return;
+  const loadEvents = useCallback(
+    async (page = 1, append = false) => {
+      if (!token) return;
 
-    if (append) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
-
-    try {
-      const response = await api.listEvents(token, page);
-      setEvents((current) => {
-        if (!append) return response.events;
-
-        const byId = new Map(current.map((event) => [event.id, event]));
-        for (const event of response.events) {
-          byId.set(event.id, event);
-        }
-
-        return Array.from(byId.values());
-      });
-      setEventPage(response.pagination.page);
-      setEventsHasNext(response.pagination.hasNext);
-    } catch (requestError) {
-      setError(actionErrorMessage(requestError));
-    } finally {
       if (append) {
-        setLoadingMore(false);
+        setLoadingMore(true);
       } else {
-        setLoading(false);
+        setLoading(true);
       }
-    }
-  }, [token]);
+      setError(null);
+
+      try {
+        const response = await api.listEvents(token, page);
+        setEvents((current) => {
+          if (!append) return response.events;
+
+          const byId = new Map(current.map((event) => [event.id, event]));
+          for (const event of response.events) {
+            byId.set(event.id, event);
+          }
+
+          return Array.from(byId.values());
+        });
+        setEventPage(response.pagination.page);
+        setEventsHasNext(response.pagination.hasNext);
+      } catch (requestError) {
+        setError(actionErrorMessage(requestError));
+      } finally {
+        if (append) {
+          setLoadingMore(false);
+        } else {
+          setLoading(false);
+        }
+      }
+    },
+    [token],
+  );
 
   useEffect(() => {
     void loadEvents();
   }, [loadEvents]);
 
   const stats = useMemo(() => {
-    const groupNames = new Set(events.map((event) => event.groupTitle ?? String(event.groupId)));
-    const joined = events.filter((event) => event.participationStatus === "joined").length;
+    const groupNames = new Set(
+      events.map((event) => event.groupTitle ?? String(event.groupId)),
+    );
+    const joined = events.filter(
+      (event) => event.participationStatus === "joined",
+    ).length;
 
     return [
       { label: "Събития", value: String(events.length) },
@@ -113,7 +158,10 @@ export default function DashboardScreen() {
         current.map((item) => {
           if (item.id !== event.id) return item;
 
-          const nextCount = Math.max(0, (item.participantCount ?? 0) + (wasJoined ? -1 : 1));
+          const nextCount = Math.max(
+            0,
+            (item.participantCount ?? 0) + (wasJoined ? -1 : 1),
+          );
 
           return {
             ...item,
@@ -125,13 +173,21 @@ export default function DashboardScreen() {
 
       setEventFeedback((current) => ({
         ...current,
-        [event.id]: { type: "success", message: wasJoined ? "Участието е отменено." : "Участието е записано." },
+        [event.id]: {
+          type: "success",
+          message: wasJoined
+            ? "Участието е отменено."
+            : "Участието е записано.",
+        },
       }));
       await loadEvents();
     } catch (requestError) {
       setEventFeedback((current) => ({
         ...current,
-        [event.id]: { type: "error", message: actionErrorMessage(requestError) },
+        [event.id]: {
+          type: "error",
+          message: actionErrorMessage(requestError),
+        },
       }));
     } finally {
       setActionEventId(null);
@@ -151,7 +207,10 @@ export default function DashboardScreen() {
 
     try {
       const response = await api.listComments(eventId, token);
-      setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
+      setCommentsByEvent((current) => ({
+        ...current,
+        [eventId]: response.comments,
+      }));
     } catch (requestError) {
       setEventFeedback((current) => ({
         ...current,
@@ -161,8 +220,14 @@ export default function DashboardScreen() {
   }
 
   function startEditingComment(eventId: number, comment: api.MobileComment) {
-    setEditingCommentIdByEvent((current) => ({ ...current, [eventId]: comment.id }));
-    setEditCommentInputs((current) => ({ ...current, [comment.id]: comment.text }));
+    setEditingCommentIdByEvent((current) => ({
+      ...current,
+      [eventId]: comment.id,
+    }));
+    setEditCommentInputs((current) => ({
+      ...current,
+      [comment.id]: comment.text,
+    }));
   }
 
   function cancelEditingComment(eventId: number) {
@@ -198,7 +263,10 @@ export default function DashboardScreen() {
         return next;
       });
       const response = await api.listComments(eventId, token);
-      setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
+      setCommentsByEvent((current) => ({
+        ...current,
+        [eventId]: response.comments,
+      }));
       setEventFeedback((current) => ({
         ...current,
         [eventId]: { type: "success", message: "Коментарът е добавен." },
@@ -222,7 +290,10 @@ export default function DashboardScreen() {
     if (text.length < 2) {
       setEventFeedback((current) => ({
         ...current,
-        [eventId]: { type: "error", message: "Коментарът трябва да е поне 2 символа." },
+        [eventId]: {
+          type: "error",
+          message: "Коментарът трябва да е поне 2 символа.",
+        },
       }));
       return;
     }
@@ -233,8 +304,14 @@ export default function DashboardScreen() {
     try {
       await api.updateComment(eventId, commentId, text, token);
       const response = await api.listComments(eventId, token);
-      setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
-      setEditingCommentIdByEvent((current) => ({ ...current, [eventId]: null }));
+      setCommentsByEvent((current) => ({
+        ...current,
+        [eventId]: response.comments,
+      }));
+      setEditingCommentIdByEvent((current) => ({
+        ...current,
+        [eventId]: null,
+      }));
       setEventFeedback((current) => ({
         ...current,
         [eventId]: { type: "success", message: "Коментарът е обновен." },
@@ -258,8 +335,14 @@ export default function DashboardScreen() {
     try {
       await api.deleteComment(eventId, commentId, token);
       const response = await api.listComments(eventId, token);
-      setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
-      setEditingCommentIdByEvent((current) => ({ ...current, [eventId]: null }));
+      setCommentsByEvent((current) => ({
+        ...current,
+        [eventId]: response.comments,
+      }));
+      setEditingCommentIdByEvent((current) => ({
+        ...current,
+        [eventId]: null,
+      }));
       setEventFeedback((current) => ({
         ...current,
         [eventId]: { type: "success", message: "Коментарът е изтрит." },
@@ -288,8 +371,13 @@ export default function DashboardScreen() {
         <AppHeader subtitle="мобилен планер" />
         <Card>
           <Eyebrow>Квартална организация</Eyebrow>
-          <Title>Един споделен план за разходки, грижа и помощ с любимците.</Title>
-          <Subtitle>Mobile приложението използва REST API и Bearer token. Влез, за да видиш реалните групи, събития и любимци от базата.</Subtitle>
+          <Title>
+            Един споделен план за разходки, грижа и помощ с любимците.
+          </Title>
+          <Subtitle>
+            Mobile приложението използва REST API и Bearer token. Влез, за да
+            видиш реалните групи, събития и любимци от базата.
+          </Subtitle>
           <Link href="/auth" asChild>
             <Pressable style={styles.primaryButton}>
               <Text style={styles.primaryButtonText}>Вход в профил</Text>
@@ -325,7 +413,12 @@ export default function DashboardScreen() {
       </View>
       <SectionTitle>Събития</SectionTitle>
       {loading && events.length === 0 ? <LoadingState /> : null}
-      {!loading && events.length === 0 ? <EmptyState title="Няма събития" text="Влез в група с код за покана или създай събитие през web приложението." /> : null}
+      {!loading && events.length === 0 ? (
+        <EmptyState
+          title="Няма събития"
+          text="Влез в група с код за покана или създай събитие през web приложението."
+        />
+      ) : null}
       <View style={dashboardStyles.list}>
         {events.map((event) => {
           const isJoined = event.participationStatus === "joined";
@@ -341,43 +434,88 @@ export default function DashboardScreen() {
                 <Badge tone="gray">{formatCapacity(event)}</Badge>
               </View>
               <Text style={dashboardStyles.eventTitle}>{event.title}</Text>
-              <Text style={dashboardStyles.eventMeta}>{event.groupTitle ?? "Група"} · {formatEventType(event.eventType)}</Text>
+              <Text style={dashboardStyles.eventMeta}>
+                {event.groupTitle ?? "Група"} ·{" "}
+                {formatEventType(event.eventType)}
+              </Text>
               <Text style={dashboardStyles.eventMeta}>{event.location}</Text>
               <View style={dashboardStyles.eventFacts}>
-                <Text style={dashboardStyles.factText}>{formatEventDate(event.startsAt)}</Text>
-                <Text style={dashboardStyles.factText}>{formatDuration(event.durationMinutes)}</Text>
-                <Text style={dashboardStyles.factText}>{formatCommentCount(event.commentCount ?? 0)}</Text>
+                <Text style={dashboardStyles.factText}>
+                  {formatEventDate(event.startsAt)}
+                </Text>
+                <Text style={dashboardStyles.factText}>
+                  {formatDuration(event.durationMinutes)}
+                </Text>
+                <Text style={dashboardStyles.factText}>
+                  {formatCommentCount(event.commentCount ?? 0)}
+                </Text>
               </View>
-              {event.notes ? <Text style={dashboardStyles.eventNote}>{event.notes}</Text> : null}
-              {feedback?.type === "success" ? <SuccessBanner message={feedback.message} /> : null}
-              {feedback?.type === "error" ? <ErrorBanner message={feedback.message} /> : null}
-              <PrimaryButton disabled={actionInProgress} onPress={() => void toggleJoin(event)}>
-                {actionInProgress ? "Записване..." : isJoined ? "Няма да участвам" : "Ще участвам"}
+              {event.notes ? (
+                <Text style={dashboardStyles.eventNote}>{event.notes}</Text>
+              ) : null}
+              {feedback?.type === "success" ? (
+                <SuccessBanner message={feedback.message} />
+              ) : null}
+              {feedback?.type === "error" ? (
+                <ErrorBanner message={feedback.message} />
+              ) : null}
+              <PrimaryButton
+                disabled={actionInProgress}
+                onPress={() => void toggleJoin(event)}
+              >
+                {actionInProgress
+                  ? "Записване..."
+                  : isJoined
+                    ? "Няма да участвам"
+                    : "Ще участвам"}
               </PrimaryButton>
-              <SecondaryButton disabled={actionInProgress} onPress={() => void toggleComments(event.id)}>
+              <SecondaryButton
+                disabled={actionInProgress}
+                onPress={() => void toggleComments(event.id)}
+              >
                 {isExpanded ? "Скрий коментарите" : "Коментари"}
               </SecondaryButton>
               {isExpanded ? (
                 <View style={dashboardStyles.commentsBox}>
-                  {comments.length === 0 ? <Text style={dashboardStyles.commentEmpty}>Още няма коментари.</Text> : null}
+                  {comments.length === 0 ? (
+                    <Text style={dashboardStyles.commentEmpty}>
+                      Още няма коментари.
+                    </Text>
+                  ) : null}
                   {comments.map((comment) => {
-                    const canManageComment = user.role === "admin" || comment.userId === user.id;
-                    const isEditingComment = editingCommentIdByEvent[event.id] === comment.id;
+                    const canManageComment =
+                      user.role === "admin" || comment.userId === user.id;
+                    const isEditingComment =
+                      editingCommentIdByEvent[event.id] === comment.id;
 
                     return (
-                      <View key={comment.id} style={dashboardStyles.commentItem}>
+                      <View
+                        key={comment.id}
+                        style={dashboardStyles.commentItem}
+                      >
                         <View style={dashboardStyles.commentHeader}>
                           <View style={dashboardStyles.commentBody}>
-                            <Text style={dashboardStyles.commentAuthor}>{comment.authorName ?? "Потребител"}</Text>
+                            <Text style={dashboardStyles.commentAuthor}>
+                              {comment.authorName ?? "Потребител"}
+                            </Text>
                             {isEditingComment ? (
                               <TextInput
                                 style={dashboardStyles.commentEditInput}
-                                value={editCommentInputs[comment.id] ?? comment.text}
-                                onChangeText={(value) => setEditCommentInputs((current) => ({ ...current, [comment.id]: value }))}
+                                value={
+                                  editCommentInputs[comment.id] ?? comment.text
+                                }
+                                onChangeText={(value) =>
+                                  setEditCommentInputs((current) => ({
+                                    ...current,
+                                    [comment.id]: value,
+                                  }))
+                                }
                                 multiline
                               />
                             ) : (
-                              <Text style={dashboardStyles.commentText}>{comment.text}</Text>
+                              <Text style={dashboardStyles.commentText}>
+                                {comment.text}
+                              </Text>
                             )}
                           </View>
                           {canManageComment ? (
@@ -386,34 +524,61 @@ export default function DashboardScreen() {
                                 <>
                                   <Pressable
                                     disabled={actionInProgress}
-                                    onPress={() => void submitCommentEdit(event.id, comment.id)}
+                                    onPress={() =>
+                                      void submitCommentEdit(
+                                        event.id,
+                                        comment.id,
+                                      )
+                                    }
                                     style={dashboardStyles.commentActionButton}
                                   >
-                                    <Text style={dashboardStyles.commentActionText}>Запази</Text>
+                                    <Text
+                                      style={dashboardStyles.commentActionText}
+                                    >
+                                      Запази
+                                    </Text>
                                   </Pressable>
                                   <Pressable
                                     disabled={actionInProgress}
-                                    onPress={() => cancelEditingComment(event.id)}
+                                    onPress={() =>
+                                      cancelEditingComment(event.id)
+                                    }
                                     style={dashboardStyles.commentActionButton}
                                   >
-                                    <Text style={dashboardStyles.commentActionText}>Отказ</Text>
+                                    <Text
+                                      style={dashboardStyles.commentActionText}
+                                    >
+                                      Отказ
+                                    </Text>
                                   </Pressable>
                                 </>
                               ) : (
                                 <>
                                   <Pressable
                                     disabled={actionInProgress}
-                                    onPress={() => startEditingComment(event.id, comment)}
+                                    onPress={() =>
+                                      startEditingComment(event.id, comment)
+                                    }
                                     style={dashboardStyles.commentActionButton}
                                   >
-                                    <Text style={dashboardStyles.commentActionText}>Редактирай</Text>
+                                    <Text
+                                      style={dashboardStyles.commentActionText}
+                                    >
+                                      Редактирай
+                                    </Text>
                                   </Pressable>
                                   <Pressable
                                     disabled={actionInProgress}
-                                    onPress={() => void deleteComment(event.id, comment.id)}
+                                    onPress={() =>
+                                      void deleteComment(event.id, comment.id)
+                                    }
                                     style={dashboardStyles.commentActionButton}
                                   >
-                                    <Text style={dashboardStyles.commentDeleteText}>Изтрий</Text>
+                                    <Text
+                                      style={dashboardStyles.commentDeleteText}
+                                    >
+                                      Изтрий
+                                    </Text>
                                   </Pressable>
                                 </>
                               )}
@@ -429,7 +594,10 @@ export default function DashboardScreen() {
                     placeholderTextColor="#9ca3af"
                     value={commentInputs[event.id] ?? ""}
                     onChangeText={(value) => {
-                      setCommentInputs((current) => ({ ...current, [event.id]: value }));
+                      setCommentInputs((current) => ({
+                        ...current,
+                        [event.id]: value,
+                      }));
                       if (commentErrors[event.id]) {
                         setCommentErrors((current) => {
                           const next = { ...current };
@@ -441,7 +609,12 @@ export default function DashboardScreen() {
                     multiline
                   />
                   <ErrorBanner message={commentErrors[event.id] ?? null} />
-                  <PrimaryButton disabled={actionInProgress} onPress={() => void submitComment(event.id)}>Изпрати коментар</PrimaryButton>
+                  <PrimaryButton
+                    disabled={actionInProgress}
+                    onPress={() => void submitComment(event.id)}
+                  >
+                    Изпрати коментар
+                  </PrimaryButton>
                 </View>
               ) : null}
             </Card>
@@ -449,7 +622,10 @@ export default function DashboardScreen() {
         })}
       </View>
       {eventsHasNext ? (
-        <SecondaryButton disabled={loadingMore} onPress={() => void loadEvents(eventPage + 1, true)}>
+        <SecondaryButton
+          disabled={loadingMore}
+          onPress={() => void loadEvents(eventPage + 1, true)}
+        >
           {loadingMore ? "Зареждане..." : "Зареди още"}
         </SecondaryButton>
       ) : null}

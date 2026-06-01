@@ -1,8 +1,6 @@
 import Link from "next/link";
 
 import {
-  adminStats,
-  adminUsers,
   dashboardStats,
   groupMembers,
   events as mockEvents,
@@ -10,7 +8,11 @@ import {
   moderationQueue,
   pets as mockPets,
 } from "@/services/mock-data";
-import type { AdminPanelStat, AdminPanelUser, AdminUserDetails } from "@/services/admin/admin-service";
+import type {
+  AdminPanelStat,
+  AdminPanelUser,
+  AdminUserDetails,
+} from "@/services/admin/admin-service";
 import type { PublicUser } from "@/services/auth/auth-service";
 import type { CareEvent, EventComment, Pet, PetGroup } from "@/types";
 import type { HomeData, HomeStat } from "@/services/home/home-service";
@@ -50,7 +52,11 @@ export function DashboardView({
   return (
     <AppShell
       active="/dashboard"
-      aside={primaryEvent ? <EventDetailsCard event={primaryEvent} compact /> : undefined}
+      aside={
+        primaryEvent ? (
+          <EventDetailsCard event={primaryEvent} compact />
+        ) : undefined
+      }
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
@@ -106,11 +112,13 @@ export function HomeView({
   currentUser: PublicUser | null;
   homeData?: HomeData;
 }) {
-  const stats = homeData?.stats ?? ([
-    { label: "Днес", value: "3 събития", detail: "разходка, грижа и игра" },
-    { label: "Групи", value: "4 активни", detail: "по квартал и нужда" },
-    { label: "Участия", value: "15 активни", detail: "по групите" },
-  ] satisfies HomeStat[]);
+  const stats =
+    homeData?.stats ??
+    ([
+      { label: "Днес", value: "3 събития", detail: "разходка, грижа и игра" },
+      { label: "Групи", value: "4 активни", detail: "по квартал и нужда" },
+      { label: "Участия", value: "15 активни", detail: "по групите" },
+    ] satisfies HomeStat[]);
   const events = homeData?.events ?? mockEvents.slice(0, 3);
 
   return (
@@ -119,7 +127,11 @@ export function HomeView({
 
       <section className="mx-auto grid max-w-6xl items-start gap-8 px-5 py-8 lg:grid-cols-[340px_minmax(0,1fr)]">
         <aside className="rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
-          {currentUser ? <HomeSessionCard user={currentUser} /> : <AuthForm mode="login" variant="home" />}
+          {currentUser ? (
+            <HomeSessionCard user={currentUser} />
+          ) : (
+            <AuthForm mode="login" variant="home" />
+          )}
         </aside>
 
         <div className="grid gap-5">
@@ -138,8 +150,13 @@ export function HomeView({
 
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {stats.map((stat) => (
-              <div key={stat.label} className="rounded-lg bg-white p-5 shadow-sm">
-                <p className="text-sm font-bold text-neutral-500">{stat.label}</p>
+              <div
+                key={stat.label}
+                className="rounded-lg bg-white p-5 shadow-sm"
+              >
+                <p className="text-sm font-bold text-neutral-500">
+                  {stat.label}
+                </p>
                 <p className="mt-2 text-2xl font-black text-emerald-700">
                   {stat.value}
                 </p>
@@ -180,7 +197,9 @@ function HomeSessionCard({ user }: { user: PublicUser }) {
       </p>
       <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-sm">
         <p className="break-all font-semibold">{user.email}</p>
-        <p className="mt-1 text-neutral-600">Роля: {user.role === "admin" ? "admin" : "user"}</p>
+        <p className="mt-1 text-neutral-600">
+          Роля: {user.role === "admin" ? "admin" : "user"}
+        </p>
       </div>
       <div className="mt-5 grid gap-2">
         <Link
@@ -221,7 +240,11 @@ export function AuthView({ mode }: { mode: "login" | "register" }) {
             {!isLogin ? (
               <FormField name="name" label="Име" placeholder="Мария Петкова" />
             ) : null}
-            <FormField name="email" label="Имейл" placeholder="kate_user@paws.bg" />
+            <FormField
+              name="email"
+              label="Имейл"
+              placeholder="kate_user@paws.bg"
+            />
             <FormField
               name="password"
               label="Парола"
@@ -391,7 +414,10 @@ export function EventPageView({
   errorMessage?: string;
 }) {
   return (
-    <AppShell active="/dashboard" aside={<ParticipantPanel participants={participants} />}>
+    <AppShell
+      active="/dashboard"
+      aside={<ParticipantPanel participants={participants} />}
+    >
       <EventDetailsCard
         event={event}
         comments={comments}
@@ -470,7 +496,9 @@ export function AdminView({
                   >
                     <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_repeat(3,minmax(92px,120px))] xl:grid-cols-[minmax(0,1fr)_110px_110px_110px_auto] xl:items-center">
                       <div className="min-w-0">
-                        <p className="font-bold text-neutral-950">{user.name}</p>
+                        <p className="font-bold text-neutral-950">
+                          {user.name}
+                        </p>
                         <p className="break-all text-sm text-neutral-500">
                           {user.email}
                         </p>
@@ -478,7 +506,7 @@ export function AdminView({
                       <AdminMeta label="Роля" value={user.role} />
                       <AdminMeta label="Статус" value={user.status} />
                       <AdminMeta label="От" value={user.joinedAt} />
-                                            <Link
+                      <Link
                         href={`/admin/users/${user.id}`}
                         className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-center font-semibold md:col-span-4 xl:col-span-1 xl:w-auto"
                       >
@@ -515,7 +543,9 @@ export function AdminView({
                         {item.status}
                       </Badge>
                       <Badge tone="neutral">публикуван</Badge>
-                      <p className="font-bold text-neutral-950">{item.eventTitle}</p>
+                      <p className="font-bold text-neutral-950">
+                        {item.eventTitle}
+                      </p>
                     </div>
                     <p className="mt-3 text-sm leading-6 text-neutral-700">
                       {item.author}: {item.text}
@@ -539,7 +569,8 @@ export function GroupDetailsView({
   groupEvents?: CareEvent[];
   members?: GroupMemberDisplay[];
 }) {
-  const eventsForGroup = groupEvents ?? mockEvents.filter((event) => event.groupId === group.id);
+  const eventsForGroup =
+    groupEvents ?? mockEvents.filter((event) => event.groupId === group.id);
 
   return (
     <AppShell
@@ -599,7 +630,9 @@ export function GroupDetailsView({
               <EmptyState
                 title="Още няма събития"
                 description="Когато мениджърът създаде събитие, то ще се появи тук."
-                actionLabel={group.isManager ? "Ново събитие" : "Предложи събитие"}
+                actionLabel={
+                  group.isManager ? "Ново събитие" : "Предложи събитие"
+                }
                 href={group.isManager ? "/events/new" : "/events/suggest"}
               />
             </div>
@@ -619,7 +652,9 @@ export function GroupDetailsView({
                     <p className="font-bold">{member.name}</p>
                     <p className="text-sm text-neutral-500">{member.email}</p>
                   </div>
-                  <Badge tone={member.role === "мениджър" ? "success" : "neutral"}>
+                  <Badge
+                    tone={member.role === "мениджър" ? "success" : "neutral"}
+                  >
                     {member.role}
                   </Badge>
                 </div>
@@ -663,8 +698,22 @@ export function PetFormView({
             { value: "other", label: "Друго" },
           ]}
         />
-        <FormField name="breed" label="Порода" placeholder="Кокер шпаньол" maxLength={120} required={false} />
-        <FormField name="age" label="Възраст" placeholder="4" type="number" min={0} max={50} required={false} />
+        <FormField
+          name="breed"
+          label="Порода"
+          placeholder="Кокер шпаньол"
+          maxLength={120}
+          required={false}
+        />
+        <FormField
+          name="age"
+          label="Възраст"
+          placeholder="4"
+          type="number"
+          min={0}
+          max={50}
+          required={false}
+        />
         <FormSelect
           name="size"
           label="Размер"
@@ -778,7 +827,13 @@ export function GroupFormView({
           minLength={3}
           maxLength={160}
         />
-        <FormField name="area" label="Район" placeholder="София, Южен парк" maxLength={180} required={false} />
+        <FormField
+          name="area"
+          label="Район"
+          placeholder="София, Южен парк"
+          maxLength={180}
+          required={false}
+        />
         <FormTextarea
           name="description"
           label="Описание"
@@ -799,12 +854,27 @@ export function GroupFormView({
 }
 
 type EventGroupOption = { value: string; label: string };
-type EventFormDefaults = Partial<Record<"groupId" | "title" | "eventType" | "startsAt" | "durationMinutes" | "location" | "capacity" | "notes", string>>;
+type EventFormDefaults = Partial<
+  Record<
+    | "groupId"
+    | "title"
+    | "eventType"
+    | "startsAt"
+    | "durationMinutes"
+    | "location"
+    | "capacity"
+    | "notes",
+    string
+  >
+>;
 
 export function EventFormView({
   action,
   errorMessage,
-  groupOptions = mockGroups.map((group) => ({ value: String(group.id), label: group.title })),
+  groupOptions = mockGroups.map((group) => ({
+    value: String(group.id),
+    label: group.title,
+  })),
   defaults = {},
   minStartsAt,
 }: {
@@ -836,7 +906,12 @@ export function EventFormView({
         errorMessage={errorMessage}
         action={action}
       >
-        <FormSelect name="groupId" label="Група" options={groupOptions} defaultValue={defaults.groupId} />
+        <FormSelect
+          name="groupId"
+          label="Група"
+          options={groupOptions}
+          defaultValue={defaults.groupId}
+        />
         <FormField
           name="title"
           label="Заглавие"
@@ -906,7 +981,11 @@ export function EventFormView({
   );
 }
 
-export function AdminUserDetailsView({ details }: { details: AdminUserDetails }) {
+export function AdminUserDetailsView({
+  details,
+}: {
+  details: AdminUserDetails;
+}) {
   const stats = [
     { label: "Любимци", value: String(details.petCount), tone: "violet" },
     { label: "Групи", value: String(details.groupCount), tone: "emerald" },
@@ -917,13 +996,19 @@ export function AdminUserDetailsView({ details }: { details: AdminUserDetails })
   return (
     <AppShell active="/admin">
       <section className="rounded-lg border border-neutral-200 bg-white p-5">
-        <p className="text-sm font-semibold text-emerald-700">Потребителски профил</p>
+        <p className="text-sm font-semibold text-emerald-700">
+          Потребителски профил
+        </p>
         <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold">{details.name}</h2>
-            <p className="mt-1 break-all text-sm text-neutral-600">{details.email}</p>
+            <p className="mt-1 break-all text-sm text-neutral-600">
+              {details.email}
+            </p>
           </div>
-          <Badge tone={details.role === "admin" ? "warning" : "neutral"}>{details.role}</Badge>
+          <Badge tone={details.role === "admin" ? "warning" : "neutral"}>
+            {details.role}
+          </Badge>
         </div>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {stats.map((stat) => (
@@ -933,7 +1018,10 @@ export function AdminUserDetailsView({ details }: { details: AdminUserDetails })
         <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
           <InfoItem label="Статус" value={details.status} />
           <InfoItem label="От" value={details.joinedAt} />
-          <InfoItem label="Участия" value={String(details.participationCount)} />
+          <InfoItem
+            label="Участия"
+            value={String(details.participationCount)}
+          />
         </dl>
         <Link
           href="/admin"
@@ -1064,7 +1152,11 @@ function GroupCard({ group }: { group: PetGroup }) {
   );
 }
 
-function ParticipantPanel({ participants }: { participants: EventParticipantView[] }) {
+function ParticipantPanel({
+  participants,
+}: {
+  participants: EventParticipantView[];
+}) {
   const statusLabels: Record<EventParticipantView["status"], string> = {
     joined: "потвърдено",
     waitlisted: "изчаква",
@@ -1084,9 +1176,15 @@ function ParticipantPanel({ participants }: { participants: EventParticipantView
             >
               <div>
                 <p className="font-semibold">{participant.name}</p>
-                <p className="text-sm text-neutral-500">{participant.petName ?? "без любимец"}</p>
+                <p className="text-sm text-neutral-500">
+                  {participant.petName ?? "без любимец"}
+                </p>
               </div>
-              <Badge tone={participant.status === "waitlisted" ? "warning" : "success"}>
+              <Badge
+                tone={
+                  participant.status === "waitlisted" ? "warning" : "success"
+                }
+              >
                 {statusLabels[participant.status]}
               </Badge>
             </div>

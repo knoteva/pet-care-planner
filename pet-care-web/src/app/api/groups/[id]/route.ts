@@ -1,9 +1,16 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { apiErrorResponse, parseRouteId, requireApiUser } from "../../api-utils";
+import {
+  apiErrorResponse,
+  parseRouteId,
+  requireApiUser,
+} from "../../api-utils";
 import { listEventsForGroupForViewer } from "@/services/events/event-service";
-import { getGroupForViewer, listGroupMembers } from "@/services/groups/group-service";
+import {
+  getGroupForViewer,
+  listGroupMembers,
+} from "@/services/groups/group-service";
 import { ValidationError } from "@/services/validation";
 
 export const runtime = "nodejs";
@@ -29,7 +36,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const group = await getGroupForViewer(groupId, user);
 
     if (!group) {
-      return NextResponse.json({ error: "Групата не е намерена." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Групата не е намерена." },
+        { status: 404 },
+      );
     }
 
     const [members, events] = await Promise.all([

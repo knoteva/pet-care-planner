@@ -1,0 +1,20 @@
+﻿node_modules/
+.next/
+.expo/
+dist/
+web-build/
+coverage/
+*.tsbuildinfo
+
+pet-care-web/.next/
+pet-care-web/.vercel/
+pet-care-web/.next-dev.err.log
+pet-care-web/.next-dev.out.log
+pet-care-web/drizzle/meta/
+pet-care-web/node_modules/
+pet-care-mobile/node_modules/
+
+# Generated exports from the source workshop documents.
+docs/Full-Stack-Apps-with-AI-Capstone-Project.md
+docs/Pet-Care-Planner-Capstone-Workshop.md
+docs/Workshop-Soccer-Planner.md

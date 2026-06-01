@@ -22,7 +22,10 @@ export function getFormError(searchParams?: SearchParams) {
   return value ? value.slice(0, 300) : undefined;
 }
 
-export function getFormValue(searchParams: SearchParams | undefined, fieldName: string) {
+export function getFormValue(
+  searchParams: SearchParams | undefined,
+  fieldName: string,
+) {
   const rawValue = searchParams?.[`${fieldPrefix}${fieldName}`];
   const value = Array.isArray(rawValue) ? rawValue[0] : rawValue;
 
@@ -34,7 +37,9 @@ export function redirectWithFormError(
   error: unknown,
   fallback = defaultFallback,
 ): never {
-  redirect(`${path}?error=${encodeURIComponent(getErrorMessage(error, fallback))}`);
+  redirect(
+    `${path}?error=${encodeURIComponent(getErrorMessage(error, fallback))}`,
+  );
 }
 
 export function redirectWithFormErrorAndState(
@@ -44,7 +49,9 @@ export function redirectWithFormErrorAndState(
   fieldNames: string[],
   fallback = defaultFallback,
 ): never {
-  const params = new URLSearchParams({ error: getErrorMessage(error, fallback) });
+  const params = new URLSearchParams({
+    error: getErrorMessage(error, fallback),
+  });
 
   for (const fieldName of fieldNames) {
     const value = formData.get(fieldName);
