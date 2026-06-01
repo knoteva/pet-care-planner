@@ -865,6 +865,7 @@ export function EventFormView({
           type="datetime-local"
           defaultValue={defaults.startsAt}
           min={minStartsAt}
+          step={900}
         />
         <FormField
           name="durationMinutes"

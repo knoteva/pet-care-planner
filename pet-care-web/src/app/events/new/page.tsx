@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { EventFormView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
-import { createEventAsManager } from "@/services/events/event-service";
+import { createEventAsManager, getMinimumEventStartDate } from "@/services/events/event-service";
 import {
   getFormError,
   getFormValue,
@@ -82,7 +82,7 @@ export default async function NewEventPage({ searchParams }: PageProps) {
     <EventFormView
       action={createEventAction}
       errorMessage={errorMessage}
-      minStartsAt={toDateTimeLocalInputValue(new Date())}
+      minStartsAt={toDateTimeLocalInputValue(getMinimumEventStartDate())}
       defaults={{
         groupId: getFormValue(resolvedSearchParams, "groupId"),
         title: getFormValue(resolvedSearchParams, "title"),

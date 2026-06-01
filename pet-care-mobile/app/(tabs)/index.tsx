@@ -38,6 +38,7 @@ export default function DashboardScreen() {
   const [eventFeedback, setEventFeedback] = useState<Record<number, { type: "success" | "error"; message: string }>>({});
   const [editingCommentIdByEvent, setEditingCommentIdByEvent] = useState<Record<number, number | null>>({});
   const [editCommentInputs, setEditCommentInputs] = useState<Record<number, string>>({});
+  const [commentErrors, setCommentErrors] = useState<Record<number, string>>({});
 
   const loadEvents = useCallback(async (page = 1, append = false) => {
     if (!token) return;
@@ -171,11 +172,16 @@ export default function DashboardScreen() {
     if (!token) return;
 
     const text = (commentInputs[eventId] ?? "").trim();
+    setCommentErrors((current) => {
+      const next = { ...current };
+      delete next[eventId];
+      return next;
+    });
 
     if (text.length < 2) {
-      setEventFeedback((current) => ({
+      setCommentErrors((current) => ({
         ...current,
-        [eventId]: { type: "error", message: "Коментарът трябва да е поне 2 символа." },
+        [eventId]: "Коментарът трябва да е поне 2 символа.",
       }));
       return;
     }
@@ -186,6 +192,11 @@ export default function DashboardScreen() {
     try {
       await api.createComment(eventId, text, token);
       setCommentInputs((current) => ({ ...current, [eventId]: "" }));
+      setCommentErrors((current) => {
+        const next = { ...current };
+        delete next[eventId];
+        return next;
+      });
       const response = await api.listComments(eventId, token);
       setCommentsByEvent((current) => ({ ...current, [eventId]: response.comments }));
       setEventFeedback((current) => ({
@@ -282,6 +293,11 @@ export default function DashboardScreen() {
           <Link href="/auth" asChild>
             <Pressable style={styles.primaryButton}>
               <Text style={styles.primaryButtonText}>Вход в профил</Text>
+            </Pressable>
+          </Link>
+          <Link href="/register" asChild>
+            <Pressable style={styles.secondaryButton}>
+              <Text style={styles.secondaryButtonText}>Регистрация</Text>
             </Pressable>
           </Link>
           <DemoProfiles />
@@ -412,9 +428,19 @@ export default function DashboardScreen() {
                     placeholder="Напиши коментар"
                     placeholderTextColor="#9ca3af"
                     value={commentInputs[event.id] ?? ""}
-                    onChangeText={(value) => setCommentInputs((current) => ({ ...current, [event.id]: value }))}
+                    onChangeText={(value) => {
+                      setCommentInputs((current) => ({ ...current, [event.id]: value }));
+                      if (commentErrors[event.id]) {
+                        setCommentErrors((current) => {
+                          const next = { ...current };
+                          delete next[event.id];
+                          return next;
+                        });
+                      }
+                    }}
                     multiline
                   />
+                  <ErrorBanner message={commentErrors[event.id] ?? null} />
                   <PrimaryButton disabled={actionInProgress} onPress={() => void submitComment(event.id)}>Изпрати коментар</PrimaryButton>
                 </View>
               ) : null}

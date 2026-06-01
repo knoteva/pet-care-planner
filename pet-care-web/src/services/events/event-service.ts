@@ -22,12 +22,65 @@ export type CreateEventInput = Pick<
 
 const eventTypes = ["dog_walk", "pet_sitting", "playdate", "training", "vet_support", "other"] satisfies EventType[];
 
+const eventStartStepMinutes = 15;
+const eventStartMinHour = 8;
+const eventStartMaxHour = 21;
+
+function roundUpToEventStep(date: Date) {
+  const rounded = new Date(date);
+  rounded.setSeconds(0, 0);
+  const remainder = rounded.getMinutes() % eventStartStepMinutes;
+
+  if (remainder > 0) {
+    rounded.setMinutes(rounded.getMinutes() + eventStartStepMinutes - remainder);
+  }
+
+  return rounded;
+}
+
+export function getMinimumEventStartDate(now = new Date()) {
+  const rounded = roundUpToEventStep(new Date(now.getTime() + eventStartStepMinutes * 60 * 1000));
+  const earliestToday = new Date(rounded);
+  earliestToday.setHours(eventStartMinHour, 0, 0, 0);
+  const latestToday = new Date(rounded);
+  latestToday.setHours(eventStartMaxHour, 45, 0, 0);
+
+  if (rounded < earliestToday) {
+    return earliestToday;
+  }
+
+  if (rounded > latestToday) {
+    const tomorrow = new Date(rounded);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(eventStartMinHour, 0, 0, 0);
+    return tomorrow;
+  }
+
+  return rounded;
+}
+
+function assertAllowedEventStart(startsAt: Date) {
+  const minutes = startsAt.getMinutes();
+  const hour = startsAt.getHours();
+
+  if (minutes % eventStartStepMinutes !== 0 || startsAt.getSeconds() !== 0 || startsAt.getMilliseconds() !== 0) {
+    throw new Error("Дата и час трябва да са на интервал от 15 минути.");
+  }
+
+  if (hour < eventStartMinHour || hour > eventStartMaxHour) {
+    throw new Error("Събитията могат да започват между 08:00 и 21:45.");
+  }
+}
+
 const participantCountSql = sql<number>`coalesce((select count(*)::int from ${eventParticipants} where ${eventParticipants.eventId} = ${careEvents.id} and ${eventParticipants.status} = 'joined'), 0)`;
 const commentCountSql = sql<number>`coalesce((select count(*)::int from ${eventComments} where ${eventComments.eventId} = ${careEvents.id} and ${eventComments.status} = 'visible' and ${eventComments.deletedAt} is null), 0)`;
 
 function validateCreateEventInput(input: CreateEventInput) {
-  const minDate = new Date(Date.now() - 5 * 60 * 1000);
+  const minDate = getMinimumEventStartDate();
   const maxDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  const startsAt = dateField(input.startsAt, { label: "Дата и час", minDate, maxDate });
+
+  assertAllowedEventStart(startsAt);
 
   return {
     ...input,
@@ -35,7 +88,7 @@ function validateCreateEventInput(input: CreateEventInput) {
     createdById: integerField(input.createdById, { label: "Създател", min: 1, max: 2147483647 }),
     title: textField(input.title, { label: "Заглавие", min: 3, max: 180 }),
     eventType: enumField(input.eventType, eventTypes, "Тип събитие"),
-    startsAt: dateField(input.startsAt, { label: "Дата и час", minDate, maxDate }),
+    startsAt,
     durationMinutes: integerField(input.durationMinutes, { label: "Продължителност", min: 15, max: 360 }),
     location: textField(input.location, { label: "Място", min: 3, max: 240 }),
     capacity: integerField(input.capacity, { label: "Капацитет", min: 1, max: 50 }),
