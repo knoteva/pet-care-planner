@@ -68,10 +68,8 @@ jobs:
             *) echo "DATABASE_URL must start with postgresql:// or postgres://"; exit 1 ;;
           esac
 
-      - name: Install Web dependencies
-        working-directory: pet-care-web
+      - name: Install workspace dependencies
         run: npm ci
 
       - name: Build Web app
-        working-directory: pet-care-web
-        run: npm run build
+        run: npm run build:web
