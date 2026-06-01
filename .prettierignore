@@ -1,4 +1,4 @@
-﻿node_modules/
+node_modules/
 .next/
 .expo/
 dist/
@@ -18,3 +18,6 @@ pet-care-mobile/node_modules/
 docs/Full-Stack-Apps-with-AI-Capstone-Project.md
 docs/Pet-Care-Planner-Capstone-Workshop.md
 docs/Workshop-Soccer-Planner.md
+test-results/
+playwright-report/
+playwright/.cache/

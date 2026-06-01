@@ -176,12 +176,18 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
         ) : null}
 
         {error ? (
-          <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-800">
+          <p
+            data-testid="auth-error"
+            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-800"
+          >
             {error}
           </p>
         ) : null}
         {message ? (
-          <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800">
+          <p
+            data-testid="auth-message"
+            className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800"
+          >
             {message}
           </p>
         ) : null}

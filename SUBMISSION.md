@@ -26,7 +26,7 @@ kate_user@paws.bg     / kate123   regular user/group member
 - Mobile app connected to REST API for login/register/logout, events, join/leave, comments, pets and groups.
 - Database-level pagination through Drizzle `limit` and `offset` in service queries.
 - Optional `npm run db:seed:large` script for 10,000-row scalability/pagination proof without bloating normal demo setup.
-- GitHub Actions CI for typecheck, smoke tests, contract tests and live API smoke testing.
+- GitHub Actions CI for typecheck, smoke tests, contract tests, live API smoke testing and Playwright Web E2E tests.
 - GitHub Actions workflow for scheduled/manual Neon Postgres backup artifacts.
 
 ## Screen Count
@@ -47,6 +47,8 @@ npm run build:web
 `npm test` includes workspace typechecks, route smoke checks and contract checks for screens, API routes, services, pagination and auth helper presence.
 
 `npm run smoke:api` checks the live REST API by logging in with a demo user, calling `/api/me`, checking paginated events/pets/groups/comments and confirming invalid login is rejected.
+
+`npm run test:e2e` runs Playwright browser tests against the local Next.js app for login, admin access, regular-user restrictions and registration validation. It can also target the deployed app with `E2E_BASE_URL`.
 
 ## Manual Review Flow
 

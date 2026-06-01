@@ -228,7 +228,7 @@ https://pet-care-web-rose.vercel.app
 The repository includes two GitHub Actions workflows:
 
 ```text
-.github/workflows/ci.yml          typecheck, smoke, contract and live API tests
+.github/workflows/ci.yml          typecheck, smoke, contract, live API tests and Playwright Web E2E tests
 .github/workflows/db-backup.yml   scheduled/manual Neon Postgres backup artifact
 ```
 
@@ -275,7 +275,12 @@ npm run db:seed:large
 npm run smoke:api
 ```
 
-Manual Web checks:
+Web E2E notes:
+
+- `npm run test:e2e` uses Playwright against `https://pet-care-web-rose.vercel.app` by default.
+- To test another URL, set `E2E_BASE_URL`, for example `set E2E_BASE_URL=http://localhost:3000` on Windows cmd.
+- The E2E suite covers login, admin access, regular-user admin restrictions and registration validation.
+  Manual Web checks:
 
 1. Open `/` and log in with `kate_user@paws.bg / kate123`.
 2. Open `/dashboard` and verify events, pets and groups load from the database.
