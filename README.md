@@ -227,6 +227,7 @@ npm run db:check
 npm run db:migrate
 npm run db:seed
 npm run smoke:web
+npm run smoke:api
 ```
 
 ## Final Test Plan
@@ -238,6 +239,7 @@ npm run typecheck
 npm run db:ping
 npm run db:check
 npm run smoke:web
+npm run smoke:api
 npm run build:web
 ```
 
@@ -265,3 +267,20 @@ Manual Mobile checks:
 8. Log out from the mobile header/profile screen.
 
 See `DEPLOYMENT.md` for deployment instructions and `SUBMISSION.md` for a short evaluator-facing summary.
+
+## API Smoke Check
+
+The live API smoke test uses the deployed Web/backend by default:
+
+```bash
+npm run smoke:api
+```
+
+To test another API base URL:
+
+```bash
+set SMOKE_API_BASE_URL=http://localhost:3000
+npm run smoke:api
+```
+
+The script logs in with `kate_user@paws.bg / kate123`, checks `/api/me`, paged events, pets, groups, comments and invalid-login handling.

@@ -1,116 +1,61 @@
-# Submission Summary
+# Pet Care Planner Submission Summary
 
-## Project
+## Live Demo
 
-Pet Care Planner is a monorepo capstone project with:
+- Web/backend: https://pet-care-web-rose.vercel.app
+- Repository: GitHub `main` branch
 
-- Next.js Web app and backend API in `pet-care-web`.
-- Expo Router mobile app in `pet-care-mobile`.
-- Shared TypeScript package in `pet-care-shared`.
-- Neon/Postgres database with Drizzle ORM migrations.
-
-## Demo Credentials
+## Demo Accounts
 
 ```text
-kate_admin@paws.bg    / kate123   admin
+kate_admin@paws.bg    / kate123   admin user
 kate_manager@paws.bg  / kate123   group manager
-kate_user@paws.bg     / kate123   regular user
+kate_user@paws.bg     / kate123   regular user/group member
 ```
 
-## Implemented Web Functionality
+## Implemented Scope
 
-- Register, login and logout.
-- JWT token plus httpOnly Web session cookie.
-- Password hashing.
-- User roles: `user`, `admin`.
-- Group roles: `member`, `manager`.
-- Admin-only admin panel.
-- Pets list/create/edit/delete for the current user.
-- Groups list/create/details/join by invite code.
-- Group creator becomes manager.
-- Events list/create/details.
-- Create event only for admin or group manager.
-- Join/leave event for group members.
-- Event comments list/create/edit/delete.
-- Regular users can suggest an event through a lightweight request/comment flow.
-- REST API routes for auth, me, pets, groups, events, join/leave and comments.
-- Pagination for large Web/API lists using Drizzle `limit` and `offset`.
+- Monorepo with npm workspaces: Next.js Web/backend, Expo mobile app and shared TypeScript package.
+- Neon Postgres database with Drizzle ORM schema and migrations.
+- Seed/demo data for users, pets, groups, events, participants and comments.
+- JWT authentication with password hashing.
+- Web session cookies and mobile Bearer token support.
+- Role checks for admin, group manager and group member flows.
+- Service layer for users, auth, pets, groups, events, comments, admin data, pagination and validation.
+- Web UI connected to real database data for dashboard, pets, groups, events, participants and comments.
+- Mobile app connected to REST API for login/register/logout, events, join/leave, comments, pets and groups.
+- Database-level pagination through Drizzle `limit` and `offset` in service queries.
 
-## Implemented Mobile Functionality
+## Screen Count
 
-- Login/register with Bearer JWT token.
-- Logout from mobile header/profile.
-- Events list from the REST API.
-- Mobile events load more with `/api/events?page=...`.
-- Join/leave event.
-- Comments list/create/edit/delete.
-- Pets read-only list.
-- Groups read-only list and join by invite code.
+- Web screens/routes: 16+ user-facing screens, plus REST API routes.
+- Mobile screens: 5 main tab screens/routes.
 
-## Implemented Database Tables
+## Automated Checks
 
-```text
-users
-pets
-pet_groups
-group_members
-care_events
-event_participants
-event_comments
-```
-
-## Scalability Evidence
-
-- `pet-care-web/src/services/pagination.ts` centralizes page parsing and page windows.
-- `event-service.ts`, `pet-service.ts`, `group-service.ts`, `admin-service.ts` and `comment-service.ts` accept `{ limit, offset }` and use Drizzle `.limit()` / `.offset()`.
-- API routes return pagination metadata.
-- Mobile events screen uses paged REST calls and a load-more action.
-
-## Web Screen Count
-
-The Web app has at least 17 page screens/routes, including public pages, dashboard, admin, pets, groups, events, API docs and dynamic detail/edit routes.
-
-## Mobile Screen Count
-
-The Expo app has 5 main mobile screens:
-
-```text
-dashboard/events
-login/profile
-register
-pets
-groups
-```
-
-## Architecture Notes
-
-- Business logic is placed in `pet-care-web/src/services`.
-- Server Actions and API route handlers call service-layer functions.
-- Database schema is defined in Drizzle under `pet-care-web/src/db/schema.ts`.
-- Migrations are generated and applied through Drizzle Kit only.
-- Web UI text is Bulgarian-facing; code identifiers stay in English.
-
-## Final Test Commands
+Run from the repository root:
 
 ```bash
-npm run typecheck
-npm run smoke:web
-npm run db:ping
-npm run db:check
+npm test
+npm run smoke:api
 npm run build:web
 ```
 
-## Manual Test Checklist
+`npm test` includes workspace typechecks, route smoke checks and contract checks for screens, API routes, services, pagination and auth helper presence.
 
-1. Log in as `kate_user@paws.bg`.
-2. Verify dashboard data loads from DB.
-3. Create/edit/delete a pet.
-4. View groups and group details.
-5. Join a group by invite code from `/groups/join`.
-6. Join and leave an event.
-7. Add, edit and delete an event comment.
-8. Submit an event suggestion as regular user.
-9. Log in as `kate_manager@paws.bg` and create a group event.
-10. Log in as `kate_admin@paws.bg` and open the admin panel.
-11. Confirm non-admin users cannot access admin-only data.
-12. In mobile, log in, load events, join/leave, comment, edit/delete comment, open pets/groups and log out.
+`npm run smoke:api` checks the live REST API by logging in with a demo user, calling `/api/me`, checking paginated events/pets/groups/comments and confirming invalid login is rejected.
+
+## Manual Review Flow
+
+1. Open the live Web app and log in with `kate_user@paws.bg / kate123`.
+2. Check dashboard, pets, groups and event details.
+3. Join/leave an event and create/edit/delete a comment.
+4. Log in with `kate_manager@paws.bg / kate123` and create a group event.
+5. Log in with `kate_admin@paws.bg / kate123` and verify admin access.
+6. Run the Expo app with `EXPO_PUBLIC_API_BASE_URL=https://pet-care-web-rose.vercel.app` and test mobile login/events/comments.
+
+## Known Limitations
+
+- Mobile Expo Go may be blocked by local corporate network/firewall settings; mobile web and the deployed REST API are available as a fallback.
+- File/photo uploads, backups and AI checklist generation are not implemented yet.
+- The app uses demo seed data suitable for capstone review, not production content moderation or email verification.

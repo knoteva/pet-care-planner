@@ -36,6 +36,7 @@ From the repository root:
 ```bash
 npm run typecheck
 npm run smoke:web
+npm run test:contracts
 npm run build:web
 
 git status
@@ -115,5 +116,16 @@ Useful pre-deploy checks:
 ```bash
 npm run typecheck
 npm run smoke:web
+npm run test:contracts
 npm run build:web
 ```
+
+## Post-Deploy API Smoke Check
+
+After a production deploy, run this from the repository root:
+
+```bash
+npm run smoke:api
+```
+
+By default this checks `https://pet-care-web-rose.vercel.app`. To check another deployment URL, set `SMOKE_API_BASE_URL` first.
