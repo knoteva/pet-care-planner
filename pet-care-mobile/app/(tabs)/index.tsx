@@ -4,7 +4,7 @@ import { Pressable, Text, TextInput, View } from "react-native";
 
 import * as api from "@/src/services/api";
 import { AppHeader, Badge, Card, DemoProfiles, EmptyState, ErrorBanner, LoadingState, PrimaryButton, Screen, SecondaryButton, SectionTitle, Subtitle, SuccessBanner, Title, Eyebrow, styles } from "@/src/components/mobile-ui";
-import { formatCapacity, formatDuration, formatEventDate, formatEventStatus, formatEventType } from "@/src/utils/format";
+import { formatCapacity, formatCommentCount, formatDuration, formatEventDate, formatEventStatus, formatEventType } from "@/src/utils/format";
 import { useAuth } from "@/src/state/auth-context";
 
 function actionErrorMessage(error: unknown) {
@@ -346,7 +346,7 @@ export default function DashboardScreen() {
               <View style={dashboardStyles.eventFacts}>
                 <Text style={dashboardStyles.factText}>{formatEventDate(event.startsAt)}</Text>
                 <Text style={dashboardStyles.factText}>{formatDuration(event.durationMinutes)}</Text>
-                <Text style={dashboardStyles.factText}>{event.commentCount ?? 0} коментара</Text>
+                <Text style={dashboardStyles.factText}>{formatCommentCount(event.commentCount ?? 0)}</Text>
               </View>
               {event.notes ? <Text style={dashboardStyles.eventNote}>{event.notes}</Text> : null}
               {feedback?.type === "success" ? <SuccessBanner message={feedback.message} /> : null}

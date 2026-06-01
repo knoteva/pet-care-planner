@@ -21,7 +21,9 @@
     "db:ping": "npm run db:ping -w pet-care-web",
     "db:seed": "npm run db:seed -w pet-care-web",
     "smoke:web": "npm run smoke -w pet-care-web",
-    "test:smoke": "npm run smoke:web"
+    "test:smoke": "npm run smoke:web",
+    "test:contracts": "node scripts/check-contracts.mjs",
+    "test": "npm run typecheck && npm run test:smoke && npm run test:contracts"
   },
   "devDependencies": {
     "prettier": "^3.6.2"

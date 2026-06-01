@@ -16,6 +16,9 @@ export const eventTypeLabels: Record<EventType, string> = {
   other: "друго",
 };
 
+export function formatCommentCount(count: number) {
+  return count === 1 ? "1 коментар" : `${count} коментара`;
+}
 export function formatEventDate(value: string) {
   return new Intl.DateTimeFormat("bg-BG", {
     day: "2-digit",

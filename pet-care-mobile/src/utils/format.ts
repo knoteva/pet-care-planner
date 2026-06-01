@@ -51,6 +51,9 @@ export function formatEventDate(value: string) {
   }).format(date);
 }
 
+export function formatCommentCount(count: number) {
+  return count === 1 ? "1 коментар" : `${count} коментара`;
+}
 export function formatDuration(minutes: number) {
   return `${minutes} мин.`;
 }

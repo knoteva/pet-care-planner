@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { comments as mockComments } from "@/services/mock-data";
 import type { CareEvent, EventComment } from "@/types";
-import { eventTypeLabels, formatEventDate, statusLabels } from "./app-labels";
+import { eventTypeLabels, formatCommentCount, formatEventDate, statusLabels } from "./app-labels";
 import { ShareLinkButton } from "./share-link-button";
 import { Badge, InfoItem } from "./ui-primitives";
 
@@ -51,7 +51,7 @@ export function EventCard({ event }: { event: CareEvent }) {
             {formatEventDate(event.startsAt)}
           </p>
           <p>{event.durationMinutes} мин.</p>
-          <p>{event.commentCount ?? 0} коментара</p>
+          <p>{formatCommentCount(event.commentCount ?? 0)}</p>
         </div>
       </div>
     </Link>
