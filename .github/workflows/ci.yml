@@ -71,5 +71,10 @@ jobs:
       - name: Install workspace dependencies
         run: npm ci
 
+      - name: Install Web dependencies locally
+        working-directory: pet-care-web
+        run: npm install --workspaces=false
+
       - name: Build Web app
-        run: npm run build:web
+        working-directory: pet-care-web
+        run: npm run build
