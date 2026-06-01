@@ -113,7 +113,7 @@ The Web app has more than 10 screens/routes:
 /register
 /dashboard
 /admin
-/admin/[id]
+/admin/users/[id]
 /api/docs
 /pets
 /pets/new

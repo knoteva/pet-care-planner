@@ -59,5 +59,5 @@ npm run build:web
 ## Known Limitations
 
 - Mobile Expo Go may be blocked by local corporate network/firewall settings; mobile web and the deployed REST API are available as a fallback.
-- File/photo uploads, backups and AI checklist generation are not implemented yet.
+- File/photo uploads and AI checklist generation are not implemented yet. Database backups are covered by the GitHub Actions backup workflow.
 - The app uses demo seed data suitable for capstone review, not production content moderation or email verification.
