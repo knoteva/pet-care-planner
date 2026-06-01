@@ -129,3 +129,15 @@ npm run smoke:api
 ```
 
 By default this checks `https://pet-care-web-rose.vercel.app`. To check another deployment URL, set `SMOKE_API_BASE_URL` first.
+## GitHub Actions Secrets
+
+Add these repository secrets in GitHub -> Settings -> Secrets and variables -> Actions:
+
+```text
+DATABASE_URL
+JWT_SECRET
+```
+
+`ci.yml` runs tests on pushes and pull requests. If both secrets exist, it also runs the Web production build.
+
+`db-backup.yml` runs daily and can also be started manually. It creates a `pg_dump` backup of the Neon database and uploads it as a GitHub Actions artifact retained for 14 days.

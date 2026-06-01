@@ -216,6 +216,22 @@ For mobile API calls, set `EXPO_PUBLIC_API_BASE_URL` to the Web/backend root URL
 https://pet-care-web-rose.vercel.app
 ```
 
+
+## GitHub Actions
+
+The repository includes two GitHub Actions workflows:
+
+```text
+.github/workflows/ci.yml          typecheck, smoke, contract and live API tests
+.github/workflows/db-backup.yml   scheduled/manual Neon Postgres backup artifact
+```
+
+For the optional Web build and DB backup workflow, add repository secrets in GitHub:
+
+```text
+DATABASE_URL
+JWT_SECRET
+```
 ## Useful Scripts
 
 ```bash

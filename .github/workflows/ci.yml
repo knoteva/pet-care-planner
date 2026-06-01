@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Typecheck, smoke and contract tests
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      SMOKE_API_BASE_URL: https://pet-care-web-rose.vercel.app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run workspace tests
+        run: npm test
+
+      - name: Run live API smoke test
+        run: npm run smoke:api
+
+      - name: Build Web app when deployment secrets exist
+        if: ${{ env.DATABASE_URL != '' && env.JWT_SECRET != '' }}
+        run: npm run build:web
