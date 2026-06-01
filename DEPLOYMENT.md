@@ -1,6 +1,6 @@
 # Deployment Guide
 
-The Web app is deployed to Vercel. The project is a monorepo, so Vercel must point to the Web workspace.
+The Web app is deployed to Vercel. The repository is a monorepo, so Vercel must point to the Web workspace.
 
 ## Vercel Settings
 
@@ -21,8 +21,8 @@ Add these variables in Vercel Project Settings -> Environment Variables -> Produ
 ```text
 DATABASE_URL=postgresql://...
 JWT_SECRET=long_random_secret
-NEXT_PUBLIC_APP_URL=https://your-vercel-url.vercel.app
-EXPO_PUBLIC_API_BASE_URL=https://your-vercel-url.vercel.app/api
+NEXT_PUBLIC_APP_URL=https://pet-care-web-rose.vercel.app
+EXPO_PUBLIC_API_BASE_URL=https://pet-care-web-rose.vercel.app
 ```
 
 `DATABASE_URL` should point to the Neon pooled connection string with SSL enabled.
@@ -34,11 +34,12 @@ Do not commit `.env.local` or real secrets to GitHub.
 From the repository root:
 
 ```bash
-npm run typecheck -w pet-care-web
+npm run typecheck
 npm run smoke:web
+npm run build:web
 
 git status
-git add .
+git add <changed-files>
 git commit -m "docs: polish submission documentation"
 git push
 ```
@@ -47,21 +48,17 @@ Then deploy the Web app:
 
 ```bash
 cd pet-care-web
-npx.cmd vercel --prod --yes
+npx.cmd --yes vercel --prod --yes
 cd ..
 ```
 
-The stable production alias currently used during development is:
+Stable production URL used during development:
 
 ```text
 https://pet-care-web-rose.vercel.app
 ```
 
-If a new production URL is generated, share the new Vercel production link instead.
-
-## Demo Pages To Share
-
-Use these routes for review:
+## Demo Routes To Share
 
 ```text
 /
@@ -89,34 +86,34 @@ Dynamic detail pages are created from database IDs, for example:
 
 ## Mobile Demo
 
-The Expo app is included in the repository and can be run locally:
+Run the Expo app locally:
 
 ```bash
 npm run dev:mobile
 ```
 
-For public review, share the Web Vercel URL first. The mobile app is a companion prototype; the Web backend now exposes REST routes for the upcoming mobile integration step.
+For mobile API calls against production, configure:
 
-## Deployment Troubleshooting
+```text
+EXPO_PUBLIC_API_BASE_URL=https://pet-care-web-rose.vercel.app
+```
+
+The mobile app uses the deployed Web/backend REST API with Bearer tokens.
+
+## Troubleshooting
 
 If Vercel fails with missing database configuration:
 
 1. Check that `DATABASE_URL` exists in Vercel Production environment variables.
 2. Check that `JWT_SECRET` exists in Vercel Production environment variables.
-3. Redeploy from `pet-care-web`:
-
-```bash
-cd pet-care-web
-npx.cmd vercel --prod --yes
-cd ..
-```
+3. Redeploy from `pet-care-web`.
 
 If Vercel fails during dependency install, confirm that the project uses `pet-care-web` as Root Directory and that `Install Command` is exactly `npm install`.
 
 Useful pre-deploy checks:
 
 ```bash
-npm run typecheck -w pet-care-web
+npm run typecheck
 npm run smoke:web
 npm run build:web
 ```

@@ -31,24 +31,46 @@ export default function DashboardScreen() {
   const [expandedEventId, setExpandedEventId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [eventPage, setEventPage] = useState(1);
+  const [eventsHasNext, setEventsHasNext] = useState(false);
   const [actionEventId, setActionEventId] = useState<number | null>(null);
   const [eventFeedback, setEventFeedback] = useState<Record<number, { type: "success" | "error"; message: string }>>({});
   const [editingCommentIdByEvent, setEditingCommentIdByEvent] = useState<Record<number, number | null>>({});
   const [editCommentInputs, setEditCommentInputs] = useState<Record<number, string>>({});
 
-  const loadEvents = useCallback(async () => {
+  const loadEvents = useCallback(async (page = 1, append = false) => {
     if (!token) return;
 
-    setLoading(true);
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
 
     try {
-      const response = await api.listEvents(token);
-      setEvents(response.events);
+      const response = await api.listEvents(token, page);
+      setEvents((current) => {
+        if (!append) return response.events;
+
+        const byId = new Map(current.map((event) => [event.id, event]));
+        for (const event of response.events) {
+          byId.set(event.id, event);
+        }
+
+        return Array.from(byId.values());
+      });
+      setEventPage(response.pagination.page);
+      setEventsHasNext(response.pagination.hasNext);
     } catch (requestError) {
       setError(actionErrorMessage(requestError));
     } finally {
-      setLoading(false);
+      if (append) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, [token]);
 
@@ -400,6 +422,11 @@ export default function DashboardScreen() {
           );
         })}
       </View>
+      {eventsHasNext ? (
+        <SecondaryButton disabled={loadingMore} onPress={() => void loadEvents(eventPage + 1, true)}>
+          {loadingMore ? "Зареждане..." : "Зареди още"}
+        </SecondaryButton>
+      ) : null}
     </Screen>
   );
 }

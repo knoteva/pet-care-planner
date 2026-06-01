@@ -4,6 +4,12 @@ export type UserRole = "user" | "admin";
 export type GroupRole = "member" | "manager";
 export type ParticipationStatus = "joined" | "waitlisted" | "left" | "removed" | null;
 
+export type PaginationMeta = {
+  page: number;
+  hasNext: boolean;
+  basePath: string;
+};
+
 export type MobileUser = {
   id: number;
   email: string;
@@ -153,8 +159,8 @@ export async function getMe(token: string) {
   return apiRequest<{ user: MobileUser }>("/api/me", { token });
 }
 
-export async function listEvents(token: string) {
-  return apiRequest<{ events: MobileEvent[] }>("/api/events", { token });
+export async function listEvents(token: string, page = 1) {
+  return apiRequest<{ events: MobileEvent[]; pagination: PaginationMeta }>(`/api/events?page=${page}`, { token });
 }
 
 export async function joinEvent(eventId: number, token: string) {
@@ -172,8 +178,8 @@ export async function leaveEvent(eventId: number, token: string) {
   });
 }
 
-export async function listComments(eventId: number, token: string) {
-  return apiRequest<{ comments: MobileComment[] }>(`/api/events/${eventId}/comments`, { token });
+export async function listComments(eventId: number, token: string, page = 1) {
+  return apiRequest<{ comments: MobileComment[]; pagination: PaginationMeta }>(`/api/events/${eventId}/comments?page=${page}`, { token });
 }
 
 export async function createComment(eventId: number, text: string, token: string) {

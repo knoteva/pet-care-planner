@@ -20,21 +20,32 @@ kate_user@paws.bg     / kate123   regular user
 ## Implemented Web Functionality
 
 - Register, login and logout.
-- JWT token + httpOnly Web session cookie.
+- JWT token plus httpOnly Web session cookie.
 - Password hashing.
 - User roles: `user`, `admin`.
 - Group roles: `member`, `manager`.
 - Admin-only admin panel.
-- Pets list/create/edit/delete for current user.
+- Pets list/create/edit/delete for the current user.
 - Groups list/create/details/join by invite code.
 - Group creator becomes manager.
 - Events list/create/details.
 - Create event only for admin or group manager.
 - Join/leave event for group members.
-- Event comments list/create.
+- Event comments list/create/edit/delete.
 - Regular users can suggest an event through a lightweight request/comment flow.
 - REST API routes for auth, me, pets, groups, events, join/leave and comments.
-- Basic pagination for large Web lists.
+- Pagination for large Web/API lists using Drizzle `limit` and `offset`.
+
+## Implemented Mobile Functionality
+
+- Login/register with Bearer JWT token.
+- Logout from mobile header/profile.
+- Events list from the REST API.
+- Mobile events load more with `/api/events?page=...`.
+- Join/leave event.
+- Comments list/create/edit/delete.
+- Pets read-only list.
+- Groups read-only list and join by invite code.
 
 ## Implemented Database Tables
 
@@ -48,23 +59,28 @@ event_participants
 event_comments
 ```
 
+## Scalability Evidence
+
+- `pet-care-web/src/services/pagination.ts` centralizes page parsing and page windows.
+- `event-service.ts`, `pet-service.ts`, `group-service.ts`, `admin-service.ts` and `comment-service.ts` accept `{ limit, offset }` and use Drizzle `.limit()` / `.offset()`.
+- API routes return pagination metadata.
+- Mobile events screen uses paged REST calls and a load-more action.
+
 ## Web Screen Count
 
-The Web app has at least 19 page screens/routes, including public pages, dashboard, admin, pets, groups, events, API docs and legacy routes that redirect to database-backed sections.
+The Web app has at least 17 page screens/routes, including public pages, dashboard, admin, pets, groups, events, API docs and dynamic detail/edit routes.
 
 ## Mobile Screen Count
 
 The Expo app has 5 main mobile screens:
 
 ```text
-dashboard/home
-login
+dashboard/events
+login/profile
 register
 pets
 groups
 ```
-
-The mobile app is intentionally scope-limited for this stage. The Web backend now exposes REST routes prepared for the mobile integration milestone.
 
 ## Architecture Notes
 
@@ -92,8 +108,9 @@ npm run build:web
 4. View groups and group details.
 5. Join a group by invite code from `/groups/join`.
 6. Join and leave an event.
-7. Add an event comment.
+7. Add, edit and delete an event comment.
 8. Submit an event suggestion as regular user.
 9. Log in as `kate_manager@paws.bg` and create a group event.
 10. Log in as `kate_admin@paws.bg` and open the admin panel.
 11. Confirm non-admin users cannot access admin-only data.
+12. In mobile, log in, load events, join/leave, comment, edit/delete comment, open pets/groups and log out.

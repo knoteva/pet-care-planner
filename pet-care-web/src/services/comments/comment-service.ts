@@ -5,7 +5,7 @@ import { careEvents, eventComments, users } from "@/db/schema";
 import { isAdmin, requireGroupMember, type PublicUser } from "@/services/auth/auth-service";
 import { textField } from "@/services/validation";
 
-export async function listEventComments(eventId: number) {
+export async function listEventComments(eventId: number, options: { limit?: number; offset?: number } = {}) {
   return db
     .select({
       id: eventComments.id,
@@ -27,7 +27,9 @@ export async function listEventComments(eventId: number) {
         isNull(users.deletedAt),
       ),
     )
-    .orderBy(asc(eventComments.createdAt));
+    .orderBy(asc(eventComments.createdAt))
+    .limit(options.limit ?? 100)
+    .offset(options.offset ?? 0);
 }
 
 export async function createEventComment(user: PublicUser, eventId: number, text: string) {
