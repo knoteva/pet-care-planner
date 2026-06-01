@@ -17,7 +17,7 @@ kate_user@paws.bg     / kate123   regular user/group member
 
 - Monorepo with npm workspaces: Next.js Web/backend, Expo mobile app and shared TypeScript package.
 - Neon Postgres database with Drizzle ORM schema and migrations.
-- Seed/demo data for users, pets, groups, events, participants and comments.
+- Seed/demo data for users, pets, groups, events, participants and comments, including pagination demo groups/events for larger-list testing.
 - JWT authentication with password hashing.
 - Web session cookies and mobile Bearer token support.
 - Role checks for admin, group manager and group member flows.

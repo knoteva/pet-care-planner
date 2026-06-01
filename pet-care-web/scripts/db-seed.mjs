@@ -373,6 +373,40 @@ try {
     upsertGroupMember({ groupId: southGroupId, userId: kateUserId, role: "member" }),
   ]);
 
+  for (let index = 1; index <= 12; index += 1) {
+    const label = String(index).padStart(2, "0");
+    const groupId = await upsertGroup({
+      title: `Демо група ${label} - странициране`,
+      description: `Тестова група ${label}, създадена за видима проверка на pagination в Web и Mobile.`,
+      area: `София, район ${label}`,
+      inviteCode: `PAGE-DEMO-${label}`,
+      createdById: kateManagerId,
+    });
+
+    await Promise.all([
+      upsertGroupMember({ groupId, userId: kateManagerId, role: "manager" }),
+      upsertGroupMember({ groupId, userId: kateUserId, role: "member" }),
+      upsertGroupMember({ groupId, userId: kateAdminId, role: "member" }),
+    ]);
+
+    const startsAt = new Date(Date.UTC(2026, 5, 10 + index, 8 + (index % 8), (index % 4) * 15, 0)).toISOString();
+    const eventId = await upsertEvent({
+      groupId,
+      createdById: kateManagerId,
+      title: `Демо събитие ${label} за странициране`,
+      eventType: index % 2 === 0 ? "dog_walk" : "pet_sitting",
+      startsAt,
+      durationMinutes: 60,
+      location: `София, район ${label}`,
+      capacity: 4 + (index % 5),
+      status: "upcoming",
+      notes: "Създадено за проверка на pagination с по-голям demo dataset.",
+    });
+
+    if (index % 3 === 0) {
+      await upsertParticipant({ eventId, userId: kateUserId, petId: null, status: "joined", notes: "Demo pagination participant." });
+    }
+  }
   const walkEventId = await upsertEvent({
     groupId: southGroupId,
     createdById: mariaId,

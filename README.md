@@ -1,12 +1,13 @@
 # Pet Care Planner
 
+## Reviewer Links
+
+- Live Web/backend demo: https://pet-care-web-rose.vercel.app
+- API documentation route: https://pet-care-web-rose.vercel.app/api/docs
+- Submission summary: [SUBMISSION.md](./SUBMISSION.md)
+- Deployment guide: [DEPLOYMENT.md](./DEPLOYMENT.md)
+
 Pet Care Planner is a full-stack capstone project for coordinating shared pet care in neighborhood and friend groups. Users can manage pets, join groups, create or join care events, and discuss event details through comments.
-
-Live Web demo:
-
-```text
-https://pet-care-web-rose.vercel.app
-```
 
 ## Demo Credentials
 
@@ -190,7 +191,7 @@ copy .env.example pet-care-web\.env.local
 
 Fill `DATABASE_URL` and `JWT_SECRET` in `pet-care-web/.env.local`. Do not commit real secrets.
 
-Run database setup:
+Run database setup. The seed script also creates extra pagination demo groups/events so reviewers can immediately see paged Web/API/Mobile data:
 
 ```bash
 npm run db:migrate
