@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "dev:web": "npm run dev -w pet-care-web",
-    "dev:mobile": "npm run web -w pet-care-mobile",
+    "dev:mobile": "npm run start -w pet-care-mobile --",
     "build:web": "npm run build -w pet-care-web",
     "lint:web": "npm run lint -w pet-care-web",
     "typecheck": "npm run typecheck --workspaces --if-present",
