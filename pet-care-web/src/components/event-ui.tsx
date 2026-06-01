@@ -110,11 +110,6 @@ export function EventDetailsCard({
         <InfoItem label="Тип" value={eventTypeLabels[event.eventType]} />
       </dl>
 
-      {!compact && errorMessage ? (
-        <p className="mt-5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-800" role="alert">
-          {errorMessage}
-        </p>
-      ) : null}
 
       {!compact ? (
         <div className="mt-5 flex flex-wrap gap-2">
@@ -209,6 +204,11 @@ export function EventDetailsCard({
           </div>
           <form action={commentAction} className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
             <input name="eventId" type="hidden" value={event.id} />
+            {errorMessage ? (
+              <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold leading-6 text-rose-800" role="alert">
+                {errorMessage}
+              </p>
+            ) : null}
             <label className="grid gap-2 text-sm font-semibold text-neutral-800">
               Напиши коментар
               <textarea
