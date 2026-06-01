@@ -12,8 +12,6 @@ jobs:
     name: Typecheck, smoke and contract tests
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
       SMOKE_API_BASE_URL: https://pet-care-web-rose.vercel.app
 
     steps:
@@ -35,6 +33,45 @@ jobs:
       - name: Run live API smoke test
         run: npm run smoke:api
 
-      - name: Build Web app when deployment secrets exist
-        if: ${{ env.DATABASE_URL != '' && env.JWT_SECRET != '' }}
-        run: npm run build:web
+  web-build:
+    name: Web production build
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      NEXT_PUBLIC_APP_URL: https://pet-care-web-rose.vercel.app
+      EXPO_PUBLIC_API_BASE_URL: https://pet-care-web-rose.vercel.app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Validate deployment secrets
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL GitHub secret is missing or empty."
+            exit 1
+          fi
+          if [ -z "$JWT_SECRET" ]; then
+            echo "JWT_SECRET GitHub secret is missing or empty."
+            exit 1
+          fi
+          case "$DATABASE_URL" in
+            postgresql://*|postgres://*) echo "DATABASE_URL format looks OK" ;;
+            *) echo "DATABASE_URL must start with postgresql:// or postgres://"; exit 1 ;;
+          esac
+
+      - name: Install Web dependencies
+        working-directory: pet-care-web
+        run: npm ci
+
+      - name: Build Web app
+        working-directory: pet-care-web
+        run: npm run build
