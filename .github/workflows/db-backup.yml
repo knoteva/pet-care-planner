@@ -26,7 +26,7 @@ jobs:
           BACKUP_NAME="pet-care-planner-$(date -u +%Y%m%d-%H%M%S).dump"
           docker run --rm \
             -e DATABASE_URL \
-            -e BACKUP_NAME \
+            -e BACKUP_NAME="$BACKUP_NAME" \
             -v "$PWD/backups:/backups" \
             postgres:17-alpine \
             sh -c 'pg_dump "$DATABASE_URL" --format=custom --no-owner --no-acl --file "/backups/$BACKUP_NAME"'
