@@ -20,17 +20,17 @@ jobs:
             exit 1
           fi
 
-      - name: Install PostgreSQL client
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-      - name: Create database dump
+      - name: Create database dump with Postgres 17 client
         run: |
           mkdir -p backups
-          BACKUP_FILE="backups/pet-care-planner-$(date -u +%Y%m%d-%H%M%S).dump"
-          pg_dump "$DATABASE_URL" --format=custom --no-owner --no-acl --file "$BACKUP_FILE"
-          echo "BACKUP_FILE=$BACKUP_FILE" >> "$GITHUB_ENV"
+          BACKUP_NAME="pet-care-planner-$(date -u +%Y%m%d-%H%M%S).dump"
+          docker run --rm \
+            -e DATABASE_URL \
+            -e BACKUP_NAME \
+            -v "$PWD/backups:/backups" \
+            postgres:17-alpine \
+            sh -c 'pg_dump "$DATABASE_URL" --format=custom --no-owner --no-acl --file "/backups/$BACKUP_NAME"'
+          echo "BACKUP_FILE=backups/$BACKUP_NAME" >> "$GITHUB_ENV"
 
       - name: Upload backup artifact
         uses: actions/upload-artifact@v4
