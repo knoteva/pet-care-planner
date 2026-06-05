@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-async function login(page, email: string, password = "kate123") {
+async function login(page, email: string, password = "kate1234") {
   const response = await page.request.post("/api/auth/login", {
     data: { email, password },
   });

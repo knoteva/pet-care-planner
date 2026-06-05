@@ -14,16 +14,16 @@ Pet Care Planner is a full-stack capstone project for coordinating shared pet ca
 Use these accounts for review:
 
 ```text
-kate_admin@paws.bg    / kate123   admin user
-kate_manager@paws.bg  / kate123   group manager
-kate_user@paws.bg     / kate123   regular group member
+kate_admin@paws.bg    / kate1234   admin user
+kate_manager@paws.bg  / kate1234   group manager
+kate_user@paws.bg     / kate1234   regular group member
 ```
 
 Additional seed accounts:
 
 ```text
-demo@paws.bg  / demo123
-admin@paws.bg / admin123
+demo@paws.bg  / demo1234
+admin@paws.bg / admin1234
 ```
 
 ## Repository Structure
@@ -282,20 +282,20 @@ Web E2E notes:
 - The E2E suite covers login, admin access, regular-user admin restrictions and registration validation.
   Manual Web checks:
 
-1. Open `/` and log in with `kate_user@paws.bg / kate123`.
+1. Open `/` and log in with `kate_user@paws.bg / kate1234`.
 2. Open `/dashboard` and verify events, pets and groups load from the database.
 3. Open an event page, join/leave the event and add a comment.
 4. Edit and delete your own comment.
 5. Open `/groups/join` and join with invite code `PAWS-SOUTH`.
 6. Open `/events/suggest` as a regular user and submit a suggestion.
-7. Log in as `kate_manager@paws.bg / kate123` and create a group event.
-8. Log in as `kate_admin@paws.bg / kate123` and open `/admin`.
+7. Log in as `kate_manager@paws.bg / kate1234` and create a group event.
+8. Log in as `kate_admin@paws.bg / kate1234` and open `/admin`.
 9. Confirm non-admin users cannot access admin-only data.
 
 Manual Mobile checks:
 
 1. Run `npm run dev:mobile`.
-2. Log in with `kate_user@paws.bg / kate123`.
+2. Log in with `kate_user@paws.bg / kate1234`.
 3. Load events and use `Load more` if available.
 4. Join and leave an event.
 5. Open comments, create a comment, edit it and delete it.
@@ -320,4 +320,4 @@ set SMOKE_API_BASE_URL=http://localhost:3000
 npm run smoke:api
 ```
 
-The script logs in with `kate_user@paws.bg / kate123`, checks `/api/me`, paged events, pets, groups, comments and invalid-login handling.
+The script logs in with `kate_user@paws.bg / kate1234`, checks `/api/me`, paged events, pets, groups, comments and invalid-login handling.

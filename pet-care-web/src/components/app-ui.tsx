@@ -248,7 +248,7 @@ export function AuthView({ mode }: { mode: "login" | "register" }) {
             <FormField
               name="password"
               label="Парола"
-              placeholder="kate123"
+              placeholder="kate1234"
               type="password"
             />
             {!isLogin ? (
@@ -268,7 +268,7 @@ export function AuthView({ mode }: { mode: "login" | "register" }) {
           </form>
           <p className="mt-4 text-sm text-neutral-600">
             Демо достъп:{" "}
-            <span className="font-semibold">kate_user@paws.bg / kate123</span>
+            <span className="font-semibold">kate_user@paws.bg / kate1234</span>
           </p>
           <p className="mt-4 text-sm text-neutral-600">
             {isLogin ? "Нямаш профил?" : "Вече имаш профил?"}{" "}

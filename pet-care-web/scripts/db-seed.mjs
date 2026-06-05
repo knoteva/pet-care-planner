@@ -244,49 +244,49 @@ async function printCounts() {
 try {
   const mariaId = await upsertUser({
     email: "demo@paws.bg",
-    password: "demo123",
+    password: "demo1234",
     name: "Мария Петкова",
     role: "user",
   });
   const adminId = await upsertUser({
     email: "admin@paws.bg",
-    password: "admin123",
+    password: "admin1234",
     name: "Админ Петрова",
     role: "admin",
   });
   const ivanId = await upsertUser({
     email: "ivan.georgiev@example.com",
-    password: "demo123",
+    password: "demo1234",
     name: "Иван Георгиев",
     role: "user",
   });
   const elenaId = await upsertUser({
     email: "elena.dimitrova@example.com",
-    password: "demo123",
+    password: "demo1234",
     name: "Елена Димитрова",
     role: "user",
   });
   const nikolayId = await upsertUser({
     email: "nikolay@example.com",
-    password: "demo123",
+    password: "demo1234",
     name: "Николай Симеонов",
     role: "user",
   });
   const kateAdminId = await upsertUser({
     email: "kate_admin@paws.bg",
-    password: "kate123",
+    password: "kate1234",
     name: "Кейт Админ",
     role: "admin",
   });
   const kateManagerId = await upsertUser({
     email: "kate_manager@paws.bg",
-    password: "kate123",
+    password: "kate1234",
     name: "Кейт Мениджър",
     role: "user",
   });
   const kateUserId = await upsertUser({
     email: "kate_user@paws.bg",
-    password: "kate123",
+    password: "kate1234",
     name: "Кейт Потребител",
     role: "user",
   });
@@ -636,11 +636,11 @@ try {
 
   console.log("Database seed completed.");
   console.log("Demo credentials:");
-  console.log("- demo@paws.bg / demo123");
-  console.log("- admin@paws.bg / admin123");
-  console.log("- kate_admin@paws.bg / kate123");
-  console.log("- kate_manager@paws.bg / kate123");
-  console.log("- kate_user@paws.bg / kate123");
+  console.log("- demo@paws.bg / demo1234");
+  console.log("- admin@paws.bg / admin1234");
+  console.log("- kate_admin@paws.bg / kate1234");
+  console.log("- kate_manager@paws.bg / kate1234");
+  console.log("- kate_user@paws.bg / kate1234");
   await printCounts();
 } catch (error) {
   console.error("Database seed failed.");

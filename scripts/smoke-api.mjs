@@ -4,7 +4,7 @@ const baseUrl = (
   process.env.SMOKE_API_BASE_URL ?? "https://pet-care-web-rose.vercel.app"
 ).replace(/\/$/, "");
 const email = process.env.SMOKE_USER_EMAIL ?? "kate_user@paws.bg";
-const password = process.env.SMOKE_USER_PASSWORD ?? "kate123";
+const password = process.env.SMOKE_USER_PASSWORD ?? "kate1234";
 
 async function request(path, options = {}) {
   const response = await fetch(`${baseUrl}${path}`, {

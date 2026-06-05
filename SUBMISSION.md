@@ -8,9 +8,9 @@
 ## Demo Accounts
 
 ```text
-kate_admin@paws.bg    / kate123   admin user
-kate_manager@paws.bg  / kate123   group manager
-kate_user@paws.bg     / kate123   regular user/group member
+kate_admin@paws.bg    / kate1234   admin user
+kate_manager@paws.bg  / kate1234   group manager
+kate_user@paws.bg     / kate1234   regular user/group member
 ```
 
 ## Implemented Scope
@@ -52,11 +52,11 @@ npm run build:web
 
 ## Manual Review Flow
 
-1. Open the live Web app and log in with `kate_user@paws.bg / kate123`.
+1. Open the live Web app and log in with `kate_user@paws.bg / kate1234`.
 2. Check dashboard, pets, groups and event details.
 3. Join/leave an event and create/edit/delete a comment.
-4. Log in with `kate_manager@paws.bg / kate123` and create a group event.
-5. Log in with `kate_admin@paws.bg / kate123` and verify admin access.
+4. Log in with `kate_manager@paws.bg / kate1234` and create a group event.
+5. Log in with `kate_admin@paws.bg / kate1234` and verify admin access.
 6. Run the Expo app with `EXPO_PUBLIC_API_BASE_URL=https://pet-care-web-rose.vercel.app` and test mobile login/events/comments.
 
 ## Known Limitations

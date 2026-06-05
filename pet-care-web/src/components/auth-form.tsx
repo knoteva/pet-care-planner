@@ -219,7 +219,7 @@ export function AuthForm({ mode, variant = "page" }: AuthFormProps) {
           ))}
         </div>
         <p className="mt-2 text-emerald-800">
-          Парола за всички: <span className="font-semibold">kate123</span>
+          Парола за всички: <span className="font-semibold">kate1234</span>
         </p>
       </div>
       <p className="mt-4 text-sm text-neutral-600">

@@ -224,7 +224,7 @@ export function DemoProfiles() {
       <Text style={styles.demoLine}>Админ: kate_admin@paws.bg</Text>
       <Text style={styles.demoLine}>Мениджър: kate_manager@paws.bg</Text>
       <Text style={styles.demoLine}>Потребител: kate_user@paws.bg</Text>
-      <Text style={styles.demoPassword}>Парола за всички: kate123</Text>
+      <Text style={styles.demoPassword}>Парола за всички: kate1234</Text>
     </View>
   );
 }
