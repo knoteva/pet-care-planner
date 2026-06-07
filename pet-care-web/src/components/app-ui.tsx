@@ -48,6 +48,9 @@ export function DashboardView({
   stats?: typeof dashboardStats;
 }) {
   const primaryEvent = events[0];
+  const hasGroupMembership = groups.some((group) => group.isMember);
+  const eventActionLabel = hasGroupMembership ? "Ново събитие" : "Въведи код";
+  const eventActionHref = hasGroupMembership ? "/events/new" : "/groups/join";
 
   return (
     <AppShell
@@ -67,8 +70,8 @@ export function DashboardView({
       <section className="mt-6">
         <SectionTitle
           title="Предстоящи събития"
-          action="Ново събитие"
-          href="/events/new"
+          action={eventActionLabel}
+          href={eventActionHref}
         />
         {events.length > 0 ? (
           <div className="mt-3 grid gap-3">
@@ -81,8 +84,8 @@ export function DashboardView({
             <EmptyState
               title="Още няма събития"
               description="Създай или отвори групово събитие, за да се покаже в таблото."
-              actionLabel="Ново събитие"
-              href="/events/new"
+              actionLabel={eventActionLabel}
+              href={eventActionHref}
             />
           </div>
         )}
@@ -571,6 +574,21 @@ export function GroupDetailsView({
 }) {
   const eventsForGroup =
     groupEvents ?? mockEvents.filter((event) => event.groupId === group.id);
+  const groupAccessLabel = group.isManager
+    ? "мениджърски изглед"
+    : group.isMember
+      ? "член на група"
+      : "достъпна група";
+  const groupAccessTone = group.isManager ? "success" : group.isMember ? "neutral" : "warning";
+  const groupActionLabel = group.isManager
+    ? "Ново събитие"
+    : group.isMember
+      ? "Предложи събитие"
+      : "Присъедини се";
+  const groupActionHref = group.isManager ? "/events/new" : group.isMember ? "/events/suggest" : "/groups/join";
+  const groupEmptyDescription = group.isMember
+    ? "Когато мениджърът създаде събитие, то ще се появи тук."
+    : "Виждаш събитията като достъпна група. Въведи код за покана, за да участваш.";
 
   return (
     <AppShell
@@ -585,9 +603,7 @@ export function GroupDetailsView({
       <section className="rounded-lg border border-neutral-200 bg-white p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <Badge tone={group.isManager ? "success" : "neutral"}>
-              {group.isManager ? "мениджърски изглед" : "член на група"}
-            </Badge>
+            <Badge tone={groupAccessTone}>{groupAccessLabel}</Badge>
             <h2 className="mt-3 text-3xl font-bold">{group.title}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600">
               {group.description}
@@ -597,21 +613,12 @@ export function GroupDetailsView({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {group.isManager ? (
-              <Link
-                href="/events/new"
-                className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
-              >
-                Ново събитие
-              </Link>
-            ) : (
-              <Link
-                href="/events/suggest"
-                className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
-              >
-                Предложи събитие
-              </Link>
-            )}
+            <Link
+              href={groupActionHref}
+              className="rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white"
+            >
+              {groupActionLabel}
+            </Link>
           </div>
         </div>
       </section>
@@ -629,11 +636,9 @@ export function GroupDetailsView({
             <div className="mt-4">
               <EmptyState
                 title="Още няма събития"
-                description="Когато мениджърът създаде събитие, то ще се появи тук."
-                actionLabel={
-                  group.isManager ? "Ново събитие" : "Предложи събитие"
-                }
-                href={group.isManager ? "/events/new" : "/events/suggest"}
+                description={groupEmptyDescription}
+                actionLabel={groupActionLabel}
+                href={groupActionHref}
               />
             </div>
           )}
@@ -1055,6 +1060,18 @@ function PetPanel({ pets = mockPets }: { pets?: Pet[] }) {
   );
 }
 
+function GroupAccessBadge({ group }: { group: PetGroup }) {
+  if (group.isManager) {
+    return <Badge tone="success">мениджър</Badge>;
+  }
+
+  if (group.isMember) {
+    return <Badge tone="neutral">член</Badge>;
+  }
+
+  return <Badge tone="warning">достъпна</Badge>;
+}
+
 function GroupPanel({ groups = mockGroups }: { groups?: PetGroup[] }) {
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-4">
@@ -1069,11 +1086,7 @@ function GroupPanel({ groups = mockGroups }: { groups?: PetGroup[] }) {
               <p className="font-semibold">{group.title}</p>
               <p className="text-sm text-neutral-500">{group.area}</p>
             </div>
-            {group.isManager ? (
-              <Badge tone="success">мениджър</Badge>
-            ) : (
-              <Badge tone="neutral">член</Badge>
-            )}
+            <GroupAccessBadge group={group} />
           </div>
         ))}
       </div>
@@ -1142,11 +1155,7 @@ function GroupCard({ group }: { group: PetGroup }) {
             {group.area}
           </p>
         </div>
-        {group.isManager ? (
-          <Badge tone="success">мениджър</Badge>
-        ) : (
-          <Badge tone="neutral">член</Badge>
-        )}
+        <GroupAccessBadge group={group} />
       </div>
     </Link>
   );

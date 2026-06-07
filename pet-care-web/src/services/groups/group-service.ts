@@ -42,6 +42,14 @@ function validateGroupInput(input: CreateGroupInput) {
   };
 }
 
+function viewerMembershipJoin(userId: number) {
+  return and(
+    eq(groupMembers.groupId, petGroups.id),
+    eq(groupMembers.userId, userId),
+    isNull(groupMembers.removedAt),
+  );
+}
+
 export async function listGroupsForUser(
   userId: number,
   options: { limit?: number; offset?: number } = {},
@@ -59,14 +67,8 @@ export async function listGroupsForUser(
       role: groupMembers.role,
     })
     .from(petGroups)
-    .innerJoin(groupMembers, eq(groupMembers.groupId, petGroups.id))
-    .where(
-      and(
-        eq(groupMembers.userId, userId),
-        isNull(groupMembers.removedAt),
-        isNull(petGroups.deletedAt),
-      ),
-    )
+    .leftJoin(groupMembers, viewerMembershipJoin(userId))
+    .where(isNull(petGroups.deletedAt))
     .orderBy(asc(petGroups.title))
     .limit(options.limit ?? 100)
     .offset(options.offset ?? 0);
@@ -128,15 +130,8 @@ export async function getGroupForUser(groupId: number, userId: number) {
       role: groupMembers.role,
     })
     .from(petGroups)
-    .innerJoin(groupMembers, eq(groupMembers.groupId, petGroups.id))
-    .where(
-      and(
-        eq(petGroups.id, groupId),
-        eq(groupMembers.userId, userId),
-        isNull(groupMembers.removedAt),
-        isNull(petGroups.deletedAt),
-      ),
-    )
+    .leftJoin(groupMembers, viewerMembershipJoin(userId))
+    .where(and(eq(petGroups.id, groupId), isNull(petGroups.deletedAt)))
     .limit(1);
 
   return group ?? null;

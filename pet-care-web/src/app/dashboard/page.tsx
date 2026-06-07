@@ -22,6 +22,7 @@ function toDashboardEvent(
     status: event.status,
     participantCount: event.participantCount,
     commentCount: event.commentCount,
+    participationStatus: event.participationStatus as CareEvent["participationStatus"],
   };
 }
 
@@ -37,6 +38,7 @@ function toDashboardGroup(
     createdById: group.createdById,
     createdAt: group.createdAt.toISOString(),
     isManager: group.role === "manager",
+    isMember: Boolean(group.role),
   };
 }
 
@@ -54,7 +56,7 @@ export default async function DashboardPage() {
     { label: "Активни събития", value: String(events.length), tone: "emerald" },
     { label: "Моите любимци", value: String(pets.length), tone: "sky" },
     { label: "Групи", value: String(groups.length), tone: "violet" },
-    { label: "Участия", value: String(events.length), tone: "amber" },
+    { label: "Участия", value: String(events.filter((event) => event.participationStatus === "joined").length), tone: "amber" },
   ];
 
   return (

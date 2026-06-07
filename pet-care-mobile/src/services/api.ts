@@ -46,7 +46,7 @@ export type MobileGroup = {
   description?: string | null;
   area?: string | null;
   inviteCode: string;
-  role: GroupRole;
+  role?: GroupRole | null;
 };
 
 export type MobilePet = {

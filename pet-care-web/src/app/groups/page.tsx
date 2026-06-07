@@ -20,6 +20,7 @@ function toPetGroup(
     createdById: group.createdById,
     createdAt: group.createdAt.toISOString(),
     isManager: group.role === "manager",
+    isMember: Boolean(group.role),
   };
 }
 

@@ -159,6 +159,14 @@ function participationStatusSql(userId: number) {
   >`(select ${eventParticipants.status} from ${eventParticipants} where ${eventParticipants.eventId} = ${careEvents.id} and ${eventParticipants.userId} = ${userId} limit 1)`;
 }
 
+function viewerMembershipJoin(userId: number) {
+  return and(
+    eq(groupMembers.groupId, careEvents.groupId),
+    eq(groupMembers.userId, userId),
+    isNull(groupMembers.removedAt),
+  );
+}
+
 function eventSelect(userId?: number) {
   return {
     id: careEvents.id,
@@ -207,11 +215,9 @@ export async function listEventsForUser(
     .select(eventSelect(userId))
     .from(careEvents)
     .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
-    .innerJoin(groupMembers, eq(groupMembers.groupId, careEvents.groupId))
+    .leftJoin(groupMembers, viewerMembershipJoin(userId))
     .where(
       and(
-        eq(groupMembers.userId, userId),
-        isNull(groupMembers.removedAt),
         isNull(careEvents.deletedAt),
         isNull(petGroups.deletedAt),
       ),
@@ -261,11 +267,9 @@ export async function listLatestEventsForViewer(
         .select(eventSelect(user.id))
         .from(careEvents)
         .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
-        .innerJoin(groupMembers, eq(groupMembers.groupId, careEvents.groupId))
+        .leftJoin(groupMembers, viewerMembershipJoin(user.id))
         .where(
           and(
-            eq(groupMembers.userId, user.id),
-            isNull(groupMembers.removedAt),
             isNull(careEvents.deletedAt),
             isNull(petGroups.deletedAt),
           ),
@@ -302,12 +306,10 @@ export async function listUpcomingEventsForViewer(
         .select(eventSelect(user.id))
         .from(careEvents)
         .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
-        .innerJoin(groupMembers, eq(groupMembers.groupId, careEvents.groupId))
+        .leftJoin(groupMembers, viewerMembershipJoin(user.id))
         .where(
           and(
-            eq(groupMembers.userId, user.id),
             gte(careEvents.startsAt, now),
-            isNull(groupMembers.removedAt),
             isNull(careEvents.deletedAt),
             isNull(petGroups.deletedAt),
           ),
@@ -324,12 +326,11 @@ export async function listEventsForGroupForViewer(
   groupId: number,
   options: { limit?: number; offset?: number } = {},
 ) {
-  await requireGroupMember(user, groupId);
-
   return db
     .select(isAdmin(user) ? adminEventSelect(user.id) : eventSelect(user.id))
     .from(careEvents)
     .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
+    .leftJoin(groupMembers, viewerMembershipJoin(user.id))
     .where(
       and(
         eq(careEvents.groupId, groupId),
@@ -355,8 +356,6 @@ export async function listEventParticipantsForViewer(
   if (!event) {
     throw new Error("Event not found.");
   }
-
-  await requireGroupMember(user, event.groupId);
 
   return db
     .select({
@@ -390,12 +389,10 @@ export async function getEventForUser(eventId: number, userId: number) {
     .select(eventSelect(userId))
     .from(careEvents)
     .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
-    .innerJoin(groupMembers, eq(groupMembers.groupId, careEvents.groupId))
+    .leftJoin(groupMembers, viewerMembershipJoin(userId))
     .where(
       and(
         eq(careEvents.id, eventId),
-        eq(groupMembers.userId, userId),
-        isNull(groupMembers.removedAt),
         isNull(careEvents.deletedAt),
         isNull(petGroups.deletedAt),
       ),

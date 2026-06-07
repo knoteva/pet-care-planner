@@ -51,6 +51,7 @@ export interface PetGroup {
   createdById: number;
   createdAt: ISODateString;
   isManager?: boolean;
+  isMember?: boolean;
 }
 
 export interface CareEvent {

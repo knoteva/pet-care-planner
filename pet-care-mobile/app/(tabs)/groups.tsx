@@ -126,9 +126,9 @@ export default function GroupsScreen() {
       <AppHeader subtitle="групи" />
       <Card>
         <Eyebrow>Квартална грижа</Eyebrow>
-        <Title>Моите групи</Title>
+        <Title>Достъпни групи</Title>
         <Subtitle>
-          Виж групите, в които участваш. Нови групи и събития се управляват през
+          Виж групите, които можеш да отвориш. За участие използвай код за покана или създай група през
           web, а тук можеш да се включиш с код.
         </Subtitle>
       </Card>
@@ -163,7 +163,7 @@ export default function GroupsScreen() {
         {groups.map((group) => (
           <Card key={group.id}>
             <View style={groupStyles.groupTop}>
-              <Badge>{group.role === "manager" ? "мениджър" : "член"}</Badge>
+              <Badge>{group.role === "manager" ? "мениджър" : group.role === "member" ? "член" : "достъпна"}</Badge>
               <Badge tone="gray">{group.inviteCode}</Badge>
             </View>
             <Text style={groupStyles.groupTitle}>{group.title}</Text>
