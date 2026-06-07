@@ -6,7 +6,14 @@ function isAllowedApiOrigin(origin: string | null) {
     return false;
   }
 
-  if (origin === "https://pet-care-web-rose.vercel.app") {
+  if (
+    origin === "https://pet-care-web-rose.vercel.app" ||
+    origin === "https://pet-care-mobile.vercel.app"
+  ) {
+    return true;
+  }
+
+  if (/^https:\/\/pet-care-mobile[-a-z0-9]*\.vercel\.app$/.test(origin)) {
     return true;
   }
 
