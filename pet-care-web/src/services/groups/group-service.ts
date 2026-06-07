@@ -205,7 +205,14 @@ export async function joinGroupByInviteCode(
   }
 
   const [existingMembership] = await db
-    .select({ id: groupMembers.id, removedAt: groupMembers.removedAt })
+    .select({
+      id: groupMembers.id,
+      groupId: groupMembers.groupId,
+      userId: groupMembers.userId,
+      role: groupMembers.role,
+      joinedAt: groupMembers.joinedAt,
+      removedAt: groupMembers.removedAt,
+    })
     .from(groupMembers)
     .where(
       and(
@@ -216,7 +223,7 @@ export async function joinGroupByInviteCode(
     .limit(1);
 
   if (existingMembership && !existingMembership.removedAt) {
-    throw new ValidationError("Вече си член на тази група.");
+    return existingMembership;
   }
 
   if (existingMembership?.removedAt) {
