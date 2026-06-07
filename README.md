@@ -3,6 +3,7 @@
 ## Reviewer Links
 
 - Live Web/backend demo: https://pet-care-web-rose.vercel.app
+- Live Mobile Expo Web demo: pending separate Vercel deployment from repo root
 - API documentation route: https://pet-care-web-rose.vercel.app/api/docs
 - Submission summary: [SUBMISSION.md](./SUBMISSION.md)
 - Deployment guide: [DEPLOYMENT.md](./DEPLOYMENT.md)
@@ -44,7 +45,7 @@ pet-care-planner/
 - Drizzle ORM and Drizzle Kit migrations
 - JWT authentication with password hashing
 - npm workspaces
-- Vercel deployment for the Web/backend app
+- Vercel deployment for the Web/backend app and Expo Web mobile build
 
 ## Architecture
 
@@ -101,7 +102,7 @@ Pagination is implemented at database query level with Drizzle `limit` and `offs
 - `pet-care-web/src/services/pagination.ts` defines page parsing and page windows.
 - `event-service.ts`, `pet-service.ts`, `group-service.ts`, `admin-service.ts` and `comment-service.ts` accept `{ limit, offset }` options.
 - API routes such as `/api/events?page=1`, `/api/pets?page=1`, `/api/groups?page=1` and `/api/events/[id]/comments?page=1` return pagination metadata.
-- Web list screens and the mobile events screen use paged data instead of loading unlimited rows.
+- Web list screens and mobile events/groups/pets screens use paged data instead of loading unlimited rows.
 - `npm run db:seed:large` is an optional reviewer/staging script that creates a 10,000-row load-test event dataset for pagination proof. It is not run during normal demo setup.
 
 ## Web Screens
@@ -142,7 +143,7 @@ The Expo app has at least 5 main screens:
 /(tabs)/groups    groups list and join by invite code
 ```
 
-Mobile uses the REST API with Bearer JWT tokens. Implemented mobile flows include login, register, logout, event list, paged load-more events, join/leave event, comments list/create/edit/delete, pets read-only and groups read-only/join.
+Mobile uses the REST API with Bearer JWT tokens. Implemented mobile flows include login, register, logout, paged event/group/pet lists, join/leave event, comments list/create/edit/delete, pets read-only and groups read-only/join.
 
 ## REST API Routes
 
@@ -211,13 +212,13 @@ Run the Web app:
 npm run dev:web
 ```
 
-Run the mobile app:
+Run the mobile app locally:
 
 ```bash
 npm run dev:mobile
 ```
 
-For mobile API calls, set `EXPO_PUBLIC_API_BASE_URL` to the Web/backend root URL, for example:
+For mobile API calls, `EXPO_PUBLIC_API_BASE_URL` can point to the Web/backend root URL. If it is not set, the mobile app falls back to the deployed backend:
 
 ```text
 https://pet-care-web-rose.vercel.app
@@ -245,6 +246,7 @@ JWT_SECRET
 npm run dev:web
 npm run dev:mobile
 npm run build:web
+npm run build:mobile:web
 npm run typecheck
 npm run db:ping
 npm run db:check
@@ -266,6 +268,7 @@ npm run db:check
 npm run smoke:web
 npm run smoke:api
 npm run build:web
+npm run build:mobile:web
 ```
 
 Optional scalability proof:

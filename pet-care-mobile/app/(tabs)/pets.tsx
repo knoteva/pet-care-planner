@@ -9,6 +9,7 @@ import {
   EmptyState,
   ErrorBanner,
   LoadingState,
+  SecondaryButton,
   RequireLogin,
   Screen,
   SectionTitle,
@@ -23,27 +24,52 @@ export default function PetsScreen() {
   const { user, token, isLoading: authLoading } = useAuth();
   const [pets, setPets] = useState<api.MobilePet[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [petPage, setPetPage] = useState(1);
+  const [petsHasNext, setPetsHasNext] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadPets = useCallback(async () => {
-    if (!token) return;
+  const loadPets = useCallback(
+    async (page = 1, append = false) => {
+      if (!token) return;
 
-    setLoading(true);
-    setError(null);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
 
-    try {
-      const response = await api.listPets(token);
-      setPets(response.pets);
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Любимците не можаха да се заредят.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+      try {
+        const response = await api.listPets(token, page);
+        setPets((current) => {
+          if (!append) return response.pets;
+
+          const byId = new Map(current.map((pet) => [pet.id, pet]));
+          for (const pet of response.pets) {
+            byId.set(pet.id, pet);
+          }
+
+          return Array.from(byId.values());
+        });
+        setPetPage(response.pagination.page);
+        setPetsHasNext(response.pagination.hasNext);
+      } catch (requestError) {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Любимците не можаха да се заредят.",
+        );
+      } finally {
+        if (append) {
+          setLoadingMore(false);
+        } else {
+          setLoading(false);
+        }
+      }
+    },
+    [token],
+  );
 
   useEffect(() => {
     void loadPets();
@@ -102,6 +128,14 @@ export default function PetsScreen() {
           </Card>
         ))}
       </View>
+      {petsHasNext ? (
+        <SecondaryButton
+          disabled={loadingMore}
+          onPress={() => void loadPets(petPage + 1, true)}
+        >
+          {loadingMore ? "Зареждане..." : "Зареди още"}
+        </SecondaryButton>
+      ) : null}
     </Screen>
   );
 }

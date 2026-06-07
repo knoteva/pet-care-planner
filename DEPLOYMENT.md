@@ -59,6 +59,36 @@ Stable production URL used during development:
 https://pet-care-web-rose.vercel.app
 ```
 
+
+## Mobile Expo Web Deployment
+
+The mobile app can also be published as a separate Expo Web static deployment.
+
+Use these settings for a separate Mobile project in Vercel:
+
+```text
+Framework Preset: Other
+Root Directory: ./
+Install Command: npm install
+Build Command: npm run build:mobile:web
+Output Directory: pet-care-mobile/dist
+```
+
+The root `vercel.json` contains the same static Expo Web settings. The mobile build uses the deployed Web/backend API by default:
+
+```text
+EXPO_PUBLIC_API_BASE_URL=https://pet-care-web-rose.vercel.app
+```
+
+Deploy from the repository root:
+
+```bash
+npm run build:mobile:web
+npx.cmd vercel --prod --yes
+```
+
+After deployment, add the generated Mobile Expo Web URL to `README.md` and `SUBMISSION.md`.
+
 ## Demo Routes To Share
 
 ```text
@@ -85,7 +115,7 @@ Dynamic detail pages are created from database IDs, for example:
 /pets/1/edit
 ```
 
-## Mobile Demo
+## Local Mobile Demo
 
 Run the Expo app locally:
 

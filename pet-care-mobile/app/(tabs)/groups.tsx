@@ -10,6 +10,7 @@ import {
   ErrorBanner,
   LoadingState,
   PrimaryButton,
+  SecondaryButton,
   RequireLogin,
   Screen,
   SectionTitle,
@@ -25,29 +26,54 @@ export default function GroupsScreen() {
   const [groups, setGroups] = useState<api.MobileGroup[]>([]);
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [groupPage, setGroupPage] = useState(1);
+  const [groupsHasNext, setGroupsHasNext] = useState(false);
   const [joining, setJoining] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const loadGroups = useCallback(async () => {
-    if (!token) return;
+  const loadGroups = useCallback(
+    async (page = 1, append = false) => {
+      if (!token) return;
 
-    setLoading(true);
-    setError(null);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
 
-    try {
-      const response = await api.listGroups(token);
-      setGroups(response.groups);
-    } catch (requestError) {
-      setError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Групите не можаха да се заредят.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+      try {
+        const response = await api.listGroups(token, page);
+        setGroups((current) => {
+          if (!append) return response.groups;
+
+          const byId = new Map(current.map((group) => [group.id, group]));
+          for (const group of response.groups) {
+            byId.set(group.id, group);
+          }
+
+          return Array.from(byId.values());
+        });
+        setGroupPage(response.pagination.page);
+        setGroupsHasNext(response.pagination.hasNext);
+      } catch (requestError) {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Групите не можаха да се заредят.",
+        );
+      } finally {
+        if (append) {
+          setLoadingMore(false);
+        } else {
+          setLoading(false);
+        }
+      }
+    },
+    [token],
+  );
 
   useEffect(() => {
     void loadGroups();
@@ -71,7 +97,7 @@ export default function GroupsScreen() {
       await api.joinGroup(cleanCode, token);
       setInviteCode("");
       setMessage("Успешно се присъедини към групата.");
-      await loadGroups();
+      await loadGroups(1, false);
     } catch (requestError) {
       setError(
         requestError instanceof Error
@@ -152,6 +178,14 @@ export default function GroupsScreen() {
           </Card>
         ))}
       </View>
+      {groupsHasNext ? (
+        <SecondaryButton
+          disabled={loadingMore}
+          onPress={() => void loadGroups(groupPage + 1, true)}
+        >
+          {loadingMore ? "Зареждане..." : "Зареди още"}
+        </SecondaryButton>
+      ) : null}
     </Screen>
   );
 }

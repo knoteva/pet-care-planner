@@ -92,7 +92,7 @@ export function getApiBaseUrl() {
   return (
     configuredUrl && configuredUrl.length > 0
       ? configuredUrl
-      : "http://localhost:3000"
+      : "https://pet-care-web-rose.vercel.app"
   ).replace(/\/$/, "");
 }
 
@@ -248,8 +248,11 @@ export async function deleteComment(
   );
 }
 
-export async function listGroups(token: string) {
-  return apiRequest<{ groups: MobileGroup[] }>("/api/groups", { token });
+export async function listGroups(token: string, page = 1) {
+  return apiRequest<{ groups: MobileGroup[]; pagination: PaginationMeta }>(
+    `/api/groups?page=${page}`,
+    { token },
+  );
 }
 
 export async function joinGroup(inviteCode: string, token: string) {
@@ -260,6 +263,9 @@ export async function joinGroup(inviteCode: string, token: string) {
   });
 }
 
-export async function listPets(token: string) {
-  return apiRequest<{ pets: MobilePet[] }>("/api/pets", { token });
+export async function listPets(token: string, page = 1) {
+  return apiRequest<{ pets: MobilePet[]; pagination: PaginationMeta }>(
+    `/api/pets?page=${page}`,
+    { token },
+  );
 }
