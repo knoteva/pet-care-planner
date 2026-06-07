@@ -53,7 +53,7 @@ npx.cmd --yes vercel --prod --yes
 cd ..
 ```
 
-Stable production URL used during development:
+Stable Web/backend production URL used during development:
 
 ```text
 https://pet-care-web-rose.vercel.app
@@ -87,7 +87,7 @@ npm run build:mobile:web
 npx.cmd vercel --prod --yes
 ```
 
-After deployment, add the generated Mobile Expo Web URL to `README.md` and `SUBMISSION.md`.
+Stable Mobile Expo Web URL used for review: `https://pet-care-mobile.vercel.app`.
 
 ## Demo Routes To Share
 

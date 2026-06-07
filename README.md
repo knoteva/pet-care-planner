@@ -2,11 +2,11 @@
 
 ## Reviewer Links
 
-- Live Web/backend demo: https://pet-care-web-rose.vercel.app
-- Live Mobile Expo Web demo: pending separate Vercel deployment from repo root
-- API documentation route: https://pet-care-web-rose.vercel.app/api/docs
-- Submission summary: [SUBMISSION.md](./SUBMISSION.md)
-- Deployment guide: [DEPLOYMENT.md](./DEPLOYMENT.md)
+- Live Web/backend demo: <a href="https://pet-care-web-rose.vercel.app" target="_blank" rel="noopener noreferrer">https://pet-care-web-rose.vercel.app</a>
+- Live Mobile Expo Web demo: <a href="https://pet-care-mobile.vercel.app" target="_blank" rel="noopener noreferrer">https://pet-care-mobile.vercel.app</a>
+- API documentation route: <a href="https://pet-care-web-rose.vercel.app/api/docs" target="_blank" rel="noopener noreferrer">https://pet-care-web-rose.vercel.app/api/docs</a>
+- Submission summary: <a href="./SUBMISSION.md" target="_blank" rel="noopener noreferrer">SUBMISSION.md</a>
+- Deployment guide: <a href="./DEPLOYMENT.md" target="_blank" rel="noopener noreferrer">DEPLOYMENT.md</a>
 
 Pet Care Planner is a full-stack capstone project for coordinating shared pet care in neighborhood and friend groups. Users can manage pets, join groups, create or join care events, and discuss event details through comments.
 

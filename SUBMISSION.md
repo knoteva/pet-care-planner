@@ -3,7 +3,7 @@
 ## Live Demo
 
 - Web/backend: https://pet-care-web-rose.vercel.app
-- Mobile Expo Web: pending separate Vercel deployment from repo root
+- Mobile Expo Web: https://pet-care-mobile.vercel.app
 - Repository: GitHub `main` branch
 
 ## Demo Accounts
