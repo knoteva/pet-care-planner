@@ -6,6 +6,7 @@ import {
   eventTypeLabels,
   formatCommentCount,
   formatEventDate,
+  formatDuration,
   statusLabels,
 } from "./app-labels";
 import { ShareLinkButton } from "./share-link-button";
@@ -55,7 +56,7 @@ export function EventCard({ event }: { event: CareEvent }) {
           <p className="font-semibold text-neutral-950">
             {formatEventDate(event.startsAt)}
           </p>
-          <p>{event.durationMinutes} мин.</p>
+          <p>{formatDuration(event.durationMinutes)}</p>
           <p>{formatCommentCount(event.commentCount ?? 0)}</p>
         </div>
       </div>
@@ -109,7 +110,7 @@ export function EventDetailsCard({
         <InfoItem label="Дата" value={formatEventDate(event.startsAt)} />
         <InfoItem
           label="Продължителност"
-          value={`${event.durationMinutes} мин.`}
+          value={formatDuration(event.durationMinutes)}
         />
         <InfoItem label="Място" value={event.location} />
         <InfoItem label="Тип" value={eventTypeLabels[event.eventType]} />

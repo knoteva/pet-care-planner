@@ -55,7 +55,18 @@ export function formatCommentCount(count: number) {
   return count === 1 ? "1 коментар" : `${count} коментара`;
 }
 export function formatDuration(minutes: number) {
-  return `${minutes} мин.`;
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours === 0) {
+    return `${minutes} мин.`;
+  }
+
+  if (remainingMinutes === 0) {
+    return `${hours} ч.`;
+  }
+
+  return `${hours} ч. ${remainingMinutes} мин.`;
 }
 
 export function formatCapacity(event: MobileEvent) {
