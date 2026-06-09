@@ -89,6 +89,30 @@ export function SectionTitle({ children }: { children: ReactNode }) {
   return <Text style={styles.sectionTitle}>{children}</Text>;
 }
 
+export function PaginationStatus({
+  page,
+  totalPages,
+  isTotalEstimated,
+}: {
+  page: number;
+  totalPages: number;
+  isTotalEstimated: boolean;
+}) {
+  if (page <= 1 && totalPages <= 1 && !isTotalEstimated) {
+    return null;
+  }
+
+  const totalLabel = isTotalEstimated ? `поне ${totalPages}` : String(totalPages);
+
+  return (
+    <View style={styles.paginationStatus}>
+      <Text style={styles.paginationStatusText}>
+        Страница {page} от {totalLabel}
+      </Text>
+    </View>
+  );
+}
+
 export function Field({ label, ...props }: TextInputProps & { label: string }) {
   return (
     <View style={styles.field}>
@@ -335,6 +359,20 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "900",
     color: "#0f172a",
+  },
+  paginationStatus: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#dce3df",
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  paginationStatusText: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#475569",
   },
   field: {
     marginTop: 12,

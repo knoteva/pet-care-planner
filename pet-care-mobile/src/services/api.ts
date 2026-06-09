@@ -13,6 +13,8 @@ export type PaginationMeta = {
   page: number;
   hasNext: boolean;
   basePath: string;
+  totalPages: number;
+  isTotalEstimated: boolean;
 };
 
 export type MobileUser = {
@@ -45,8 +47,10 @@ export type MobileGroup = {
   title: string;
   description?: string | null;
   area?: string | null;
-  inviteCode: string;
+  inviteCode?: string | null;
   role?: GroupRole | null;
+  memberCount?: number;
+  upcomingEventCount?: number;
 };
 
 export type MobilePet = {

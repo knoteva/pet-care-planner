@@ -11,6 +11,7 @@ import {
   EmptyState,
   ErrorBanner,
   LoadingState,
+  PaginationStatus,
   PrimaryButton,
   Screen,
   SecondaryButton,
@@ -64,6 +65,8 @@ export default function DashboardScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [eventPage, setEventPage] = useState(1);
   const [eventsHasNext, setEventsHasNext] = useState(false);
+  const [eventTotalPages, setEventTotalPages] = useState(1);
+  const [eventsTotalEstimated, setEventsTotalEstimated] = useState(false);
   const [actionEventId, setActionEventId] = useState<number | null>(null);
   const [eventFeedback, setEventFeedback] = useState<
     Record<number, { type: "success" | "error"; message: string }>
@@ -103,6 +106,8 @@ export default function DashboardScreen() {
         });
         setEventPage(response.pagination.page);
         setEventsHasNext(response.pagination.hasNext);
+        setEventTotalPages(response.pagination.totalPages ?? response.pagination.page);
+        setEventsTotalEstimated(Boolean(response.pagination.isTotalEstimated));
       } catch (requestError) {
         setError(actionErrorMessage(requestError));
       } finally {
@@ -621,6 +626,13 @@ export default function DashboardScreen() {
           );
         })}
       </View>
+      {eventPage > 1 || eventsHasNext ? (
+        <PaginationStatus
+          page={eventPage}
+          totalPages={eventTotalPages}
+          isTotalEstimated={eventsTotalEstimated}
+        />
+      ) : null}
       {eventsHasNext ? (
         <SecondaryButton
           disabled={loadingMore}

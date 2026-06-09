@@ -9,6 +9,7 @@ import {
   EmptyState,
   ErrorBanner,
   LoadingState,
+  PaginationStatus,
   PrimaryButton,
   SecondaryButton,
   RequireLogin,
@@ -29,6 +30,8 @@ export default function GroupsScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [groupPage, setGroupPage] = useState(1);
   const [groupsHasNext, setGroupsHasNext] = useState(false);
+  const [groupTotalPages, setGroupTotalPages] = useState(1);
+  const [groupsTotalEstimated, setGroupsTotalEstimated] = useState(false);
   const [joining, setJoining] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +61,8 @@ export default function GroupsScreen() {
         });
         setGroupPage(response.pagination.page);
         setGroupsHasNext(response.pagination.hasNext);
+        setGroupTotalPages(response.pagination.totalPages ?? response.pagination.page);
+        setGroupsTotalEstimated(Boolean(response.pagination.isTotalEstimated));
       } catch (requestError) {
         setError(
           requestError instanceof Error
@@ -160,24 +165,52 @@ export default function GroupsScreen() {
         />
       ) : null}
       <View style={groupStyles.list}>
-        {groups.map((group) => (
-          <Card key={group.id}>
-            <View style={groupStyles.groupTop}>
-              <Badge>{group.role === "manager" ? "мениджър" : group.role === "member" ? "член" : "достъпна"}</Badge>
-              <Badge tone="gray">{group.inviteCode}</Badge>
-            </View>
-            <Text style={groupStyles.groupTitle}>{group.title}</Text>
-            {group.area ? (
-              <Text style={groupStyles.groupMeta}>{group.area}</Text>
-            ) : null}
-            {group.description ? (
-              <Text style={groupStyles.groupDescription}>
-                {group.description}
-              </Text>
-            ) : null}
-          </Card>
-        ))}
+        {groups.map((group) => {
+          const canSeeInviteCode =
+            user.role === "admin" || group.role === "manager";
+
+          return (
+            <Card key={group.id}>
+              <View style={groupStyles.groupTop}>
+                <Badge>
+                  {group.role === "manager"
+                    ? "мениджър"
+                    : group.role === "member"
+                      ? "член"
+                      : "достъпна"}
+                </Badge>
+                {canSeeInviteCode && group.inviteCode ? (
+                  <Badge tone="gray">{group.inviteCode}</Badge>
+                ) : null}
+              </View>
+              <Text style={groupStyles.groupTitle}>{group.title}</Text>
+              {group.area ? (
+                <Text style={groupStyles.groupMeta}>{group.area}</Text>
+              ) : null}
+              <View style={groupStyles.groupStats}>
+                <Text style={groupStyles.groupStat}>
+                  {group.memberCount ?? 0} членове
+                </Text>
+                <Text style={groupStyles.groupStat}>
+                  {group.upcomingEventCount ?? 0} предстоящи
+                </Text>
+              </View>
+              {group.description ? (
+                <Text style={groupStyles.groupDescription}>
+                  {group.description}
+                </Text>
+              ) : null}
+            </Card>
+          );
+        })}
       </View>
+      {groupPage > 1 || groupsHasNext ? (
+        <PaginationStatus
+          page={groupPage}
+          totalPages={groupTotalPages}
+          isTotalEstimated={groupsTotalEstimated}
+        />
+      ) : null}
       {groupsHasNext ? (
         <SecondaryButton
           disabled={loadingMore}
@@ -220,6 +253,21 @@ const groupStyles = {
   groupMeta: {
     marginTop: 5,
     fontSize: 14,
+    color: "#475569",
+  },
+  groupStats: {
+    marginTop: 10,
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    gap: 8,
+  },
+  groupStat: {
+    borderRadius: 8,
+    backgroundColor: "#f8fafc",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontSize: 12,
+    fontWeight: "800" as const,
     color: "#475569",
   },
   groupDescription: {

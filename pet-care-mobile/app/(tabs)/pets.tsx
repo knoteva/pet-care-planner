@@ -9,6 +9,7 @@ import {
   EmptyState,
   ErrorBanner,
   LoadingState,
+  PaginationStatus,
   SecondaryButton,
   RequireLogin,
   Screen,
@@ -27,6 +28,8 @@ export default function PetsScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [petPage, setPetPage] = useState(1);
   const [petsHasNext, setPetsHasNext] = useState(false);
+  const [petTotalPages, setPetTotalPages] = useState(1);
+  const [petsTotalEstimated, setPetsTotalEstimated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadPets = useCallback(
@@ -54,6 +57,8 @@ export default function PetsScreen() {
         });
         setPetPage(response.pagination.page);
         setPetsHasNext(response.pagination.hasNext);
+        setPetTotalPages(response.pagination.totalPages ?? response.pagination.page);
+        setPetsTotalEstimated(Boolean(response.pagination.isTotalEstimated));
       } catch (requestError) {
         setError(
           requestError instanceof Error
@@ -128,6 +133,13 @@ export default function PetsScreen() {
           </Card>
         ))}
       </View>
+      {petPage > 1 || petsHasNext ? (
+        <PaginationStatus
+          page={petPage}
+          totalPages={petTotalPages}
+          isTotalEstimated={petsTotalEstimated}
+        />
+      ) : null}
       {petsHasNext ? (
         <SecondaryButton
           disabled={loadingMore}
