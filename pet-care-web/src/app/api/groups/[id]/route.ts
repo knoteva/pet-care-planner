@@ -42,8 +42,14 @@ export async function GET(request: NextRequest, context: RouteContext) {
       );
     }
 
+    const canViewPrivateGroupContent = user.role === "admin" || Boolean(group.role);
+
+    if (!canViewPrivateGroupContent) {
+      return NextResponse.json({ group, members: [], events: [] });
+    }
+
     const [members, events] = await Promise.all([
-      listGroupMembers(groupId),
+      listGroupMembers(groupId, user),
       listEventsForGroupForViewer(user, groupId),
     ]);
 

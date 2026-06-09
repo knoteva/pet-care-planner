@@ -12,6 +12,7 @@ import {
   type NewCareEvent,
 } from "@/db/schema";
 import {
+  AuthError,
   isAdmin,
   requireGroupMember,
   type PublicUser,
@@ -21,8 +22,9 @@ import {
   enumField,
   integerField,
   textField,
+  ValidationError,
 } from "@/services/validation";
-import type { EventType } from "@/types";
+import type { EventStatus, EventType } from "@/types";
 
 export type CreateEventInput = Pick<
   NewCareEvent,
@@ -37,6 +39,17 @@ export type CreateEventInput = Pick<
   | "notes"
 >;
 
+export type UpdateEventInput = {
+  title?: string;
+  eventType?: EventType;
+  startsAt?: Date | string;
+  durationMinutes?: number;
+  location?: string;
+  capacity?: number;
+  notes?: string | null;
+  status?: EventStatus;
+};
+
 const eventTypes = [
   "dog_walk",
   "pet_sitting",
@@ -45,6 +58,13 @@ const eventTypes = [
   "vet_support",
   "other",
 ] satisfies EventType[];
+
+const eventStatuses = [
+  "upcoming",
+  "current",
+  "past",
+  "canceled",
+] satisfies EventStatus[];
 
 const eventStartStepMinutes = 15;
 const eventStartMinHour = 8;
@@ -170,6 +190,7 @@ function eventSelect(userId?: number) {
   return {
     id: careEvents.id,
     groupId: careEvents.groupId,
+    createdById: careEvents.createdById,
     title: careEvents.title,
     eventType: careEvents.eventType,
     startsAt: careEvents.startsAt,
@@ -190,6 +211,7 @@ function adminEventSelect(userId?: number) {
   return {
     id: careEvents.id,
     groupId: careEvents.groupId,
+    createdById: careEvents.createdById,
     title: careEvents.title,
     eventType: careEvents.eventType,
     startsAt: careEvents.startsAt,
@@ -441,6 +463,177 @@ export async function getEventForViewer(eventId: number, user: PublicUser) {
     .limit(1);
 
   return event ?? null;
+}
+
+type ManageableEvent = {
+  id: number;
+  groupId: number;
+  createdById: number;
+};
+
+async function getEventForManagement(eventId: number, user: PublicUser) {
+  const [event] = await db
+    .select({
+      id: careEvents.id,
+      groupId: careEvents.groupId,
+      createdById: careEvents.createdById,
+    })
+    .from(careEvents)
+    .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
+    .where(
+      and(
+        eq(careEvents.id, eventId),
+        isNull(careEvents.deletedAt),
+        isNull(petGroups.deletedAt),
+      ),
+    )
+    .limit(1);
+
+  if (!event) {
+    throw new ValidationError("Събитието не е намерено.");
+  }
+
+  if (isAdmin(user)) {
+    return event;
+  }
+
+  const membership = await requireGroupMember(user, event.groupId);
+
+  if (event.createdById !== user.id && membership?.role !== "manager") {
+    throw new AuthError(
+      "Само авторът, manager на групата или admin може да управлява това събитие.",
+      403,
+    );
+  }
+
+  return event satisfies ManageableEvent;
+}
+
+function buildEventUpdates(input: UpdateEventInput) {
+  const updates: Partial<NewCareEvent> = { updatedAt: new Date() };
+  let hasChanges = false;
+
+  if (Object.prototype.hasOwnProperty.call(input, "title")) {
+    updates.title = textField(input.title, {
+      label: "Заглавие",
+      min: 3,
+      max: 180,
+    });
+    hasChanges = true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "eventType")) {
+    updates.eventType = enumField(input.eventType, eventTypes, "Тип събитие");
+    hasChanges = true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "startsAt")) {
+    const minDate = getMinimumEventStartDate();
+    const maxDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    const startsAt = dateField(input.startsAt, {
+      label: "Дата и час",
+      minDate,
+      maxDate,
+    });
+
+    assertAllowedEventStart(startsAt);
+    updates.startsAt = startsAt;
+    hasChanges = true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "durationMinutes")) {
+    updates.durationMinutes = integerField(input.durationMinutes, {
+      label: "Продължителност",
+      min: 15,
+      max: 480,
+    });
+    hasChanges = true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "location")) {
+    updates.location = textField(input.location, {
+      label: "Място",
+      min: 3,
+      max: 240,
+    });
+    hasChanges = true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "capacity")) {
+    updates.capacity = integerField(input.capacity, {
+      label: "Капацитет",
+      min: 1,
+      max: 50,
+    });
+    hasChanges = true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "notes")) {
+    updates.notes = textField(input.notes, {
+      label: "Бележки",
+      max: 1200,
+      required: false,
+    });
+    hasChanges = true;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "status")) {
+    updates.status = enumField(input.status, eventStatuses, "Статус");
+    hasChanges = true;
+  }
+
+  if (!hasChanges) {
+    throw new ValidationError("Няма промени за записване.");
+  }
+
+  return updates;
+}
+
+export async function updateEventForAuthorizedUser(
+  user: PublicUser,
+  eventId: number,
+  input: UpdateEventInput,
+) {
+  const event = await getEventForManagement(eventId, user);
+  const updates = buildEventUpdates(input);
+
+  const [updatedEvent] = await db
+    .update(careEvents)
+    .set(updates)
+    .where(eq(careEvents.id, event.id))
+    .returning();
+
+  return updatedEvent;
+}
+
+export async function cancelEventForAuthorizedUser(
+  user: PublicUser,
+  eventId: number,
+) {
+  const event = await getEventForManagement(eventId, user);
+
+  const [updatedEvent] = await db
+    .update(careEvents)
+    .set({ status: "canceled", updatedAt: new Date() })
+    .where(eq(careEvents.id, event.id))
+    .returning();
+
+  return updatedEvent;
+}
+
+export async function deleteEventForAuthorizedUser(
+  user: PublicUser,
+  eventId: number,
+) {
+  const event = await getEventForManagement(eventId, user);
+
+  const [deletedEvent] = await db
+    .update(careEvents)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(eq(careEvents.id, event.id))
+    .returning();
+
+  return deletedEvent;
 }
 
 export async function createEventForMember(

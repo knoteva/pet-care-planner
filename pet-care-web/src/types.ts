@@ -40,7 +40,7 @@ export interface PetGroup {
   title: string;
   description?: string | null;
   area?: string | null;
-  inviteCode: string;
+  inviteCode: string | null;
   createdById: number;
   createdAt: ISODateString;
   isManager?: boolean;

@@ -357,7 +357,7 @@ type PaginationView = {
 type GroupMemberDisplay = {
   id: number;
   name: string;
-  email: string;
+  email?: string | null;
   role: string;
   pets: string;
   joinedAt: string;
@@ -691,7 +691,11 @@ export function GroupDetailsView({
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-bold">{member.name}</p>
-                      <p className="text-sm text-neutral-500">{member.email}</p>
+                      {member.email ? (
+                        <p className="text-sm text-neutral-500">{member.email}</p>
+                      ) : (
+                        <p className="text-sm text-neutral-500">Имейлът е скрит</p>
+                      )}
                     </div>
                     <Badge
                       tone={member.role === "мениджър" ? "success" : "neutral"}

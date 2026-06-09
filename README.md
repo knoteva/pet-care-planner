@@ -71,11 +71,11 @@ validation.ts
 
 ## Roles
 
-- Visitor: can open the landing page and register.
-- User: can manage own pets, join groups, join/leave events and comment.
-- Group member: can view group events and participate.
-- Group manager: can create events for managed groups.
-- Admin: can access the admin panel and create events in any group.
+- Visitor: can open the landing page, register and view public group previews.
+- Registered user: can manage own pets, create groups and join groups with an invite code.
+- Group member: can view private group content, create events, join/leave events, comment and manage own events.
+- Group manager: can moderate all events and members in their own groups and can see invite codes.
+- Admin: has global access and can manage all users, groups and events without being a member of every group.
 
 ## Database
 
@@ -126,7 +126,6 @@ The Web app has more than 10 screens/routes:
 /groups/[id]
 /events/new
 /events/[id]
-/events/suggest
 ```
 
 Legacy demo slug routes redirect to real database-backed sections.
@@ -166,6 +165,8 @@ POST   /api/groups/join
 GET    /api/events?page=1
 POST   /api/events
 GET    /api/events/[id]
+PATCH  /api/events/[id]
+DELETE /api/events/[id]
 POST   /api/events/[id]/join
 DELETE /api/events/[id]/join
 GET    /api/events/[id]/comments?page=1
@@ -282,7 +283,7 @@ Web E2E notes:
 
 - `npm run test:e2e` uses Playwright against `https://pet-care-web-rose.vercel.app` by default.
 - To test another URL, set `E2E_BASE_URL`, for example `set E2E_BASE_URL=http://localhost:3000` on Windows cmd.
-- The E2E suite covers login, admin access, regular-user admin restrictions and registration validation.
+- The E2E suite covers login, admin access, regular-user admin restrictions, registration validation, invite-code privacy and event permissions.
   Manual Web checks:
 
 1. Open `/` and log in with `kate_user@paws.bg / kate1234`.
@@ -290,10 +291,9 @@ Web E2E notes:
 3. Open an event page, join/leave the event and add a comment.
 4. Edit and delete your own comment.
 5. Open `/groups/join` and join with invite code `PAWS-SOUTH`.
-6. Open `/events/suggest` as a regular user and submit a suggestion.
-7. Log in as `kate_manager@paws.bg / kate1234` and create a group event.
-8. Log in as `kate_admin@paws.bg / kate1234` and open `/admin`.
-9. Confirm non-admin users cannot access admin-only data.
+6. Log in as `kate_manager@paws.bg / kate1234` and create or moderate a group event.
+7. Log in as `kate_admin@paws.bg / kate1234` and open `/admin`.
+8. Confirm non-admin users cannot access admin-only data.
 
 Manual Mobile checks:
 

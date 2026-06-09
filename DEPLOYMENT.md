@@ -103,7 +103,6 @@ Stable Mobile Expo Web URL used for review: `https://pet-care-mobile.vercel.app`
 /groups/new
 /groups/join
 /events/new
-/events/suggest
 /api/docs
 ```
 

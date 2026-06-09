@@ -21,9 +21,9 @@ kate_user@paws.bg     / kate1234   regular user/group member
 - Seed/demo data for users, pets, groups, events, participants and comments, including pagination demo groups/events for larger-list testing.
 - JWT authentication with password hashing.
 - Web session cookies and mobile Bearer token support.
-- Role checks for admin, group manager and group member flows.
+- Role checks for visitors, registered users, group members, group managers and admins.
 - Service layer for users, auth, pets, groups, events, comments, admin data, pagination and validation.
-- Web UI connected to real database data for dashboard, pets, groups, events, participants and comments.
+- Web UI connected to real database data for dashboard, pets, public/private group previews, events, participants and comments.
 - Mobile app connected to REST API for login/register/logout, paged events/groups/pets, join/leave, comments and Expo Web static build support.
 - Database-level pagination through Drizzle `limit` and `offset` in service queries.
 - Optional `npm run db:seed:large` script for 10,000-row scalability/pagination proof without bloating normal demo setup.
@@ -56,9 +56,9 @@ npm run build:web
 1. Open the live Web app and log in with `kate_user@paws.bg / kate1234`.
 2. Check dashboard, pets, groups and event details.
 3. Join/leave an event and create/edit/delete a comment.
-4. Log in with `kate_manager@paws.bg / kate1234` and create a group event.
-5. Log in with `kate_admin@paws.bg / kate1234` and verify admin access.
-6. Open the deployed Expo Web mobile app, or run Expo locally with `EXPO_PUBLIC_API_BASE_URL=https://pet-care-web-rose.vercel.app`, and test mobile login/events/comments.
+4. Log in with `kate_user@paws.bg / kate1234` and create an event in a group where the user is a member.
+5. Log in with `kate_manager@paws.bg / kate1234` and moderate group events.
+6. Log in with `kate_admin@paws.bg / kate1234` and verify admin access. Open the deployed Expo Web mobile app, or run Expo locally with `EXPO_PUBLIC_API_BASE_URL=https://pet-care-web-rose.vercel.app`, and test mobile login/events/comments.
 
 ## Known Limitations
 

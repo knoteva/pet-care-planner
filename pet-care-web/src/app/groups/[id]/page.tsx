@@ -73,7 +73,7 @@ export default async function GroupPage({
 
   const canViewPrivateGroupContent = Boolean(group.role);
   const members =
-    user && canViewPrivateGroupContent ? await listGroupMembers(groupId) : [];
+    user && canViewPrivateGroupContent ? await listGroupMembers(groupId, user) : [];
   const events =
     user && canViewPrivateGroupContent
       ? await listEventsForGroupForViewer(user, groupId)

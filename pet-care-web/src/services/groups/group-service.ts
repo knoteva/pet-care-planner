@@ -9,7 +9,11 @@ import {
   users,
   type NewPetGroup,
 } from "@/db/schema";
-import { isAdmin, type PublicUser } from "@/services/auth/auth-service";
+import {
+  getGroupMembership,
+  isAdmin,
+  type PublicUser,
+} from "@/services/auth/auth-service";
 import {
   integerField,
   textField,
@@ -106,7 +110,7 @@ function publicGroupSelect() {
     title: petGroups.title,
     description: petGroups.description,
     area: petGroups.area,
-    inviteCode: sql<string>`''`,
+    inviteCode: sql<null>`null`,
     createdById: petGroups.createdById,
     createdAt: petGroups.createdAt,
     updatedAt: petGroups.updatedAt,
@@ -122,7 +126,7 @@ function userGroupSelect() {
     title: petGroups.title,
     description: petGroups.description,
     area: petGroups.area,
-    inviteCode: petGroups.inviteCode,
+    inviteCode: sql<string | null>`case when ${groupMembers.role} = 'manager' then ${petGroups.inviteCode} else null end`,
     createdById: petGroups.createdById,
     createdAt: petGroups.createdAt,
     updatedAt: petGroups.updatedAt,
@@ -365,7 +369,18 @@ export async function joinGroupByInviteCode(
   return ensureGroupMembership(cleanUserId, group.id);
 }
 
-export async function listGroupMembers(groupId: number) {
+export async function listGroupMembers(
+  groupId: number,
+  viewer?: PublicUser | null,
+) {
+  const emailSelect =
+    isAdmin(viewer) ||
+    (viewer
+      ? (await getGroupMembership(viewer.id, groupId))?.role === "manager"
+      : false)
+      ? users.email
+      : sql<string | null>`null`;
+
   return db
     .select({
       id: groupMembers.id,
@@ -374,7 +389,7 @@ export async function listGroupMembers(groupId: number) {
       role: groupMembers.role,
       joinedAt: groupMembers.joinedAt,
       name: users.name,
-      email: users.email,
+      email: emailSelect,
     })
     .from(groupMembers)
     .innerJoin(users, eq(users.id, groupMembers.userId))

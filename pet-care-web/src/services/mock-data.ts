@@ -307,6 +307,26 @@ export const apiEndpoints = [
   },
   {
     method: "POST",
+    path: "/api/events",
+    purpose: "Създаване на събитие от активен член на група.",
+  },
+  {
+    method: "GET",
+    path: "/api/events/[id]",
+    purpose: "Детайли за събитие, достъпни само за членове/admin.",
+  },
+  {
+    method: "PATCH",
+    path: "/api/events/[id]",
+    purpose: "Редакция или отмяна от автора, manager или admin.",
+  },
+  {
+    method: "DELETE",
+    path: "/api/events/[id]",
+    purpose: "Soft delete от автора, manager или admin.",
+  },
+  {
+    method: "POST",
     path: "/api/events/[id]/join",
     purpose: "Участие със selected pet или helper-only режим.",
   },
