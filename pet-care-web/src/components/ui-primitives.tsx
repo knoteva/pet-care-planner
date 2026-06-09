@@ -332,10 +332,14 @@ export function PaginationControls({
   page,
   hasNext,
   basePath,
+  totalPages,
+  isTotalEstimated,
 }: {
   page: number;
   hasNext: boolean;
   basePath: string;
+  totalPages: number;
+  isTotalEstimated: boolean;
 }) {
   if (page <= 1 && !hasNext) {
     return null;
@@ -358,7 +362,7 @@ export function PaginationControls({
       >
         Предишна
       </Link>
-      <span className="text-neutral-600">Страница {page}</span>
+      <span className="text-neutral-600">Страница {page}/{totalPages}{isTotalEstimated ? "+" : ""}</span>
       <Link
         aria-disabled={!hasNext}
         className={classNames(

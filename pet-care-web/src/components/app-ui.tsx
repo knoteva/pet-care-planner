@@ -34,6 +34,7 @@ import {
   classNames,
 } from "./ui-primitives";
 import { DeletePetButton } from "./delete-pet-button";
+import { EventDateTimeField } from "./event-datetime-field";
 import { LogoutButton } from "./logout-button";
 
 export function DashboardView({
@@ -345,7 +346,13 @@ export function PetsView({
   );
 }
 
-type PaginationView = { page: number; hasNext: boolean; basePath: string };
+type PaginationView = {
+  page: number;
+  hasNext: boolean;
+  basePath: string;
+  totalPages: number;
+  isTotalEstimated: boolean;
+};
 
 type GroupMemberDisplay = {
   id: number;
@@ -896,6 +903,26 @@ type EventFormDefaults = Partial<
   >
 >;
 
+const eventDurationOptions = Array.from({ length: 32 }, (_, index) => {
+  const minutes = (index + 1) * 15;
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  const label =
+    minutes < 60
+      ? `${minutes} мин.`
+      : remainingMinutes === 0
+        ? `${hours} ч.`
+        : `${hours} ч. ${remainingMinutes} мин.`;
+
+  return { value: String(minutes), label };
+});
+
+function resolveEventDurationDefault(value?: string) {
+  return eventDurationOptions.some((option) => option.value === value)
+    ? value
+    : "90";
+}
+
 export function EventFormView({
   action,
   errorMessage,
@@ -961,24 +988,15 @@ export function EventFormView({
             { value: "other", label: "Друго" },
           ]}
         />
-        <FormField
-          name="startsAt"
-          label="Дата и час"
-          placeholder="2026-05-30T11:30"
-          type="datetime-local"
+        <EventDateTimeField
           defaultValue={defaults.startsAt}
-          min={minStartsAt}
-          step={900}
+          minStartsAt={minStartsAt}
         />
-        <FormField
+        <FormSelect
           name="durationMinutes"
           label="Продължителност"
-          placeholder="90"
-          type="number"
-          defaultValue={defaults.durationMinutes}
-          min={15}
-          max={360}
-          step={5}
+          defaultValue={resolveEventDurationDefault(defaults.durationMinutes)}
+          options={eventDurationOptions}
         />
         <FormField
           name="location"
@@ -1075,7 +1093,7 @@ function PetPanel({ pets = mockPets }: { pets?: Pet[] }) {
     <div className="rounded-lg border border-neutral-200 bg-white p-4">
       <h2 className="text-lg font-bold">Моите любимци</h2>
       <div className="mt-3 grid gap-3">
-        {pets.slice(0, 2).map((pet) => (
+        {pets.slice(0, 4).map((pet) => (
           <PetRow key={pet.id} pet={pet} />
         ))}
       </div>
@@ -1096,22 +1114,47 @@ function GroupAccessBadge({ group }: { group: PetGroup }) {
 }
 
 function GroupPanel({ groups = mockGroups }: { groups?: PetGroup[] }) {
+  const visibleGroups = [...groups]
+    .sort((left, right) => {
+      const managerSort = Number(right.isManager) - Number(left.isManager);
+      const memberSort = Number(right.isMember) - Number(left.isMember);
+
+      return (
+        managerSort ||
+        memberSort ||
+        left.title.localeCompare(right.title, "bg")
+      );
+    })
+    .slice(0, 4);
+
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-4">
-      <h2 className="text-lg font-bold">Активни групи</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-bold">Активни групи</h2>
+        <Link href="/groups" className="text-sm font-bold text-emerald-700">
+          Виж всички
+        </Link>
+      </div>
       <div className="mt-3 grid gap-3">
-        {groups.slice(0, 2).map((group) => (
-          <div
-            key={group.id}
-            className="flex items-start justify-between gap-3 border-b border-neutral-100 pb-3 last:border-0 last:pb-0"
-          >
-            <div>
-              <p className="font-semibold">{group.title}</p>
-              <p className="text-sm text-neutral-500">{group.area}</p>
-            </div>
-            <GroupAccessBadge group={group} />
-          </div>
-        ))}
+        {visibleGroups.length > 0 ? (
+          visibleGroups.map((group) => (
+            <Link
+              key={group.id}
+              href={`/groups/${group.id}`}
+              className="flex items-start justify-between gap-3 rounded-lg border border-neutral-100 p-3 transition hover:border-emerald-300 hover:bg-emerald-50/40"
+            >
+              <div>
+                <p className="font-semibold">{group.title}</p>
+                <p className="text-sm text-neutral-500">{group.area}</p>
+              </div>
+              <GroupAccessBadge group={group} />
+            </Link>
+          ))
+        ) : (
+          <p className="rounded-lg bg-neutral-50 p-3 text-sm text-neutral-600">
+            Още не участваш в група.
+          </p>
+        )}
       </div>
     </div>
   );
@@ -1141,13 +1184,16 @@ function PetCard({ pet }: { pet: Pet }) {
 
 function PetRow({ pet }: { pet: Pet }) {
   return (
-    <div className="flex items-center gap-3">
+    <Link
+      href={`/pets/${pet.id}/edit`}
+      className="flex items-center gap-3 rounded-lg border border-neutral-100 p-3 transition hover:border-emerald-300 hover:bg-emerald-50/40"
+    >
       <PetAvatar name={pet.name} small />
       <div>
         <p className="font-semibold">{pet.name}</p>
         <p className="text-sm text-neutral-500">{pet.breed}</p>
       </div>
-    </div>
+    </Link>
   );
 }
 

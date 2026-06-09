@@ -136,7 +136,7 @@ function validateCreateEventInput(input: CreateEventInput) {
     durationMinutes: integerField(input.durationMinutes, {
       label: "Продължителност",
       min: 15,
-      max: 360,
+      max: 480,
     }),
     location: textField(input.location, { label: "Място", min: 3, max: 240 }),
     capacity: integerField(input.capacity, {
@@ -259,7 +259,7 @@ export async function listLatestEventsForViewer(
         .from(careEvents)
         .innerJoin(petGroups, eq(petGroups.id, careEvents.groupId))
         .where(and(isNull(careEvents.deletedAt), isNull(petGroups.deletedAt)))
-        .orderBy(desc(careEvents.startsAt))
+        .orderBy(desc(careEvents.createdAt))
         .limit(options.limit ?? 3)
         .offset(options.offset ?? 0)
     : await db
@@ -273,7 +273,7 @@ export async function listLatestEventsForViewer(
             isNull(petGroups.deletedAt),
           ),
         )
-        .orderBy(desc(careEvents.startsAt))
+        .orderBy(desc(careEvents.createdAt))
         .limit(options.limit ?? 3)
         .offset(options.offset ?? 0);
 

@@ -1,7 +1,10 @@
 import { DashboardView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import { listEventsForUser } from "@/services/events/event-service";
-import { listGroupsForUser } from "@/services/groups/group-service";
+import {
+  listEventWritableGroupsForUser,
+  listGroupsForUser,
+} from "@/services/groups/group-service";
 import { listPetsForUser } from "@/services/pets/pet-service";
 import type { CareEvent, PetGroup } from "@/types";
 
@@ -47,7 +50,7 @@ export default async function DashboardPage() {
   const [eventRows, pets, groupRows] = await Promise.all([
     listEventsForUser(user.id),
     listPetsForUser(user.id),
-    listGroupsForUser(user.id),
+    listEventWritableGroupsForUser(user),
   ]);
 
   const events = eventRows.map(toDashboardEvent);

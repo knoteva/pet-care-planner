@@ -4,6 +4,8 @@ export type PaginationMeta = {
   page: number;
   hasNext: boolean;
   basePath: string;
+  totalPages: number;
+  isTotalEstimated: boolean;
 };
 
 export function parsePage(value: string | string[] | undefined) {
@@ -26,12 +28,16 @@ export function resolvePageRows<T>(
   basePath: string,
   pageSize = DEFAULT_PAGE_SIZE,
 ) {
+  const hasNext = rows.length > pageSize;
+
   return {
     items: rows.slice(0, pageSize),
     pagination: {
       page,
-      hasNext: rows.length > pageSize,
+      hasNext,
       basePath,
+      totalPages: hasNext ? page + 1 : page,
+      isTotalEstimated: hasNext,
     } satisfies PaginationMeta,
   };
 }
