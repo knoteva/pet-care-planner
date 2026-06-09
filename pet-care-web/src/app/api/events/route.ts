@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { apiErrorResponse, readJsonObject, requireApiUser } from "../api-utils";
 import {
-  createEventAsManager,
+  createEventForMember,
   listEventsForViewer,
 } from "@/services/events/event-service";
 import {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await readJsonObject(request);
-    const event = await createEventAsManager(user, {
+    const event = await createEventForMember(user, {
       groupId: Number(body.groupId),
       createdById: user.id,
       title: String(body.title ?? ""),

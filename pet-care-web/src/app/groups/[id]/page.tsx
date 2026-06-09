@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { GroupDetailsView } from "@/components/app-ui";
-import { requireCurrentSessionUser } from "@/services/auth/session";
+import { getCurrentSessionUser } from "@/services/auth/session";
 import { listEventsForGroupForViewer } from "@/services/events/event-service";
 import {
   getGroupForViewer,
@@ -28,6 +28,8 @@ function toPetGroup(
     createdAt: group.createdAt.toISOString(),
     isManager: group.role === "manager",
     isMember: Boolean(group.role),
+    memberCount: group.memberCount,
+    upcomingEventCount: group.upcomingEventCount,
   };
 }
 
@@ -56,7 +58,7 @@ export default async function GroupPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await requireCurrentSessionUser("/groups");
+  const user = await getCurrentSessionUser();
   const groupId = parseId((await params).id);
 
   if (!groupId) {
@@ -69,15 +71,20 @@ export default async function GroupPage({
     notFound();
   }
 
-  const [members, events] = await Promise.all([
-    listGroupMembers(groupId),
-    listEventsForGroupForViewer(user, groupId),
-  ]);
+  const canViewPrivateGroupContent = Boolean(group.role);
+  const members =
+    user && canViewPrivateGroupContent ? await listGroupMembers(groupId) : [];
+  const events =
+    user && canViewPrivateGroupContent
+      ? await listEventsForGroupForViewer(user, groupId)
+      : [];
 
   return (
     <GroupDetailsView
       group={toPetGroup(group)}
       groupEvents={events.map(toCareEvent)}
+      isPrivatePreview={!canViewPrivateGroupContent}
+      viewerIsLoggedIn={Boolean(user)}
       members={members.map((member) => ({
         id: member.id,
         name: member.name,

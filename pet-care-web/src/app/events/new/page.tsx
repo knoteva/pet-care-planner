@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { EventFormView } from "@/components/app-ui";
 import { requireCurrentSessionUser } from "@/services/auth/session";
 import {
-  createEventAsManager,
+  createEventForMember,
   getMinimumEventStartDate,
 } from "@/services/events/event-service";
 import {
@@ -11,7 +11,7 @@ import {
   getFormValue,
   redirectWithFormErrorAndState,
 } from "@/services/forms/form-errors";
-import { listCreatableGroupsForUser } from "@/services/groups/group-service";
+import { listEventWritableGroupsForUser } from "@/services/groups/group-service";
 import type { EventType } from "@/types";
 
 const eventFormFields = [
@@ -45,7 +45,7 @@ type PageProps = {
 
 export default async function NewEventPage({ searchParams }: PageProps) {
   const user = await requireCurrentSessionUser("/events/new");
-  const groups = await listCreatableGroupsForUser(user);
+  const groups = await listEventWritableGroupsForUser(user);
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const errorMessage = getFormError(resolvedSearchParams);
 
@@ -64,7 +64,7 @@ export default async function NewEventPage({ searchParams }: PageProps) {
     let eventId: number;
 
     try {
-      const event = await createEventAsManager(actionUser, {
+      const event = await createEventForMember(actionUser, {
         groupId,
         createdById: actionUser.id,
         title,

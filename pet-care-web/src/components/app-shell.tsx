@@ -15,7 +15,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/", label: "Начало" },
   { href: "/dashboard", label: "Табло", authOnly: true },
-  { href: "/groups", label: "Групи", authOnly: true },
+  { href: "/groups", label: "Групи" },
   { href: "/pets", label: "Любимци", authOnly: true },
   { href: "/events/new", label: "Ново събитие", authOnly: true },
   { href: "/admin", label: "Админ", adminOnly: true },

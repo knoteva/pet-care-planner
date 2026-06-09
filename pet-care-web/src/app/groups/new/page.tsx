@@ -18,17 +18,6 @@ type PageProps = {
   searchParams?: Promise<{ error?: string | string[] }>;
 };
 
-function normalizeGroupError(error: unknown) {
-  if (
-    error instanceof Error &&
-    error.message.toLowerCase().includes("duplicate")
-  ) {
-    return new Error("Този код за покана вече се използва. Избери друг код.");
-  }
-
-  return error;
-}
-
 export default async function NewGroupPage({ searchParams }: PageProps) {
   await requireCurrentSessionUser("/groups/new");
   const errorMessage = getFormError(
@@ -40,9 +29,6 @@ export default async function NewGroupPage({ searchParams }: PageProps) {
 
     const user = await requireCurrentSessionUser("/groups/new");
     const title = String(formData.get("title") ?? "").trim();
-    const inviteCode = String(formData.get("inviteCode") ?? "")
-      .trim()
-      .toUpperCase();
 
     if (!title) {
       redirectWithFormError(
@@ -51,26 +37,21 @@ export default async function NewGroupPage({ searchParams }: PageProps) {
       );
     }
 
-    if (!inviteCode) {
-      redirectWithFormError(
-        "/groups/new",
-        new Error("Кодът за покана е задължителен."),
-      );
-    }
+    let groupId: number;
 
     try {
-      await createGroup({
+      const group = await createGroup({
         title,
-        inviteCode,
         createdById: user.id,
         area: optionalText(formData.get("area")),
         description: optionalText(formData.get("description")),
       });
+      groupId = group.id;
     } catch (error) {
-      redirectWithFormError("/groups/new", normalizeGroupError(error));
+      redirectWithFormError("/groups/new", error);
     }
 
-    redirect("/groups");
+    redirect(`/groups/${groupId}`);
   }
 
   return (

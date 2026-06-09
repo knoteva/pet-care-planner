@@ -1,5 +1,5 @@
 import { GroupsView } from "@/components/app-ui";
-import { requireCurrentSessionUser } from "@/services/auth/session";
+import { getCurrentSessionUser } from "@/services/auth/session";
 import { listGroupsForViewer } from "@/services/groups/group-service";
 import {
   getPageWindow,
@@ -21,6 +21,8 @@ function toPetGroup(
     createdAt: group.createdAt.toISOString(),
     isManager: group.role === "manager",
     isMember: Boolean(group.role),
+    memberCount: group.memberCount,
+    upcomingEventCount: group.upcomingEventCount,
   };
 }
 
@@ -29,11 +31,11 @@ type PageProps = {
 };
 
 export default async function GroupsPage({ searchParams }: PageProps) {
-  const user = await requireCurrentSessionUser("/groups");
+  const user = await getCurrentSessionUser();
   const page = parsePage((await searchParams)?.page);
   const groupRows = await listGroupsForViewer(user, getPageWindow(page));
   const { items, pagination } = resolvePageRows(groupRows, page, "/groups");
   const groups = items.map(toPetGroup);
 
-  return <GroupsView groups={groups} pagination={pagination} />;
+  return <GroupsView groups={groups} pagination={pagination} currentUser={user} />;
 }

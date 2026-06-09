@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
       title: String(body.title ?? ""),
       description: nullableText(body.description),
       area: nullableText(body.area),
-      inviteCode: String(body.inviteCode ?? ""),
       createdById: user.id,
     });
 

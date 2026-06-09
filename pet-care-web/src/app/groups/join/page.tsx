@@ -55,7 +55,7 @@ export default async function JoinGroupPage({ searchParams }: PageProps) {
           placeholder="PAWS-SOUTH"
           minLength={4}
           maxLength={48}
-          pattern="[A-Z0-9-]+"
+          pattern="[A-Za-z0-9-]+"
         />
       </FormCard>
     </AppShell>

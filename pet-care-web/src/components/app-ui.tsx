@@ -367,13 +367,18 @@ type EventParticipantView = {
 export function GroupsView({
   groups = mockGroups,
   pagination,
+  currentUser,
 }: {
   groups?: PetGroup[];
   pagination?: PaginationView;
+  currentUser?: PublicUser | null;
 }) {
+  const actionLabel = currentUser ? "Нова група" : "Регистрация";
+  const actionHref = currentUser ? "/groups/new" : "/register";
+
   return (
     <AppShell active="/groups" aside={<InvitePanel />}>
-      <SectionTitle title="Групи" action="Нова група" href="/groups/new" />
+      <SectionTitle title="Групи" action={actionLabel} href={actionHref} />
       {groups.length > 0 ? (
         <div className="mt-4 grid gap-4">
           {groups.map((group) => (
@@ -384,9 +389,9 @@ export function GroupsView({
         <div className="mt-4">
           <EmptyState
             title="Още няма групи"
-            description="Създай първата си група, за да организираш събития и помощ за любимци."
-            actionLabel="Нова група"
-            href="/groups/new"
+            description="Тук ще се показват кварталните групи с публична информация. След регистрация можеш да създадеш своя група или да се присъединиш с код."
+            actionLabel={actionLabel}
+            href={actionHref}
           />
         </div>
       )}
@@ -394,7 +399,6 @@ export function GroupsView({
     </AppShell>
   );
 }
-
 export function EventPageView({
   event = mockEvents[0],
   comments,
@@ -567,10 +571,14 @@ export function GroupDetailsView({
   group = mockGroups[0],
   groupEvents,
   members = groupMembers,
+  isPrivatePreview = false,
+  viewerIsLoggedIn = true,
 }: {
   group?: PetGroup;
   groupEvents?: CareEvent[];
   members?: GroupMemberDisplay[];
+  isPrivatePreview?: boolean;
+  viewerIsLoggedIn?: boolean;
 }) {
   const eventsForGroup =
     groupEvents ?? mockEvents.filter((event) => event.groupId === group.id);
@@ -578,24 +586,30 @@ export function GroupDetailsView({
     ? "мениджърски изглед"
     : group.isMember
       ? "член на група"
-      : "достъпна група";
+      : "публична информация";
   const groupAccessTone = group.isManager ? "success" : group.isMember ? "neutral" : "warning";
-  const groupActionLabel = group.isManager
+  const groupActionLabel = group.isMember
     ? "Ново събитие"
-    : group.isMember
-      ? "Предложи събитие"
-      : "Присъедини се";
-  const groupActionHref = group.isManager ? "/events/new" : group.isMember ? "/events/suggest" : "/groups/join";
+    : viewerIsLoggedIn
+      ? "Въведи код"
+      : "Влез или се регистрирай";
+  const groupActionHref = group.isMember
+    ? `/events/new?groupId=${group.id}`
+    : viewerIsLoggedIn
+      ? "/groups/join"
+      : `/login?redirect=${encodeURIComponent(`/groups/${group.id}`)}`;
   const groupEmptyDescription = group.isMember
-    ? "Когато мениджърът създаде събитие, то ще се появи тук."
-    : "Виждаш събитията като достъпна група. Въведи код за покана, за да участваш.";
+    ? "Всеки активен член може да създаде събитие в тази група."
+    : "Въведи код за покана, за да виждаш събитията, участниците и коментарите.";
+  const memberCount = group.memberCount ?? members.length;
+  const upcomingEventCount = group.upcomingEventCount ?? eventsForGroup.length;
 
   return (
     <AppShell
       active="/groups"
       aside={
         <>
-          <InvitePanel />
+          <InvitePanel group={group} />
           <CareChecklistPreview />
         </>
       }
@@ -621,60 +635,75 @@ export function GroupDetailsView({
             </Link>
           </div>
         </div>
+        <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+          <InfoItem label="Членове" value={String(memberCount)} />
+          <InfoItem label="Предстоящи събития" value={String(upcomingEventCount)} />
+          <InfoItem label="Достъп" value={group.isMember ? "пълен" : "само публичен preview"} />
+        </dl>
       </section>
 
-      <section className="mt-6 grid gap-5">
-        <div className="rounded-lg border border-neutral-200 bg-white p-5">
-          <h3 className="text-xl font-bold">Събития в групата</h3>
-          {eventsForGroup.length > 0 ? (
-            <div className="mt-4 grid gap-3">
-              {eventsForGroup.map((event) => (
-                <EventCard key={event.id} event={event} />
+      {isPrivatePreview ? (
+        <section className="mt-6">
+          <EmptyState
+            title="Съдържанието е само за членове"
+            description="Групата е откриваема, но точните събития, участници, членове и коментари се виждат само след присъединяване с код."
+            actionLabel={groupActionLabel}
+            href={groupActionHref}
+          />
+        </section>
+      ) : (
+        <section className="mt-6 grid gap-5">
+          <div className="rounded-lg border border-neutral-200 bg-white p-5">
+            <h3 className="text-xl font-bold">Събития в групата</h3>
+            {eventsForGroup.length > 0 ? (
+              <div className="mt-4 grid gap-3">
+                {eventsForGroup.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            ) : (
+              <div className="mt-4">
+                <EmptyState
+                  title="Още няма събития"
+                  description={groupEmptyDescription}
+                  actionLabel={groupActionLabel}
+                  href={groupActionHref}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-lg border border-neutral-200 bg-white p-5">
+            <h3 className="text-xl font-bold">Членове</h3>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {members.map((member) => (
+                <div
+                  key={member.id}
+                  className="rounded-lg border border-neutral-100 bg-neutral-50 p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-bold">{member.name}</p>
+                      <p className="text-sm text-neutral-500">{member.email}</p>
+                    </div>
+                    <Badge
+                      tone={member.role === "мениджър" ? "success" : "neutral"}
+                    >
+                      {member.role}
+                    </Badge>
+                  </div>
+                  <p className="mt-2 text-sm text-neutral-600">
+                    {member.pets} · от {member.joinedAt}
+                  </p>
+                </div>
               ))}
             </div>
-          ) : (
-            <div className="mt-4">
-              <EmptyState
-                title="Още няма събития"
-                description={groupEmptyDescription}
-                actionLabel={groupActionLabel}
-                href={groupActionHref}
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-lg border border-neutral-200 bg-white p-5">
-          <h3 className="text-xl font-bold">Членове</h3>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {members.map((member) => (
-              <div
-                key={member.id}
-                className="rounded-lg border border-neutral-100 bg-neutral-50 p-3"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-bold">{member.name}</p>
-                    <p className="text-sm text-neutral-500">{member.email}</p>
-                  </div>
-                  <Badge
-                    tone={member.role === "мениджър" ? "success" : "neutral"}
-                  >
-                    {member.role}
-                  </Badge>
-                </div>
-                <p className="mt-2 text-sm text-neutral-600">
-                  {member.pets} · от {member.joinedAt}
-                </p>
-              </div>
-            ))}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </AppShell>
   );
 }
-
 export function PetFormView({
   action,
   errorMessage,
@@ -820,7 +849,7 @@ export function GroupFormView({
     <AppShell active="/groups" aside={<FormGuidePanel title="Група" />}>
       <FormCard
         title="Създай група"
-        description="Собственикът на групата ще стане първият group manager."
+        description="Създателят става първият manager. Кодът за покана се генерира автоматично, за да няма дублирани или объркващи кодове."
         submitLabel="Създай група"
         errorMessage={errorMessage}
         action={action}
@@ -845,19 +874,13 @@ export function GroupFormView({
           placeholder="Кога се събирате, какъв тип грижа координирате..."
           maxLength={1000}
         />
-        <FormField
-          name="inviteCode"
-          label="Код за покана"
-          placeholder="PAWS-SOUTH"
-          minLength={4}
-          maxLength={48}
-          pattern="[A-Z0-9-]+"
-        />
+        <p className="rounded-lg border border-emerald-100 bg-emerald-50 p-3 text-sm text-emerald-900">
+          След създаване ще получиш автоматичен код за покана, който можеш да споделиш с бъдещи членове.
+        </p>
       </FormCard>
     </AppShell>
   );
 }
-
 type EventGroupOption = { value: string; label: string };
 type EventFormDefaults = Partial<
   Record<
@@ -894,7 +917,7 @@ export function EventFormView({
       <AppShell active="/dashboard" aside={<FormGuidePanel title="Събитие" />}>
         <EmptyState
           title="Няма група за ново събитие"
-          description="Само админ или мениджър на група може да публикува събитие директно. Създай група или използвай мениджърски профил."
+          description="Трябва да си член на поне една група, за да създадеш събитие. Присъедини се с код или създай собствена група."
           actionLabel="Към групите"
           href="/groups"
         />
@@ -1142,6 +1165,10 @@ function PetAvatar({ name, small = false }: { name: string; small?: boolean }) {
 }
 
 function GroupCard({ group }: { group: PetGroup }) {
+  const hasPublicStats =
+    typeof group.memberCount === "number" ||
+    typeof group.upcomingEventCount === "number";
+
   return (
     <Link
       href={`/groups/${group.id}`}
@@ -1157,10 +1184,18 @@ function GroupCard({ group }: { group: PetGroup }) {
         </div>
         <GroupAccessBadge group={group} />
       </div>
+      {hasPublicStats ? (
+        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+          <InfoItem label="Членове" value={String(group.memberCount ?? 0)} />
+          <InfoItem
+            label="Предстоящи събития"
+            value={String(group.upcomingEventCount ?? 0)}
+          />
+        </dl>
+      ) : null}
     </Link>
   );
 }
-
 function ParticipantPanel({
   participants,
 }: {
@@ -1208,16 +1243,22 @@ function ParticipantPanel({
   );
 }
 
-function InvitePanel() {
+function InvitePanel({ group }: { group?: PetGroup }) {
+  const managerCanSeeCode = group?.isManager && group.inviteCode;
+
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-5">
       <h2 className="text-lg font-bold">Покана към група</h2>
       <p className="mt-2 text-sm leading-6 text-neutral-600">
-        Мениджърите ще могат да създават кодове и линкове за покана.
+        {managerCanSeeCode
+          ? "Кодът е видим само за manager/admin и може да се споделя с хора, които трябва да станат членове."
+          : "Въведи код от manager, за да станеш член и да виждаш пълното съдържание на групата."}
       </p>
-      <div className="mt-4 rounded-lg bg-neutral-100 px-3 py-2 font-mono text-sm">
-        PAWS-SOUTH
-      </div>
+      {managerCanSeeCode ? (
+        <div className="mt-4 rounded-lg bg-neutral-100 px-3 py-2 font-mono text-sm">
+          {group.inviteCode}
+        </div>
+      ) : null}
       <Link
         href="/groups/join"
         className="mt-4 inline-flex w-full justify-center rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-800"
@@ -1227,7 +1268,6 @@ function InvitePanel() {
     </div>
   );
 }
-
 function AdminAuditPanel() {
   return (
     <div className="rounded-lg border border-neutral-200 bg-white p-5">
